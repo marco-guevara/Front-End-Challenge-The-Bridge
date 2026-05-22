@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 
 import { AuthShell, StatusMessage } from "../Auth/AuthShell";
 import api from "../../services/api";
+import styles from "./Register.module.css";
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -37,16 +38,16 @@ function Register() {
 
   return (
     <AuthShell variant="register">
-      <section className="mx-auto w-full max-w-xl rounded-[1.35rem] border border-slate-200/10 bg-[#111a2d] p-6 shadow-[0_28px_90px_rgba(2,6,23,0.32)] sm:p-12">
-        <form className="space-y-6" onSubmit={handleSubmit}>
-          <label className="block space-y-3">
-            <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#00cfe6]">
+      <section className={styles.card}>
+        <form className={styles.form} onSubmit={handleSubmit}>
+          <label className={styles.field}>
+            <span className={styles.label}>
               Full Name
             </span>
-            <span className="flex h-16 items-center gap-4 rounded-[1rem] bg-[#080e1e] px-5 ring-1 ring-white/5 focus-within:ring-cyan-300/35">
+            <span className={styles.inputRow}>
               <svg
                 aria-hidden="true"
-                className="text-cyan-50/75"
+                className={styles.fieldIcon}
                 fill="none"
                 height="24"
                 viewBox="0 0 24 24"
@@ -62,7 +63,7 @@ function Register() {
               </svg>
               <input
                 autoComplete="name"
-                className="h-full min-w-0 flex-1 bg-transparent text-base text-cyan-50 outline-none placeholder:text-slate-500"
+                className={styles.input}
                 name="name"
                 onChange={handleChange}
                 placeholder="Alexander Sterling"
@@ -73,17 +74,17 @@ function Register() {
             </span>
           </label>
 
-          <label className="block space-y-3">
-            <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#00cfe6]">
+          <label className={styles.field}>
+            <span className={styles.label}>
               Email Address
             </span>
-            <span className="flex h-16 items-center gap-4 rounded-[1rem] bg-[#080e1e] px-5 ring-1 ring-white/5 focus-within:ring-cyan-300/35">
-              <span aria-hidden="true" className="text-3xl text-cyan-50/75">
+            <span className={styles.inputRow}>
+              <span aria-hidden="true" className={styles.atIcon}>
                 @
               </span>
               <input
                 autoComplete="email"
-                className="h-full min-w-0 flex-1 bg-transparent text-base text-cyan-50 outline-none placeholder:text-slate-500"
+                className={styles.input}
                 name="email"
                 onChange={handleChange}
                 placeholder="a.sterling@novapay.io"
@@ -94,12 +95,12 @@ function Register() {
             </span>
           </label>
 
-          <label className="block space-y-3">
-            <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#00cfe6]">
+          <label className={styles.field}>
+            <span className={styles.label}>
               Account Type
             </span>
             <select
-              className="h-16 w-full rounded-[1rem] bg-[#080e1e] px-5 text-base text-cyan-50 outline-none ring-1 ring-white/5 focus:ring-cyan-300/35"
+              className={styles.select}
               onChange={(event) => setAccountType(event.target.value)}
               value={accountType}
             >
@@ -108,14 +109,14 @@ function Register() {
             </select>
           </label>
 
-          <div className="grid gap-5 sm:grid-cols-2">
-            <label className="block space-y-3">
-              <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#00cfe6]">
+          <div className={styles.passwordFields}>
+            <label className={styles.field}>
+              <span className={styles.label}>
                 Password
               </span>
               <input
                 autoComplete="new-password"
-                className="h-16 w-full rounded-[1rem] bg-[#080e1e] px-5 text-base text-cyan-50 outline-none ring-1 ring-white/5 placeholder:text-slate-500 focus:ring-cyan-300/35"
+                className={styles.passwordInput}
                 name="password"
                 onChange={handleChange}
                 placeholder="Password"
@@ -125,13 +126,13 @@ function Register() {
               />
             </label>
 
-            <label className="block space-y-3">
-              <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#00cfe6]">
+            <label className={styles.field}>
+              <span className={styles.label}>
                 Confirm
               </span>
               <input
                 autoComplete="new-password"
-                className="h-16 w-full rounded-[1rem] bg-[#080e1e] px-5 text-base text-cyan-50 outline-none ring-1 ring-white/5 placeholder:text-slate-500 focus:ring-cyan-300/35"
+                className={styles.passwordInput}
                 name="confirmPassword"
                 onChange={handleChange}
                 placeholder="Confirm Password"
@@ -142,10 +143,10 @@ function Register() {
             </label>
           </div>
 
-          <div className="flex gap-4 rounded-[1rem] border border-cyan-300/10 bg-cyan-400/10 p-5 text-sm leading-6 text-cyan-50/75">
+          <div className={styles.notice}>
             <span
               aria-hidden="true"
-              className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full border border-[#00d7ee] text-xs font-black text-[#00d7ee]"
+              className={styles.noticeMark}
             >
               OK
             </span>
@@ -156,29 +157,29 @@ function Register() {
           </div>
 
           <button
-            className="h-16 w-full rounded-[1rem] bg-[#0dd1e7] text-base font-black uppercase tracking-[0.24em] text-[#041827] shadow-[0_14px_36px_rgba(13,209,231,0.24)] transition hover:bg-[#42e4f5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-200"
+            className={styles.submitButton}
             type="submit"
           >
             Initialize Account
           </button>
 
           {(error || success) && (
-            <div className="space-y-3">
+            <div className={styles.messages}>
               {error && <StatusMessage kind="error">{error}</StatusMessage>}
               {success && <StatusMessage kind="success">{success}</StatusMessage>}
             </div>
           )}
         </form>
 
-        <div className="mt-9 border-t border-white/5 pt-8 text-center text-sm font-semibold text-slate-400">
+        <div className={styles.switchView}>
           Already part of the network?{" "}
-          <Link className="text-[#00d7ee] transition hover:text-cyan-100" to="/login">
+          <Link className={styles.link} to="/login">
             Sign In
           </Link>
         </div>
       </section>
 
-      <footer className="mx-auto mt-9 flex w-full max-w-xl flex-wrap justify-center gap-x-10 gap-y-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+      <footer className={styles.footer}>
         <span>PCI DSS Level 1</span>
         <span>Instant Settlement</span>
         <span>Global API 2.0</span>
