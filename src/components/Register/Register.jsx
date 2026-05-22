@@ -2,8 +2,9 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { AuthShell, StatusMessage } from "../Auth/AuthShell";
-import api from "../../services/api";
+// import api from "../../services/api";
 import styles from "./Register.module.css";
+import useAuth from "../../context/useAuth";
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -13,8 +14,9 @@ function Register() {
     confirmPassword: "",
   });
   const [accountType, setAccountType] = useState("personal");
-  const [error, setError] = useState("");
+  // const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const {error, register, setError} = useAuth()
 
   const handleChange = (event) => {
     setFormData({
@@ -27,15 +29,12 @@ function Register() {
     event.preventDefault();
 
     try {
-      const response = await api.post("/api/auth/register", formData);
-      setSuccess(response.data.message);
+      const response = await register(formData);
+      setSuccess(response.message);
       setError("");
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Ha ocurrido un error con la API.",
-      );
       setSuccess("");
+      setError(err)
     }
   };
 

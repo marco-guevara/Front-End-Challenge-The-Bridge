@@ -5,4 +5,22 @@ const api = axios.create({
   withCredentials: true,
 });
 
-export default api;
+const request = async (callback) => {
+  try {
+    const res = await callback()
+    return res.data
+  } catch (err) {
+    const message = err?.response?.data?.message || 'Has ocorrido un error con la API'
+    throw new Error(message, {cause: err})
+  }
+}
+
+const registerUser = (payload) => request(() => api.post('/auth/register', payload))
+const loginUser = (payload) => request(() => api.post('/auth/login', payload))
+const logoutUser = () => request(() => api.post('/auth/logout'))
+
+export {
+  registerUser,
+  loginUser,
+  logoutUser,
+};

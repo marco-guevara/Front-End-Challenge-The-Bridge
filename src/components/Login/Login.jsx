@@ -2,14 +2,16 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { AuthShell, StatusMessage } from "../Auth/AuthShell";
-import api from "../../services/api";
+
 import styles from "./Login.module.css";
+import useAuth from "../../context/useAuth";
 
 function Login() {
   const [formData, setFormData] = useState({ email: "", password: "" });
-  const [error, setError] = useState("");
+  // const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const {error, login, setError} = useAuth()
 
   const handleChange = (event) => {
     setFormData({
@@ -22,14 +24,12 @@ function Login() {
     event.preventDefault();
 
     try {
-      const response = await api.post("/api/auth/login", formData);
-      setSuccess(response.data.message);
+      const response = await login(formData);
+      setSuccess(response.message);
       setError("");
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Ha ocurrido un error con la API.",
-      );
+      console.log(err)
+      // setError(err.response?.message || "Error al iniciar sesion");
       setSuccess("");
     }
   };
