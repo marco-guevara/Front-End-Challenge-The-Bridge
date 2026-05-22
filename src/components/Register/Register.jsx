@@ -27,11 +27,14 @@ function Register() {
     event.preventDefault();
 
     try {
-      const response = await api.post("/auth/register", formData);
+      const response = await api.post("/api/auth/register", formData);
       setSuccess(response.data.message);
       setError("");
     } catch (err) {
-      setError(err.response?.data?.message || "Error al registrar usuario");
+      setError(
+        err.response?.data?.message ||
+          "Ha ocurrido un error con la API.",
+      );
       setSuccess("");
     }
   };

@@ -22,11 +22,14 @@ function Login() {
     event.preventDefault();
 
     try {
-      const response = await api.post("/auth/login", formData);
+      const response = await api.post("/api/auth/login", formData);
       setSuccess(response.data.message);
       setError("");
     } catch (err) {
-      setError(err.response?.data?.message || "Error al iniciar sesion");
+      setError(
+        err.response?.data?.message ||
+          "Ha ocurrido un error con la API.",
+      );
       setSuccess("");
     }
   };
