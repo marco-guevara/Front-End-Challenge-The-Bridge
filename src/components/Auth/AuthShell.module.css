@@ -1,0 +1,146 @@
+.shell {
+  min-height: 100svh;
+  overflow-x: hidden;
+  background: #090f1f;
+  color: #dce7f2;
+}
+
+.stage {
+  display: flex;
+  min-height: 100svh;
+  width: 100%;
+  max-width: 40rem;
+  flex-direction: column;
+  margin: 0 auto;
+  padding-inline: 1rem;
+}
+
+.loginStage {
+  align-items: center;
+  justify-content: center;
+  padding-block: 1.75rem;
+}
+
+.registerStage {
+  justify-content: center;
+  padding-block: 1.5rem;
+}
+
+.boltMark {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border: 1px solid rgb(207 250 254 / 15%);
+  border-radius: 0.8rem;
+  background: #1b263b;
+  color: #09d7ee;
+  box-shadow: 0 0 24px rgb(0 215 238 / 14%);
+}
+
+.boltMarkCompact {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.95rem;
+  transform: rotate(12deg);
+}
+
+.boltIconCompact {
+  transform: rotate(-12deg);
+}
+
+.registerHeader {
+  width: 100%;
+  max-width: 30rem;
+  margin: 0 auto 1.5rem;
+}
+
+.registerBrand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.8rem;
+}
+
+.brandName,
+.loginBrandName {
+  color: #ecfeff;
+  font-weight: 600;
+}
+
+.brandName {
+  font-size: 1.35rem;
+}
+
+.tagline {
+  max-width: 20rem;
+  color: rgb(236 254 255 / 85%);
+  font-size: 0.9rem;
+  line-height: 1.4rem;
+}
+
+.loginHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.75rem;
+  text-align: center;
+}
+
+.loginBrandName {
+  margin-top: 1.25rem;
+  font-size: 1.5rem;
+}
+
+.grade {
+  margin-top: 0.35rem;
+  color: #00c8df;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.status {
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  padding: 0.65rem 0.8rem;
+  font-size: 0.8rem;
+}
+
+.errorStatus {
+  border-color: rgb(253 164 175 / 20%);
+  background: rgb(253 164 175 / 10%);
+  color: #ffe4e6;
+}
+
+.successStatus {
+  border-color: rgb(110 231 183 / 20%);
+  background: rgb(110 231 183 / 10%);
+  color: #d1fae5;
+}
+
+@media (min-width: 640px) {
+  .stage {
+    padding-inline: 1.5rem;
+  }
+
+  .loginStage {
+    padding-block: 2rem;
+  }
+
+  .registerStage {
+    padding-block: 1.75rem;
+  }
+}
+
+@media (max-height: 760px) {
+  .loginStage,
+  .registerStage {
+    justify-content: flex-start;
+  }
+
+  .loginHeader {
+    margin-top: auto;
+  }
+}
