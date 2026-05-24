@@ -1,0 +1,314 @@
+.dashboard {
+  display: flex;
+  min-height: 100vh;
+  background: #080d1a;
+  color: #dbe7f0;
+  font-family: Inter, system-ui, sans-serif;
+}
+
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 15rem;
+  background: #121827;
+  padding: 2rem 0.8rem;
+}
+
+.brand {
+  padding: 0 0.4rem 2.5rem;
+}
+
+.brand h1 {
+  margin: 0;
+  color: #d8fbff;
+  font-size: 1.35rem;
+}
+
+.brand span {
+  color: #748094;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.nav {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.navItem,
+.activeNav,
+.logout {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  border: 0;
+  background: transparent;
+  color: #aeb9c9;
+  padding: 0.9rem 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.activeNav {
+  border: 1px solid #9beef8;
+  border-radius: 0.75rem;
+  background: #123b4d;
+  color: #d8fbff;
+}
+
+.sidebarBottom {
+  position: absolute;
+  right: 0.8rem;
+  bottom: 1.6rem;
+  left: 0.8rem;
+}
+
+.main {
+  width: 100%;
+  margin-left: 15rem;
+}
+
+.content {
+  padding: 2rem;
+}
+
+.heading h2 {
+  margin: 0;
+  font-size: 2.8rem;
+  line-height: 1;
+}
+
+.heading p {
+  margin-top: 0.4rem;
+  color: #9fb1c3;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.3rem;
+  margin-top: 2.2rem;
+}
+
+.statCard,
+.ledger {
+  border: 1px solid #1d2638;
+  border-radius: 0.9rem;
+  background: #111725;
+}
+
+.statCard {
+  padding: 1.4rem;
+}
+
+.dangerCard {
+  border-color: #4a2633;
+  background: #140f1d;
+}
+
+.statTop {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.statIcon {
+  display: grid;
+  width: 2.3rem;
+  height: 2.3rem;
+  place-items: center;
+  border-radius: 0.7rem;
+  background: #243143;
+  color: #cdfaff;
+}
+
+.statCard p {
+  color: #a6b1c0;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.statCard h3 {
+  margin: 0.3rem 0 0;
+  font-size: 2rem;
+}
+
+.cyan {
+  color: #00ddeb;
+}
+
+.green,
+.successValue {
+  color: #d9ff8c;
+}
+
+.red,
+.dangerValue {
+  color: #ffaca2;
+}
+
+.ledger {
+  margin-top: 2rem;
+  overflow: hidden;
+}
+
+.ledgerHeader {
+  display: flex;
+  justify-content: space-between;
+  padding: 1.5rem 1.8rem;
+}
+
+.ledger h3 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.ledgerHeader button {
+  border: 1px solid #354156;
+  border-radius: 0.6rem;
+  background: transparent;
+  color: #d8fbff;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border-top: 1px solid #1b2434;
+  padding: 1rem 1.8rem;
+  text-align: left;
+}
+
+th {
+  color: #69758a;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}
+
+td {
+  color: #c8d2df;
+  font-weight: 700;
+}
+
+tbody tr {
+  transition: background 160ms ease;
+}
+
+tbody tr:hover {
+  background: rgb(255 255 255 / 3%);
+}
+
+.amount {
+  font-family: monospace;
+}
+
+.badge {
+  border-radius: 999px;
+  background: #253141;
+  padding: 0.3rem 0.7rem;
+  color: #d9ff8c;
+  font-size: 0.72rem;
+}
+
+.statusSelect {
+  border: 1px solid #2b3548;
+  border-radius: 0.55rem;
+  background: #182132;
+  color: #dbe7f0;
+  padding: 0.45rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  outline: none;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.statusSelect:hover {
+  border-color: #4b5b77;
+}
+
+.statusSelect:focus {
+  border-color: #00ddeb;
+  box-shadow: 0 0 0 2px rgb(0 221 235 / 15%);
+}
+
+@media (max-width: 1100px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .dashboard {
+    display: block;
+  }
+
+  .sidebar {
+    position: static;
+    width: 100%;
+    padding: 1rem;
+  }
+
+  .brand {
+    padding-bottom: 1rem;
+  }
+
+  .nav {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .sidebarBottom {
+    position: static;
+    margin-top: 1rem;
+  }
+
+  .main {
+    margin-left: 0;
+  }
+
+  .content {
+    padding: 1rem;
+  }
+
+  .heading h2 {
+    font-size: 2rem;
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .ledger {
+    overflow-x: auto;
+  }
+
+  table {
+    min-width: 760px;
+  }
+}
+
+@media (max-width: 420px) {
+  .nav {
+    grid-template-columns: 1fr;
+  }
+
+  .heading h2 {
+    font-size: 1.7rem;
+  }
+
+  .statCard {
+    padding: 1rem;
+  }
+}
