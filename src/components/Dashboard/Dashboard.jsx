@@ -1,5 +1,8 @@
 import styles from "./Dashboard.module.css";
 
+import useAuth from "../../context/useAuth";
+import { useNavigate } from "react-router-dom";
+
 const currentUser = {
   name: "Analyst User",
   role: "junior",
@@ -36,6 +39,17 @@ const transactions = [
 ];
 
 function Dashboard() {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    const isConfirmed = confirm("¿Está segur@ de que quiere cerrar la sesión?")
+    if (!isConfirmed) return;
+
+    await logout();
+    navigate("/login");
+  };
+
   const visibleTransactions = transactions.filter((transaction) => {
     if (currentUser.role === "junior") {
       return transaction.fraudScore < 70;
@@ -127,7 +141,9 @@ function Dashboard() {
         </nav>
 
         <div className={styles.sidebarBottom}>
-          <button className={styles.logout}>↪ Logout</button>
+          <button className={styles.logout} onClick={handleLogout}>
+            Logout
+          </button>
         </div>
       </aside>
 

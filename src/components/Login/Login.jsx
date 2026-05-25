@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { AuthShell, StatusMessage } from "../Auth/AuthShell";
 
@@ -10,7 +10,6 @@ function Login() {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({ email: "", password: "" });
-  const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const { error, login, setError } = useAuth();
 
@@ -24,17 +23,10 @@ function Login() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    try {
-      const response = await login(formData);
-      setSuccess(response.message);
-      setError("");
-      navigate("/dashboard");
-    } catch (err) {
-      console.log(err);
-      // setError(err.response?.message || "Error al iniciar sesion");
-      setSuccess("");
-      setError(err);
-    }
+    const response = await login(formData);
+    if (!response) return;
+
+    navigate("/dashboard");
   };
 
   return (
@@ -141,16 +133,12 @@ function Login() {
             Initialize Session
           </button>
 
-          {(error || success) && (
+          {error && (
             <div className={styles.messages}>
-              {error && <StatusMessage kind="error">{error}</StatusMessage>}
-              {success && (
-                <StatusMessage kind="success">{success}</StatusMessage>
-              )}
+              <StatusMessage kind="error">{error}</StatusMessage>
             </div>
           )}
         </form>
-
       </section>
 
       <footer className={styles.footer}>
