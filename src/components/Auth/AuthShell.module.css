@@ -21,11 +21,6 @@
   padding-block: 1.75rem;
 }
 
-.registerStage {
-  justify-content: center;
-  padding-block: 1.5rem;
-}
-
 .boltMark {
   display: grid;
   width: 2.5rem;
@@ -49,34 +44,9 @@
   transform: rotate(-12deg);
 }
 
-.registerHeader {
-  width: 100%;
-  max-width: 30rem;
-  margin: 0 auto 1.5rem;
-}
-
-.registerBrand {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.8rem;
-}
-
-.brandName,
 .loginBrandName {
   color: #ecfeff;
   font-weight: 600;
-}
-
-.brandName {
-  font-size: 1.35rem;
-}
-
-.tagline {
-  max-width: 20rem;
-  color: rgb(236 254 255 / 85%);
-  font-size: 0.9rem;
-  line-height: 1.4rem;
 }
 
 .loginHeader {
@@ -129,14 +99,10 @@
     padding-block: 2rem;
   }
 
-  .registerStage {
-    padding-block: 1.75rem;
-  }
 }
 
 @media (max-height: 760px) {
-  .loginStage,
-  .registerStage {
+  .loginStage {
     justify-content: flex-start;
   }
 
