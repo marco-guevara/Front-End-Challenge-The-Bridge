@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 
 import { AuthShell, StatusMessage } from "../Auth/AuthShell";
 
@@ -8,7 +7,6 @@ import useAuth from "../../context/useAuth";
 
 function Login() {
   const [formData, setFormData] = useState({ email: "", password: "" });
-  // const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const {error, login, setError} = useAuth()
@@ -28,14 +26,13 @@ function Login() {
       setSuccess(response.message);
       setError("");
     } catch (err) {
-      console.log(err)
-      // setError(err.response?.message || "Error al iniciar sesion");
       setSuccess("");
+      setError(err);
     }
   };
 
   return (
-    <AuthShell variant="login">
+    <AuthShell>
       <section className={styles.card}>
         <form className={styles.form} onSubmit={handleSubmit}>
           <label className={styles.field}>
@@ -158,12 +155,6 @@ function Login() {
           )}
         </form>
 
-        <div className={styles.switchView}>
-          New to NovaPay?{" "}
-          <Link className={styles.link} to="/register">
-            Create Account
-          </Link>
-        </div>
       </section>
 
       <footer className={styles.footer}>

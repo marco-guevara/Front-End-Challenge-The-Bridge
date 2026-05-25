@@ -24,36 +24,17 @@ function BoltMark({ compact = false }) {
   );
 }
 
-function AuthShell({ children, variant }) {
-  const isRegister = variant === "register";
-
+function AuthShell({ children }) {
   return (
     <main className={styles.shell}>
-      <div
-        className={`${styles.stage} ${
-          isRegister ? styles.registerStage : styles.loginStage
-        }`}
-      >
-        {isRegister ? (
-          <header className={styles.registerHeader}>
-            <div className={styles.registerBrand}>
-              <BoltMark />
-              <p className={styles.brandName}>NovaPay</p>
-            </div>
-            <p className={styles.tagline}>
-              Next-generation digital finance. Secure your future with electric
-              precision.
-            </p>
-          </header>
-        ) : (
-          <header className={styles.loginHeader}>
-            <BoltMark compact />
-            <p className={styles.loginBrandName}>NovaPay</p>
-            <p className={styles.grade}>
-              Institutional Grade
-            </p>
-          </header>
-        )}
+      <div className={`${styles.stage} ${styles.loginStage}`}>
+        <header className={styles.loginHeader}>
+          <BoltMark compact />
+          <p className={styles.loginBrandName}>NovaPay</p>
+          <p className={styles.grade}>
+            Institutional Grade
+          </p>
+        </header>
 
         {children}
       </div>
