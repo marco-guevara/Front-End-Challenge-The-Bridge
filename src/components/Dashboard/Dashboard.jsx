@@ -122,6 +122,9 @@ function Dashboard() {
   });
 
   const handleLogout = async () => {
+    const isConfirmed = confirm("¿Está segur@ de que quiere cerrar la sesión?")
+    if (!isConfirmed) return;
+
     await logout();
     navigate("/login");
   };
