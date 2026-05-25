@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { AuthShell, StatusMessage } from "../Auth/AuthShell";
 
@@ -6,10 +7,11 @@ import styles from "./Login.module.css";
 import useAuth from "../../context/useAuth";
 
 function Login() {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({ email: "", password: "" });
-  const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const {error, login, setError} = useAuth()
+  const { error, login, setError } = useAuth();
 
   const handleChange = (event) => {
     setFormData({
@@ -21,14 +23,10 @@ function Login() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    try {
-      const response = await login(formData);
-      setSuccess(response.message);
-      setError("");
-    } catch (err) {
-      setSuccess("");
-      setError(err);
-    }
+    const response = await login(formData);
+    if (!response) return;
+
+    navigate("/dashboard");
   };
 
   return (
@@ -36,9 +34,7 @@ function Login() {
       <section className={styles.card}>
         <form className={styles.form} onSubmit={handleSubmit}>
           <label className={styles.field}>
-            <span className={styles.label}>
-              Corporate ID / Email
-            </span>
+            <span className={styles.label}>Corporate ID / Email</span>
             <span className={styles.inputRow}>
               <span aria-hidden="true" className={styles.atIcon}>
                 @
@@ -59,10 +55,7 @@ function Login() {
           <label className={styles.field}>
             <span className={styles.splitLabel}>
               Security Key
-              <button
-                className={styles.resetButton}
-                type="button"
-              >
+              <button className={styles.resetButton} type="button">
                 Reset access?
               </button>
             </span>
@@ -132,29 +125,20 @@ function Login() {
           </label>
 
           <label className={styles.checkboxField}>
-            <input
-              className={styles.checkbox}
-              defaultChecked
-              type="checkbox"
-            />
+            <input className={styles.checkbox} defaultChecked type="checkbox" />
             Enforce session encryption
           </label>
 
-          <button
-            className={styles.submitButton}
-            type="submit"
-          >
+          <button className={styles.submitButton} type="submit">
             Initialize Session
           </button>
 
-          {(error || success) && (
+          {error && (
             <div className={styles.messages}>
-              {error && <StatusMessage kind="error">{error}</StatusMessage>}
-              {success && <StatusMessage kind="success">{success}</StatusMessage>}
+              <StatusMessage kind="error">{error}</StatusMessage>
             </div>
           )}
         </form>
-
       </section>
 
       <footer className={styles.footer}>
