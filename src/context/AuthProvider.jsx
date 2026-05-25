@@ -1,18 +1,10 @@
 import { useState } from "react";
-import { loginUser, logoutUser, registerUser } from "../services/api";
+import { loginUser, logoutUser } from "../services/api";
 import { AuthContext } from './authContext'
 
 function AuthProvider ({children}) {
   const [user, setUser] = useState(null)
   const [error, setError] = useState('')
-
-  // const refreshSession = async () => {
-  //   try {
-  //     const data = await 
-  //   } catch (err) {
-
-  //   }
-  // }
 
   const login = async (credentials) => {
     try {
@@ -22,18 +14,6 @@ function AuthProvider ({children}) {
       return data
     } catch (err) {
       setError(err.message)
-      // throw error
-    }
-  }
-
-  const register = async (credentials) => {
-    try {
-      const data = await registerUser(credentials)
-      setError('')
-      return data
-    } catch (err) {
-      setError(err.message)
-      throw error
     }
   }
 
@@ -54,10 +34,7 @@ function AuthProvider ({children}) {
         error,
         setError,
         login,
-        register,
-        // changePassword,
         logout,
-        // refreshSession,
       }}
     >
       {children}
