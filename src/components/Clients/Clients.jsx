@@ -15,8 +15,14 @@ function getClientName(client) {
 
 function Clients() {
   const [clients, setClients] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const clientsPerPage = 10;
+  const totalPages = Math.max(1, Math.ceil(clients.length / clientsPerPage));
+  const startIndex = (currentPage - 1) * clientsPerPage;
+  const endIndex = startIndex + clientsPerPage;
+  const paginatedClients = clients.slice(startIndex, endIndex);
 
   useEffect(() => {
     const fetchClients = async () => {
@@ -26,6 +32,7 @@ function Clients() {
       try {
         const data = await getClients();
         setClients(Array.isArray(data) ? data : []);
+        setCurrentPage(1);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -78,7 +85,7 @@ function Clients() {
                   <td colSpan="5">No clients found</td>
                 </tr>
               ) : (
-                clients.map((client) => {
+                paginatedClients.map((client) => {
                   const id = getClientId(client);
 
                   return (
@@ -106,6 +113,28 @@ function Clients() {
             </tbody>
           </table>
         </div>
+
+        {!loading && clients.length > 0 && (
+          <div className={styles.pagination}>
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+              type="button"
+            >
+              Previous
+            </button>
+            <span>
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+              type="button"
+            >
+              Next
+            </button>
+          </div>
+        )}
       </section>
     </main>
   );
