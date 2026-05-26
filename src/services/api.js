@@ -5,6 +5,21 @@ const api = axios.create({
   withCredentials: true,
 });
 
+api.interceptors.response.use(
+  (response) => response,
+
+  (error) => {
+    const isUnauthorized = error.response?.status === 401;
+    const isLoginPage = window.location.pathname === "/login";
+
+    if (isUnauthorized && !isLoginPage) {
+      window.location.href = "/login";
+    }
+
+    return Promise.reject(error);
+  },
+);
+
 const request = async (callback) => {
   try {
     const res = await callback();
@@ -24,6 +39,7 @@ const getClientTransactions = (id) => request(() => api.get(`/clientes/${id}/tra
 const updateClient = (id, payload) => request(() => api.patch(`/clientes/${id}`, payload));
 
 export {
+  api,
   loginUser,
   logoutUser,
   getActiveUser,
