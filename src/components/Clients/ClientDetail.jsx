@@ -1,8 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ShieldCheck, UserRound } from "lucide-react";
+import { Ban, CheckCircle2, ShieldCheck, UserRound } from "lucide-react";
 
-import { getClientById, getClientTransactions } from "../../services/api";
+import {
+  getClientById,
+  getClientTransactions,
+  updateClient,
+} from "../../services/api";
 import styles from "./Clients.module.css";
 
 function getClientName(client) {
@@ -14,6 +18,7 @@ function ClientDetail() {
   const [client, setClient] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -52,6 +57,22 @@ function ClientDetail() {
 
     return { fraud, pending, volume };
   }, [transactions]);
+
+  const toggleBlock = async () => {
+    if (!client) return;
+
+    setSaving(true);
+    setError("");
+
+    try {
+      const updated = await updateClient(id, { bloqueado: !client.bloqueado });
+      setClient(updated);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -128,6 +149,20 @@ function ClientDetail() {
             <div><dt>Email verified</dt><dd>{client?.email_verificado ? "Yes" : "No"}</dd></div>
             <div><dt>3D Secure</dt><dd>{client?.paso_3d_secure ? "Passed" : "Pending"}</dd></div>
           </dl>
+
+          <button
+            className={client?.bloqueado ? styles.unblockButton : styles.blockButton}
+            disabled={saving}
+            onClick={toggleBlock}
+            type="button"
+          >
+            {client?.bloqueado ? (
+              <CheckCircle2 aria-hidden="true" size={16} />
+            ) : (
+              <Ban aria-hidden="true" size={16} />
+            )}
+            {saving ? "Saving..." : client?.bloqueado ? "Unblock Client" : "Block Client"}
+          </button>
         </article>
 
         <article className={styles.card}>
