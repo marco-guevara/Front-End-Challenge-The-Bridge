@@ -69,6 +69,7 @@ function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
 
   const { logout } = useAuth();
   const navigate = useNavigate();
@@ -280,7 +281,10 @@ function Dashboard() {
                     {!isLoading &&
                       !error &&
                       paginatedTransactions.map((transaction) => (
-                        <tr key={transaction.id}>
+                        <tr
+                          key={transaction.id}
+                          onClick={() => setSelectedTransaction(transaction)}
+                        >
                           <td>{transaction.id}</td>
                           <td>{transaction.time}</td>
                           <td>
@@ -345,7 +349,11 @@ function Dashboard() {
               <div className={styles.cardHeader}>
                 <div>
                   <h3>Transaction Detail</h3>
-                  <p>TX-82910 selected</p>
+                  <p>
+                    {selectedTransaction
+                      ? `${selectedTransaction.id} selected`
+                      : "Select a transaction"}
+                  </p>
                 </div>
                 <span className={styles.livePill}>Preview</span>
               </div>
@@ -353,23 +361,45 @@ function Dashboard() {
               <div className={styles.scoreBlock}>
                 <div>
                   <span>Fraud score</span>
-                  <strong>92%</strong>
+                  <strong>
+                    {selectedTransaction
+                      ? `${selectedTransaction.score}%`
+                      : "-"}
+                  </strong>
                 </div>
-                <div className={styles.scoreRing}>92</div>
+                <div className={styles.scoreRing}>
+                  {selectedTransaction ? selectedTransaction.score : "-"}
+                </div>
               </div>
 
               <dl className={styles.detailList}>
                 <div>
-                  <dt>Signal</dt>
-                  <dd>Velocity spike and country mismatch</dd>
+                  <dt>Category</dt>
+                  <dd>{selectedTransaction?.signal || "-"}</dd>
                 </div>
+
                 <div>
-                  <dt>Payment method</dt>
-                  <dd>Corporate virtual card</dd>
+                  <dt>Amount</dt>
+                  <dd>
+                    {selectedTransaction
+                      ? `€${selectedTransaction.amount}`
+                      : "-"}
+                  </dd>
                 </div>
+
                 <div>
-                  <dt>Model reason</dt>
-                  <dd>Amount anomaly, VPN usage, new device</dd>
+                  <dt>User</dt>
+                  <dd>{selectedTransaction?.userId || "-"}</dd>
+                </div>
+
+                <div>
+                  <dt>Country</dt>
+                  <dd>{selectedTransaction?.country || "-"}</dd>
+                </div>
+
+                <div>
+                  <dt>Status</dt>
+                  <dd>{selectedTransaction?.status || "-"}</dd>
                 </div>
               </dl>
 
