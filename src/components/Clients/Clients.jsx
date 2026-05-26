@@ -16,52 +16,54 @@ function getClientName(client) {
 function Clients() {
   const [clients, setClients] = useState([]);
   const [filters, setFilters] = useState({ q: "", bloqueado: "" });
-  const [appliedFilters, setAppliedFilters] = useState({ q: "", bloqueado: "" });
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const visibleClients = clients.filter((client) => {
-    const search = appliedFilters.q.trim().toLowerCase();
+  const clientsPerPage = 10;
+  const search = filters.q.trim().toLowerCase();
+  const filteredClients = clients.filter((client) => {
     const matchesSearch =
       !search ||
       Object.values(client).some((value) =>
         String(value ?? "").toLowerCase().includes(search),
       );
     const matchesStatus =
-      appliedFilters.bloqueado === "" ||
-      client.bloqueado === (appliedFilters.bloqueado === "true");
+      filters.bloqueado === "" ||
+      client.bloqueado === (filters.bloqueado === "true");
 
     return matchesSearch && matchesStatus;
   });
-  const clientsPerPage = 10;
-  const totalPages = Math.max(1, Math.ceil(visibleClients.length / clientsPerPage));
+  const totalPages = Math.max(1, Math.ceil(filteredClients.length / clientsPerPage));
   const startIndex = (currentPage - 1) * clientsPerPage;
-  const endIndex = startIndex + clientsPerPage;
-  const paginatedClients = visibleClients.slice(startIndex, endIndex);
+  const paginatedClients = filteredClients.slice(startIndex, startIndex + clientsPerPage);
 
-  const applyFilters = (event) => {
-    event?.preventDefault();
-    setAppliedFilters(filters);
+  const updateFilter = (name, value) => {
+    setFilters((currentFilters) => ({
+      ...currentFilters,
+      [name]: value,
+    }));
     setCurrentPage(1);
   };
 
-  const fetchClients = async () => {
-    setLoading(true);
-    setError("");
-
-    try {
-      const data = await getClients();
-      setClients(Array.isArray(data) ? data : []);
-      setCurrentPage(1);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchClients();
+    let ignore = false;
+
+    getClients()
+      .then((data) => {
+        if (ignore) return;
+        setClients(Array.isArray(data) ? data : []);
+        setCurrentPage(1);
+      })
+      .catch((err) => {
+        if (!ignore) setError(err.message);
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   return (
@@ -74,13 +76,13 @@ function Clients() {
         </div>
       </header>
 
-      <form className={styles.filters} onSubmit={applyFilters}>
+      <form className={styles.filters}>
         <label>
           <span>Search</span>
           <div className={styles.searchInput}>
             <Search aria-hidden="true" size={16} />
             <input
-              onChange={(event) => setFilters({ ...filters, q: event.target.value })}
+              onChange={(event) => updateFilter("q", event.target.value)}
               placeholder="Client id..."
               value={filters.q}
             />
@@ -89,7 +91,7 @@ function Clients() {
         <label>
           <span>Status</span>
           <select
-            onChange={(event) => setFilters({ ...filters, bloqueado: event.target.value })}
+            onChange={(event) => updateFilter("bloqueado", event.target.value)}
             value={filters.bloqueado}
           >
             <option value="">All</option>
@@ -97,7 +99,6 @@ function Clients() {
             <option value="true">Blocked</option>
           </select>
         </label>
-        <button type="submit">Apply</button>
       </form>
 
       {error && <p className={styles.error}>{error}</p>}
@@ -106,7 +107,7 @@ function Clients() {
         <div className={styles.cardHeader}>
           <div>
             <h2>Client Directory</h2>
-            <p>{loading ? "Loading clients..." : `${visibleClients.length} clients visible`}</p>
+            <p>{loading ? "Loading clients..." : `${filteredClients.length} clients visible`}</p>
           </div>
           <UserRound aria-hidden="true" size={22} />
         </div>
@@ -127,7 +128,7 @@ function Clients() {
                 <tr>
                   <td colSpan="5">Loading...</td>
                 </tr>
-              ) : visibleClients.length === 0 ? (
+              ) : filteredClients.length === 0 ? (
                 <tr>
                   <td colSpan="5">No clients found</td>
                 </tr>
@@ -161,7 +162,7 @@ function Clients() {
           </table>
         </div>
 
-        {!loading && visibleClients.length > 0 && (
+        {!loading && filteredClients.length > 0 && (
           <div className={styles.pagination}>
             <button
               disabled={currentPage === 1}

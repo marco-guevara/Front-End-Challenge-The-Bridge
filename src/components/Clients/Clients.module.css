@@ -87,18 +87,6 @@
   padding: 0;
 }
 
-.filters button {
-  height: 2.35rem;
-  border: 1px solid rgb(13 209 231 / 40%);
-  border-radius: 0.65rem;
-  background: #0dd1e7;
-  color: #041827;
-  cursor: pointer;
-  font-size: 0.78rem;
-  font-weight: 900;
-  padding-inline: 1rem;
-}
-
 .card {
   overflow: hidden;
   border: 1px solid #1d2638;
