@@ -17,6 +17,7 @@ const request = async (callback) => {
 
 const loginUser = (payload) => request(() => api.post("/auth/login", payload));
 const logoutUser = () => request(() => api.post("/auth/logout"));
+const getActiveUser = () => request(() => api.get("/auth/active-user"));
 const getClients = (params = {}) => request(() => api.get("/clientes", { params }));
 const getClientById = (id) => request(() => api.get(`/clientes/${id}`));
 const getClientTransactions = (id) => request(() => api.get(`/clientes/${id}/transacciones`));
@@ -25,6 +26,7 @@ const updateClient = (id, payload) => request(() => api.patch(`/clientes/${id}`,
 export {
   loginUser,
   logoutUser,
+  getActiveUser,
   getClients,
   getClientById,
   getClientTransactions,
