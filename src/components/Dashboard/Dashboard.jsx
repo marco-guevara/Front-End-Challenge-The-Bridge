@@ -28,35 +28,6 @@ const analyst = {
   queue: "High Risk First",
 };
 
-const stats = [
-  {
-    icon: CircleDot,
-    label: "Visible Reviews",
-    value: "46",
-    detail: analyst.role,
-  },
-  {
-    icon: Triangle,
-    label: "Low / Medium Risk",
-    value: "34",
-    detail: "< 70%",
-  },
-  {
-    icon: AlertTriangle,
-    label: "High Risk",
-    value: "12",
-    detail: ">= 70%",
-    danger: true,
-  },
-  {
-    icon: Gauge,
-    label: "Avg Fraud Score",
-    value: "55%",
-    detail: "Current queue",
-    success: true,
-  },
-];
-
 const navigationItems = [
   { label: "Dashboard", icon: LayoutDashboard },
   { label: "Transactions", icon: ListChecks },
@@ -116,6 +87,55 @@ function Dashboard() {
     return false;
   });
 
+  // ESTADÍSTICAS
+  const lowMediumRisk = visibleTransactions.filter(
+    (transaction) => transaction.score < 70,
+  ).length;
+
+  const highRisk = visibleTransactions.filter(
+    (transaction) => transaction.score >= 70,
+  ).length;
+
+  const averageFraudScore =
+    visibleTransactions.length > 0
+      ? Math.round(
+          visibleTransactions.reduce(
+            (total, transaction) => total + transaction.score,
+            0,
+          ) / visibleTransactions.length,
+        )
+      : 0;
+
+  const stats = [
+    {
+      icon: CircleDot,
+      label: "Visible Reviews",
+      value: visibleTransactions.length,
+      detail: analyst.role,
+    },
+    {
+      icon: Triangle,
+      label: "Low / Medium Risk",
+      value: lowMediumRisk,
+      detail: "< 70%",
+    },
+    {
+      icon: AlertTriangle,
+      label: "High Risk",
+      value: highRisk,
+      detail: ">= 70%",
+      danger: true,
+    },
+    {
+      icon: Gauge,
+      label: "Avg Fraud Score",
+      value: `${averageFraudScore}%`,
+      detail: "Current queue",
+      success: true,
+    },
+  ];
+
+  // TABLA DE TRANSACCIONES
   // Ordenamos transacciones por score (riesgo) de mayor a menor
   const prioritizedTransactions = [...visibleTransactions].sort((a, b) => {
     return b.score - a.score;
@@ -124,6 +144,7 @@ function Dashboard() {
   // Transacciones por página
   const transactionsPerPage = 5;
 
+  // PAGINADO DE TRANSACCIONES
   // Calculamos el total de páginas
   // Como necesitamos páginas completas, Math.ceil() redondea hacia arriba.
   const totalPages = Math.ceil(
@@ -142,6 +163,14 @@ function Dashboard() {
     endIndex,
   );
 
+  // Si estás en una página que ya no existe, volver a página 1
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1);
+    }
+  }, [currentPage, totalPages]);
+
+  // LOGOUT
   const handleLogout = async () => {
     const isConfirmed = confirm("¿Está segur@ de que quiere cerrar la sesión?");
     if (!isConfirmed) return;
@@ -282,6 +311,11 @@ function Dashboard() {
                       !error &&
                       paginatedTransactions.map((transaction) => (
                         <tr
+                          className={
+                            selectedTransaction?.id === transaction.id
+                              ? styles.selectedRow
+                              : ""
+                          }
                           key={transaction.id}
                           onClick={() => setSelectedTransaction(transaction)}
                         >
@@ -306,11 +340,13 @@ function Dashboard() {
                           <td>{transaction.status}</td>
                           <td>
                             <div className={styles.rowActions}>
-                              <button type="button">
-                                <ShieldAlert aria-hidden="true" size={14} />
-                                Review
-                              </button>
-                              <button type="button">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/users/${transaction.userId}`);
+                                }}
+                                type="button"
+                              >
                                 <User aria-hidden="true" size={14} />
                                 User
                               </button>
