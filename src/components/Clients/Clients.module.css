@@ -32,6 +32,73 @@
   color: #9fb1c3;
 }
 
+.filters {
+  display: grid;
+  grid-template-columns: minmax(14rem, 22rem) 10rem max-content;
+  gap: 0.7rem;
+  align-items: end;
+  margin-bottom: 1.25rem;
+  border: 1px solid #1d2638;
+  border-radius: 0.9rem;
+  background: #111725;
+  padding: 0.8rem;
+}
+
+.filters label {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.filters span {
+  color: #8fa0b6;
+  font-size: 0.64rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.filters input,
+.filters select,
+.searchInput {
+  height: 2.35rem;
+  border: 1px solid #2b3548;
+  border-radius: 0.65rem;
+  background: #080e1e;
+  color: #ecfeff;
+  outline: 0;
+  padding-inline: 0.7rem;
+}
+
+.searchInput {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.searchInput svg {
+  flex-shrink: 0;
+  color: #67e8f9;
+}
+
+.searchInput input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.filters button {
+  height: 2.35rem;
+  border: 1px solid rgb(13 209 231 / 40%);
+  border-radius: 0.65rem;
+  background: #0dd1e7;
+  color: #041827;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 900;
+  padding-inline: 1rem;
+}
+
 .card {
   overflow: hidden;
   border: 1px solid #1d2638;
@@ -174,6 +241,10 @@ td span {
 @media (max-width: 760px) {
   .page {
     padding: 1rem;
+  }
+
+  .filters {
+    grid-template-columns: 1fr;
   }
 
   .pagination {

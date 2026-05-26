@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { UserRound } from "lucide-react";
+import { Search, UserRound } from "lucide-react";
 
 import { getClients } from "../../services/api";
 import styles from "./Clients.module.css";
@@ -15,31 +15,52 @@ function getClientName(client) {
 
 function Clients() {
   const [clients, setClients] = useState([]);
+  const [filters, setFilters] = useState({ q: "", bloqueado: "" });
+  const [appliedFilters, setAppliedFilters] = useState({ q: "", bloqueado: "" });
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const visibleClients = clients.filter((client) => {
+    const search = appliedFilters.q.trim().toLowerCase();
+    const matchesSearch =
+      !search ||
+      Object.values(client).some((value) =>
+        String(value ?? "").toLowerCase().includes(search),
+      );
+    const matchesStatus =
+      appliedFilters.bloqueado === "" ||
+      client.bloqueado === (appliedFilters.bloqueado === "true");
+
+    return matchesSearch && matchesStatus;
+  });
   const clientsPerPage = 10;
-  const totalPages = Math.max(1, Math.ceil(clients.length / clientsPerPage));
+  const totalPages = Math.max(1, Math.ceil(visibleClients.length / clientsPerPage));
   const startIndex = (currentPage - 1) * clientsPerPage;
   const endIndex = startIndex + clientsPerPage;
-  const paginatedClients = clients.slice(startIndex, endIndex);
+  const paginatedClients = visibleClients.slice(startIndex, endIndex);
+
+  const applyFilters = (event) => {
+    event?.preventDefault();
+    setAppliedFilters(filters);
+    setCurrentPage(1);
+  };
+
+  const fetchClients = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const data = await getClients();
+      setClients(Array.isArray(data) ? data : []);
+      setCurrentPage(1);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchClients = async () => {
-      setLoading(true);
-      setError("");
-
-      try {
-        const data = await getClients();
-        setClients(Array.isArray(data) ? data : []);
-        setCurrentPage(1);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchClients();
   }, []);
 
@@ -53,13 +74,39 @@ function Clients() {
         </div>
       </header>
 
+      <form className={styles.filters} onSubmit={applyFilters}>
+        <label>
+          <span>Search</span>
+          <div className={styles.searchInput}>
+            <Search aria-hidden="true" size={16} />
+            <input
+              onChange={(event) => setFilters({ ...filters, q: event.target.value })}
+              placeholder="Client id..."
+              value={filters.q}
+            />
+          </div>
+        </label>
+        <label>
+          <span>Status</span>
+          <select
+            onChange={(event) => setFilters({ ...filters, bloqueado: event.target.value })}
+            value={filters.bloqueado}
+          >
+            <option value="">All</option>
+            <option value="false">Active</option>
+            <option value="true">Blocked</option>
+          </select>
+        </label>
+        <button type="submit">Apply</button>
+      </form>
+
       {error && <p className={styles.error}>{error}</p>}
 
       <section className={styles.card}>
         <div className={styles.cardHeader}>
           <div>
             <h2>Client Directory</h2>
-            <p>{loading ? "Loading clients..." : `${clients.length} clients visible`}</p>
+            <p>{loading ? "Loading clients..." : `${visibleClients.length} clients visible`}</p>
           </div>
           <UserRound aria-hidden="true" size={22} />
         </div>
@@ -80,7 +127,7 @@ function Clients() {
                 <tr>
                   <td colSpan="5">Loading...</td>
                 </tr>
-              ) : clients.length === 0 ? (
+              ) : visibleClients.length === 0 ? (
                 <tr>
                   <td colSpan="5">No clients found</td>
                 </tr>
@@ -114,7 +161,7 @@ function Clients() {
           </table>
         </div>
 
-        {!loading && clients.length > 0 && (
+        {!loading && visibleClients.length > 0 && (
           <div className={styles.pagination}>
             <button
               disabled={currentPage === 1}
