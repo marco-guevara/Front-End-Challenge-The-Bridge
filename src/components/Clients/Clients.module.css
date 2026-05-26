@@ -226,12 +226,160 @@ td span {
   padding: 0.85rem 1rem;
 }
 
+.loading {
+  border: 1px solid #1d2638;
+  border-radius: 0.75rem;
+  background: #111725;
+  color: #9fb1c3;
+  padding: 0.85rem 1rem;
+}
+
+.backLink {
+  display: inline-block;
+  margin-bottom: 1rem;
+  color: #67e8f9;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.profileHeader {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid #1d2638;
+  border-radius: 0.9rem;
+  background: #111725;
+  padding: 1.25rem;
+}
+
+.profileHeader h1 {
+  margin: 0.25rem 0;
+  color: #ecfeff;
+  font-size: 2rem;
+}
+
+.profileHeader p {
+  margin: 0;
+  color: #9fb1c3;
+}
+
+.profileHeader .active,
+.profileHeader .blocked {
+  margin-left: auto;
+}
+
+.avatar {
+  display: grid;
+  width: 4rem;
+  height: 4rem;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 1rem;
+  background: #123b4d;
+  color: #67e8f9;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.statsGrid article {
+  display: grid;
+  gap: 0.45rem;
+  border: 1px solid #1d2638;
+  border-radius: 0.9rem;
+  background: #111725;
+  padding: 1.15rem;
+}
+
+.statsGrid span {
+  color: #8fa0b6;
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.statsGrid strong {
+  color: #ecfeff;
+  font-size: 1.65rem;
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: 1.25rem;
+}
+
+.detailList {
+  display: grid;
+  gap: 0.7rem;
+  margin: 0;
+  padding: 0 1.25rem 1.25rem;
+}
+
+.detailList div,
+.miniTable div {
+  border-top: 1px solid #1b2434;
+  padding-top: 0.7rem;
+}
+
+.detailList dt {
+  color: #7f8ba0;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.detailList dd {
+  margin: 0.25rem 0 0;
+  color: #dbe7f0;
+  font-weight: 700;
+}
+
+.miniTable {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0 1.25rem 1.25rem;
+}
+
+.miniTable div {
+  display: grid;
+  grid-template-columns: 1fr 0.75fr auto;
+  gap: 0.7rem;
+  color: #aeb9c9;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.miniTable strong {
+  color: #ecfeff;
+}
+
 @media (max-width: 760px) {
   .page {
     padding: 1rem;
   }
 
   .filters {
+    grid-template-columns: 1fr;
+  }
+
+  .profileHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .profileHeader .active,
+  .profileHeader .blocked {
+    margin-left: 0;
+  }
+
+  .statsGrid,
+  .detailGrid {
     grid-template-columns: 1fr;
   }
 
