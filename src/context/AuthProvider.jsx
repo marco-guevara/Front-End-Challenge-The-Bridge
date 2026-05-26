@@ -1,10 +1,30 @@
-import { useState } from "react";
-import { loginUser, logoutUser } from "../services/api";
+import { useEffect, useState } from "react";
+import { getActiveUser, loginUser, logoutUser } from "../services/api";
 import { AuthContext } from "./authContext";
 
 function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let ignore = false;
+
+    getActiveUser()
+      .then((data) => {
+        if (!ignore) setUser(data.user);
+      })
+      .catch(() => {
+        if (!ignore) setUser(null);
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   const login = async (credentials) => {
     try {
@@ -37,6 +57,7 @@ function AuthProvider({ children }) {
       value={{
         user,
         error,
+        loading,
         setError,
         login,
         logout,
