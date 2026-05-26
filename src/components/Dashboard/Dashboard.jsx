@@ -73,6 +73,8 @@ function Dashboard() {
 
     getTransactions();
   }, []);
+  // console.log(transactions);
+  
 
   // Filtramos transacciones por rol de analista
   const visibleTransactions = transactions.filter((transaction) => {
@@ -343,7 +345,7 @@ function Dashboard() {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  navigate(`/users/${transaction.userId}`);
+                                  navigate(`/clients/${transaction.userId}`);
                                 }}
                                 type="button"
                               >
