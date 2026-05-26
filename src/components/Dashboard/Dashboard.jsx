@@ -22,12 +22,6 @@ import styles from "./Dashboard.module.css";
 import useAuth from "../../context/useAuth";
 import { api } from "../../services/api";
 
-const analyst = {
-  name: "Marta Soler",
-  role: "Admin",
-  queue: "High Risk First",
-};
-
 const navigationItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
   { label: "Transactions", icon: ListChecks, path: "/transactions" },
@@ -41,13 +35,23 @@ function Dashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
 
-  const { logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const navigate = useNavigate();
+
+  const analyst = {
+    name: user?.name || user?.email || "Analyst",
+    role: user?.role || "Analyst",
+    // role: "Admin"
+  };
 
   useEffect(() => {
     const getTransactions = async () => {
       try {
-        const response = await api.get("/trans?limite=100");
+        const response = await api.get("/trans", {
+          params: {
+            limite: 100,
+          },
+        });
 
         const mappedTransactions = response.data.map((transaction) => ({
           id: transaction.id_transaccion,
@@ -72,7 +76,7 @@ function Dashboard() {
 
     getTransactions();
   }, []);
-  // console.log(transactions);
+  console.log(transactions);
 
   // Filtramos transacciones por rol de analista
   const visibleTransactions = transactions.filter((transaction) => {
@@ -88,11 +92,11 @@ function Dashboard() {
   });
 
   // ESTADÍSTICAS
-  const lowMediumRisk = visibleTransactions.filter(
+  const lowMediumRisk = transactions.filter(
     (transaction) => transaction.score < 70,
   ).length;
 
-  const highRisk = visibleTransactions.filter(
+  const highRisk = transactions.filter(
     (transaction) => transaction.score >= 70,
   ).length;
 
@@ -251,35 +255,11 @@ function Dashboard() {
             ))}
           </section>
 
-          <section className={styles.filterBar}>
-            {["Risk", "Status"].map((label) => (
-              <label key={label}>
-                <span>{label}</span>
-                <select defaultValue="">
-                  <option value="">All</option>
-                  <option>High priority</option>
-                  <option>Pending</option>
-                </select>
-              </label>
-            ))}
-            <label className={styles.searchField}>
-              <span>Search</span>
-              <div className={styles.searchInput}>
-                <Search aria-hidden="true" size={16} />
-                <input placeholder="Transaction, user or customer" />
-              </div>
-            </label>
-            <button className={styles.primaryButton} type="button">
-              <SlidersHorizontal aria-hidden="true" size={16} />
-              Apply Filters
-            </button>
-          </section>
-
           <section className={styles.workspaceGrid}>
             <article className={styles.ledger}>
               <div className={styles.cardHeader}>
                 <div>
-                  <h3>Transaction Review Queue</h3>
+                  <h3>Last Transactions Review Queue</h3>
                 </div>
               </div>
 
