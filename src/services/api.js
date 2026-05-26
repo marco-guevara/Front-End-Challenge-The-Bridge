@@ -18,4 +18,4 @@ const request = async (callback) => {
 const loginUser = (payload) => request(() => api.post("/auth/login", payload));
 const logoutUser = () => request(() => api.post("/auth/logout"));
 
-export { loginUser, logoutUser };
+export { api, loginUser, logoutUser };
