@@ -29,10 +29,9 @@ const analyst = {
 };
 
 const navigationItems = [
-  { label: "Dashboard", icon: LayoutDashboard },
-  { label: "Transactions", icon: ListChecks },
-  { label: "Risk Review", icon: ShieldAlert },
-  { label: "Users", icon: Users },
+  { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
+  { label: "Transactions", icon: ListChecks, path: "/transactions" },
+  { label: "Users", icon: Users, path: "/clients" },
 ];
 
 function Dashboard() {
@@ -48,7 +47,7 @@ function Dashboard() {
   useEffect(() => {
     const getTransactions = async () => {
       try {
-        const response = await api.get("/trans");
+        const response = await api.get("/trans?limite=100");
 
         const mappedTransactions = response.data.map((transaction) => ({
           id: transaction.id_transaccion,
@@ -74,7 +73,6 @@ function Dashboard() {
     getTransactions();
   }, []);
   // console.log(transactions);
-  
 
   // Filtramos transacciones por rol de analista
   const visibleTransactions = transactions.filter((transaction) => {
@@ -193,10 +191,11 @@ function Dashboard() {
         </div>
 
         <nav className={styles.nav}>
-          {navigationItems.map(({ label, icon: Icon }, index) => (
+          {navigationItems.map(({ label, icon: Icon, path }, index) => (
             <button
               className={index === 0 ? styles.activeNav : styles.navItem}
               key={label}
+              onClick={() => navigate(path)}
               type="button"
             >
               <Icon aria-hidden="true" size={18} />
