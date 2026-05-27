@@ -394,6 +394,18 @@ function Dashboard() {
                   onClick={() => {
                     if (!selectedTransaction) return;
 
+                    navigate(`/transactions/${selectedTransaction.id}`);
+                  }}
+                >
+                  <ListChecks aria-hidden="true" size={14} />
+                  Detail
+                </button>
+                <button
+                  type="button"
+                  disabled={!selectedTransaction}
+                  onClick={() => {
+                    if (!selectedTransaction) return;
+
                     navigate(`/clients/${selectedTransaction.userId}`);
                   }}
                 >
