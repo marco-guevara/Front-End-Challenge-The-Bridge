@@ -63,7 +63,6 @@ function Transactions() {
       if (transactionId.trim()) {
         response = await api.get(`/trans/${transactionId.trim()}`);
 
-        // Si es array coge primer elemento, si no usa el objeto directamente
         const transaction = Array.isArray(response.data)
           ? response.data[0]
           : response.data;
@@ -117,12 +116,8 @@ function Transactions() {
     return b.score - a.score;
   });
 
-  // Transacciones por página
   const transactionsPerPage = 10;
 
-  // PAGINADO DE TRANSACCIONES
-  // Calculamos el total de páginas
-  // Como necesitamos páginas completas, Math.ceil() redondea hacia arriba.
   const totalPages = Math.ceil(
     prioritizedTransactions.length / transactionsPerPage,
   );
@@ -131,26 +126,20 @@ function Transactions() {
     setSelectedTransaction(null);
   }, [currentPage]);
 
-  // Calculamos desde qué posición del array empieza la página actual
   const startIndex = (currentPage - 1) * transactionsPerPage;
-
-  // Calculamos hasta qué posición del array llega la página
   const endIndex = startIndex + transactionsPerPage;
 
-  // Hacemos el corte real del array
   const paginatedTransactions = prioritizedTransactions.slice(
     startIndex,
     endIndex,
   );
 
-  // Si estás en una página que ya no existe, volver a página 1
   useEffect(() => {
     if (currentPage > totalPages && totalPages > 0) {
       setCurrentPage(1);
     }
   }, [currentPage, totalPages]);
 
-  // LOGOUT
   const handleLogout = async () => {
     const isConfirmed = confirm("¿Está segur@ de que quiere cerrar la sesión?");
     if (!isConfirmed) return;
@@ -458,6 +447,18 @@ function Transactions() {
               </dl>
 
               <div className={styles.detailActions}>
+                <button
+                  type="button"
+                  disabled={!selectedTransaction}
+                  onClick={() => {
+                    if (!selectedTransaction) return;
+                    navigate(`/transactions/${selectedTransaction.id}`);
+                  }}
+                >
+                  <ListChecks aria-hidden="true" size={14} />
+                  Detail
+                </button>
+
                 <button
                   type="button"
                   disabled={!selectedTransaction}
