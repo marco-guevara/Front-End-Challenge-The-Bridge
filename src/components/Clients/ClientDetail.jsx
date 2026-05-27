@@ -7,6 +7,12 @@ import {
   getClientTransactions,
   updateClient,
 } from "../../services/api";
+import { confirmAction, showError, showSuccess } from "../../utils/alerts";
+import {
+  formatBoolean,
+  formatCurrency,
+  formatDateTime,
+} from "../../utils/formatters";
 import styles from "./Clients.module.css";
 
 function getClientName(client) {
@@ -17,21 +23,15 @@ function getTransactionId(transaction) {
   return transaction.id_transaccion || transaction.id;
 }
 
-function isPendingReview(transaction) {
-  return !transaction.revisado || transaction.revisado === "Pendiente";
+function getTransactionTimestamp(transaction) {
+  const date = transaction.fecha ? new Date(transaction.fecha) : null;
+  const time = Number(transaction.hora || 0) * 60 * 60 * 1000;
+
+  return date && !Number.isNaN(date.getTime()) ? date.getTime() + time : time;
 }
 
-function formatTransactionDate(transaction) {
-  if (!transaction.fecha) return "-";
-
-  const date = new Date(transaction.fecha);
-  const formattedDate = Number.isNaN(date.getTime())
-    ? transaction.fecha
-    : date.toLocaleDateString();
-
-  return transaction.hora !== undefined
-    ? `${formattedDate} · ${transaction.hora}:00`
-    : formattedDate;
+function isPendingReview(transaction) {
+  return !transaction.revisado || transaction.revisado === "Pendiente";
 }
 
 function ClientDetail() {
@@ -53,7 +53,17 @@ function ClientDetail() {
       .then(([clientData, transactionData]) => {
         if (ignore) return;
         setClient(clientData);
-        setTransactions(Array.isArray(transactionData) ? transactionData.slice(0, 5) : []);
+        const lastTransactions = Array.isArray(transactionData)
+          ? [...transactionData]
+              .sort(
+                (firstTransaction, secondTransaction) =>
+                  getTransactionTimestamp(secondTransaction) -
+                  getTransactionTimestamp(firstTransaction),
+              )
+              .slice(0, 5)
+          : [];
+
+        setTransactions(lastTransactions);
       })
       .catch((err) => {
         if (!ignore) setError(err.message);
@@ -81,6 +91,18 @@ function ClientDetail() {
   const toggleBlock = async () => {
     if (!client) return;
 
+    const willBlockClient = !client.bloqueado;
+    const isConfirmed = await confirmAction({
+      title: willBlockClient ? "Block client?" : "Unblock client?",
+      text: willBlockClient
+        ? "This will prevent the client from operating until the account is reviewed again."
+        : "This will restore the client account access.",
+      confirmButtonText: willBlockClient ? "Block Client" : "Unblock Client",
+      icon: willBlockClient ? "warning" : "question",
+    });
+
+    if (!isConfirmed) return;
+
     setSaving(true);
     setError("");
     setSuccessMessage("");
@@ -88,11 +110,13 @@ function ClientDetail() {
     try {
       const updated = await updateClient(id, { bloqueado: !client.bloqueado });
       setClient(updated);
-      setSuccessMessage(
-        updated.bloqueado ? "Client blocked" : "Client unblocked",
-      );
+      const message = updated.bloqueado ? "Client blocked" : "Client unblocked";
+
+      setSuccessMessage(message);
+      await showSuccess("Client updated", message);
     } catch (err) {
       setError(err.message);
+      await showError("Client not updated", err.message);
     } finally {
       setSaving(false);
     }
@@ -109,6 +133,9 @@ function ClientDetail() {
   if (error && !client) {
     return (
       <main className={styles.page}>
+        <Link className={styles.backLink} to="/clients">
+          Back to clients
+        </Link>
         <p className={styles.error}>{error}</p>
       </main>
     );
@@ -152,7 +179,7 @@ function ClientDetail() {
         </article>
         <article>
           <span>Volume</span>
-          <strong>€{stats.volume.toFixed(2)}</strong>
+          <strong>{formatCurrency(stats.volume)}</strong>
         </article>
       </section>
 
@@ -171,8 +198,8 @@ function ClientDetail() {
             <div><dt>DNI</dt><dd>{client?.dni || "-"}</dd></div>
             <div><dt>Country</dt><dd>{client?.pais_emision || "-"}</dd></div>
             <div><dt>Account age</dt><dd>{client?.dias_antiguedad_cuenta ?? "-"} days</dd></div>
-            <div><dt>Email verified</dt><dd>{client?.email_verificado ? "Yes" : "No"}</dd></div>
-            <div><dt>3D Secure</dt><dd>{client?.paso_3d_secure ? "Passed" : "Pending"}</dd></div>
+            <div><dt>Email verified</dt><dd>{formatBoolean(client?.email_verificado)}</dd></div>
+            <div><dt>3D Secure</dt><dd>{formatBoolean(client?.paso_3d_secure, "Passed", "Not passed")}</dd></div>
           </dl>
 
           <button
@@ -213,10 +240,12 @@ function ClientDetail() {
                   >
                     <span>
                       <strong>{transaction.categoria || "-"}</strong>
-                      <small>{formatTransactionDate(transaction)}</small>
+                      <small>
+                        {formatDateTime(transaction.fecha, transaction.hora)}
+                      </small>
                     </span>
                     <span>{transaction.pais_pago || "-"}</span>
-                    <strong>€{Number(transaction.importe || 0).toFixed(2)}</strong>
+                    <strong>{formatCurrency(transaction.importe)}</strong>
                   </Link>
                 );
               })

@@ -10,6 +10,14 @@ import {
 } from "lucide-react";
 
 import { getTransactionById, updateTransaction } from "../../services/api";
+import { confirmAction, showError, showSuccess } from "../../utils/alerts";
+import {
+  displayValue as formatDisplayValue,
+  formatBoolean as formatDisplayBoolean,
+  formatCurrency,
+  formatHour,
+  getTransactionScore,
+} from "../../utils/formatters";
 import styles from "./TransactionDetail.module.css";
 
 function normalizeTransaction(data) {
@@ -87,15 +95,6 @@ function getReasonList(value) {
   );
 }
 
-function displayValue(value) {
-  return value === null || value === undefined || value === "" ? "-" : value;
-}
-
-function displayBoolean(value) {
-  if (value === null || value === undefined) return "-";
-  return value ? "Yes" : "No";
-}
-
 function TransactionDetail() {
   const { id } = useParams();
   const [transaction, setTransaction] = useState(null);
@@ -124,7 +123,16 @@ function TransactionDetail() {
     };
   }, [id]);
 
-  const saveDecision = async (payload, message, loadingKey, localPatch = payload) => {
+  const saveDecision = async ({
+    payload,
+    message,
+    loadingKey,
+    localPatch = payload,
+    confirmOptions,
+  }) => {
+    const isConfirmed = await confirmAction(confirmOptions);
+    if (!isConfirmed) return;
+
     try {
       setDecisionLoading(loadingKey);
       setDecisionError("");
@@ -146,8 +154,10 @@ function TransactionDetail() {
         };
       });
       setDecisionMessage(message);
+      await showSuccess("Decision saved", message);
     } catch (err) {
       setDecisionError(err.message);
+      await showError("Decision not saved", err.message);
     } finally {
       setDecisionLoading("");
     }
@@ -164,16 +174,18 @@ function TransactionDetail() {
   if (error || !transaction) {
     return (
       <main className={styles.page}>
+        <nav className={styles.breadcrumb}>
+          <Link to="/transactions">Transactions</Link>
+          <span>/</span>
+          <strong>{String(id).slice(0, 12)}...</strong>
+        </nav>
         <p className={styles.error}>{error || "Transaction not found"}</p>
       </main>
     );
   }
 
-  const score = Math.min(
-    100,
-    Math.max(0, Math.round(Number(transaction.f_score || 0) * 100)),
-  );
-  const amount = Number(transaction.importe || 0).toFixed(2);
+  const score = getTransactionScore(transaction);
+  const amount = formatCurrency(transaction.importe);
   const structuredExplainability = getStructuredExplainability(transaction);
   const fraudReasons = getReasonList(structuredExplainability?.razones_fraude);
   const legitReasons = getReasonList(
@@ -186,6 +198,10 @@ function TransactionDetail() {
     structuredExplainability?.resumen ||
     structuredExplainability?.summary ||
     "";
+  const isReviewed = transaction.revisado === "Revisado";
+  const isApproveDisabled =
+    Boolean(decisionLoading) || isReviewed || transaction.es_fraude;
+  const isFraudDisabled = Boolean(decisionLoading) || isReviewed;
 
   return (
     <main className={styles.page}>
@@ -202,7 +218,7 @@ function TransactionDetail() {
           <p>
             <span>{transaction.id_transaccion || id}</span>
             <span>{formatDateTime(transaction)}</span>
-            <span>€{amount}</span>
+            <span>{amount}</span>
           </p>
         </div>
 
@@ -217,45 +233,75 @@ function TransactionDetail() {
       <section className={styles.actionBar}>
         <button
           className={styles.approveButton}
-          disabled={Boolean(decisionLoading)}
+          disabled={isApproveDisabled}
           onClick={() =>
-            saveDecision(
-              { es_fraude: false, revisado: "Revisado", auditor_fraude: false },
-              "Transaction approved",
-              "approve",
-              {
+            saveDecision({
+              payload: {
+                es_fraude: false,
+                revisado: "Revisado",
+                auditor_fraude: false,
+              },
+              message: "Transaction approved",
+              loadingKey: "approve",
+              localPatch: {
                 es_fraude: false,
                 revisar: false,
                 revisado: "Revisado",
                 auditor_fraude: false,
               },
-            )
+              confirmOptions: {
+                title: "Approve transaction?",
+                text: "This will mark the transaction as reviewed and not fraudulent. This action can only be changed through technical support.",
+                confirmButtonText: "Approve",
+                icon: "question",
+              },
+            })
           }
           type="button"
         >
           <CheckCircle2 aria-hidden="true" size={16} />
-          {decisionLoading === "approve" ? "Approving..." : "Approve Transaction"}
+          {isReviewed
+            ? "Decision Saved"
+            : transaction.es_fraude
+              ? "Already Fraud"
+            : decisionLoading === "approve"
+              ? "Approving..."
+              : "Approve Transaction"}
         </button>
         <button
           className={styles.rejectButton}
-          disabled={Boolean(decisionLoading)}
+          disabled={isFraudDisabled}
           onClick={() =>
-            saveDecision(
-              { es_fraude: true, revisado: "Revisado", auditor_fraude: true },
-              "Transaction marked as fraud",
-              "fraud",
-              {
+            saveDecision({
+              payload: {
+                es_fraude: true,
+                revisado: "Revisado",
+                auditor_fraude: true,
+              },
+              message: "Transaction marked as fraud",
+              loadingKey: "fraud",
+              localPatch: {
                 es_fraude: true,
                 revisar: false,
                 revisado: "Revisado",
                 auditor_fraude: true,
               },
-            )
+              confirmOptions: {
+                title: "Mark as fraud?",
+                text: "This will mark the transaction as reviewed and fraudulent. This action can only be changed through technical support.",
+                confirmButtonText: "Mark Fraud",
+                icon: "warning",
+              },
+            })
           }
           type="button"
         >
           <XCircle aria-hidden="true" size={16} />
-          {decisionLoading === "fraud" ? "Saving..." : "Mark as Fraud"}
+          {isReviewed
+            ? "Decision Saved"
+            : decisionLoading === "fraud"
+              ? "Saving..."
+              : "Mark as Fraud"}
         </button>
         <Link className={styles.clientButton} to={`/clients/${transaction.id_usuario}`}>
           <UserRound aria-hidden="true" size={16} />
@@ -286,19 +332,19 @@ function TransactionDetail() {
           <dl className={styles.scoreFacts}>
             <div>
               <dt>Is Fraud</dt>
-              <dd>{transaction.es_fraude ? "Yes" : "No"}</dd>
+              <dd>{formatDisplayBoolean(transaction.es_fraude)}</dd>
             </div>
             <div>
               <dt>Needs Review</dt>
-              <dd>{transaction.revisar ? "Yes" : "No"}</dd>
+              <dd>{formatDisplayBoolean(transaction.revisar)}</dd>
             </div>
             <div>
               <dt>Category</dt>
-              <dd>{displayValue(transaction.categoria)}</dd>
+              <dd>{formatDisplayValue(transaction.categoria)}</dd>
             </div>
             <div>
               <dt>Amount</dt>
-              <dd>€{amount}</dd>
+              <dd>{amount}</dd>
             </div>
           </dl>
         </article>
@@ -314,11 +360,11 @@ function TransactionDetail() {
               <div className={styles.explainabilityMetrics}>
                 <div>
                   <span>Risk level</span>
-                  <strong>{displayValue(structuredExplainability.nivel)}</strong>
+                  <strong>{formatDisplayValue(structuredExplainability.nivel)}</strong>
                 </div>
                 <div>
                   <span>Model score</span>
-                  <strong>{displayValue(structuredExplainability.score)}</strong>
+                  <strong>{formatDisplayValue(structuredExplainability.score)}</strong>
                 </div>
               </div>
 
@@ -388,32 +434,32 @@ function TransactionDetail() {
             <div><dt>Transaction ID</dt><dd>{transaction.id_transaccion || id}</dd></div>
             <div><dt>User ID</dt><dd>{transaction.id_usuario || "-"}</dd></div>
             <div><dt>Date</dt><dd>{formatDateTime(transaction)}</dd></div>
-            <div><dt>Amount</dt><dd>€{amount}</dd></div>
-            <div><dt>Category</dt><dd>{displayValue(transaction.categoria)}</dd></div>
-            <div><dt>Hour</dt><dd>{transaction.hora !== undefined ? `${transaction.hora}:00` : "-"}</dd></div>
+            <div><dt>Amount</dt><dd>{amount}</dd></div>
+            <div><dt>Category</dt><dd>{formatDisplayValue(transaction.categoria)}</dd></div>
+            <div><dt>Hour</dt><dd>{formatHour(transaction.hora)}</dd></div>
           </dl>
         </article>
 
         <article className={styles.infoCard}>
           <h2>Payment Information</h2>
           <dl>
-            <div><dt>Payment Country</dt><dd>{displayValue(transaction.pais_pago)}</dd></div>
-            <div><dt>Card Type</dt><dd>{displayValue(transaction.tipo_tarjeta)}</dd></div>
-            <div><dt>Online</dt><dd>{displayBoolean(transaction.es_online)}</dd></div>
-            <div><dt>Same Shipping/Billing</dt><dd>{displayBoolean(transaction.mismo_envio_facturacion)}</dd></div>
-            <div><dt>VPN/Proxy</dt><dd>{displayBoolean(transaction.uso_vpn_proxy)}</dd></div>
-            <div><dt>3D Secure</dt><dd>{displayBoolean(transaction.paso_3d_secure)}</dd></div>
+            <div><dt>Payment Country</dt><dd>{formatDisplayValue(transaction.pais_pago)}</dd></div>
+            <div><dt>Card Type</dt><dd>{formatDisplayValue(transaction.tipo_tarjeta)}</dd></div>
+            <div><dt>Online</dt><dd>{formatDisplayBoolean(transaction.es_online)}</dd></div>
+            <div><dt>Same Shipping/Billing</dt><dd>{formatDisplayBoolean(transaction.mismo_envio_facturacion)}</dd></div>
+            <div><dt>VPN/Proxy</dt><dd>{formatDisplayBoolean(transaction.uso_vpn_proxy)}</dd></div>
+            <div><dt>3D Secure</dt><dd>{formatDisplayBoolean(transaction.paso_3d_secure)}</dd></div>
           </dl>
         </article>
 
         <article className={styles.infoCard}>
           <h2>Device and Account</h2>
           <dl>
-            <div><dt>Device Type</dt><dd>{displayValue(transaction.tipo_dispositivo)}</dd></div>
+            <div><dt>Device Type</dt><dd>{formatDisplayValue(transaction.tipo_dispositivo)}</dd></div>
             <div><dt>Min Since Last TX</dt><dd>{transaction.minutos_desde_ultima_tx ?? "-"} min</dd></div>
             <div><dt>Account Age</dt><dd>{transaction.dias_antiguedad_cuenta ?? "-"} days</dd></div>
-            <div><dt>Email Verified</dt><dd>{displayBoolean(transaction.email_verificado)}</dd></div>
-            <div><dt>Issuing Country</dt><dd>{displayValue(transaction.pais_emision)}</dd></div>
+            <div><dt>Email Verified</dt><dd>{formatDisplayBoolean(transaction.email_verificado)}</dd></div>
+            <div><dt>Issuing Country</dt><dd>{formatDisplayValue(transaction.pais_emision)}</dd></div>
           </dl>
         </article>
       </section>

@@ -45,6 +45,10 @@ function Clients() {
     setCurrentPage(1);
   };
 
+  const handleFilterSubmit = (event) => {
+    event.preventDefault();
+  };
+
   useEffect(() => {
     let ignore = false;
 
@@ -76,14 +80,15 @@ function Clients() {
         </div>
       </header>
 
-      <form className={styles.filters}>
+      <form className={styles.filters} onSubmit={handleFilterSubmit}>
         <label>
           <span>Search</span>
           <div className={styles.searchInput}>
             <Search aria-hidden="true" size={16} />
             <input
               onChange={(event) => updateFilter("q", event.target.value)}
-              placeholder="Client id..."
+              placeholder="Search by id, email or country..."
+              type="search"
               value={filters.q}
             />
           </div>

@@ -15,13 +15,58 @@ import {
 
 import styles from "./Dashboard.module.css";
 import useAuth from "../../context/useAuth";
-import { api } from "../../services/api";
+import { getDashboardStats, getTransactions } from "../../services/api";
+import { confirmAction, showError } from "../../utils/alerts";
+import {
+  formatCurrency,
+  formatHour,
+  getTransactionScore,
+} from "../../utils/formatters";
 
 const navigationItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
   { label: "Transactions", icon: ListChecks, path: "/transactions" },
   { label: "Users", icon: Users, path: "/clients" },
 ];
+const DASHBOARD_TRANSACTION_LIMIT = 1000;
+
+// Normaliza la respuesta de la API al formato que usa la tabla del dashboard.
+function mapPendingTransaction(transaction) {
+  return {
+    id: transaction.id_transaccion,
+    time: formatHour(transaction.hora),
+    customer: transaction.id_usuario,
+    userId: transaction.id_usuario,
+    amount: formatCurrency(transaction.importe),
+    country: transaction.pais_pago,
+    score: getTransactionScore(transaction),
+    fraudReason: transaction.shap_reasons?.razones_fraude,
+    legitReason: transaction.shap_reasons?.razones_legitima,
+  };
+}
+
+function isPendingTransaction(transaction) {
+  const reviewStatus = transaction.revisado ?? transaction.reviewed;
+
+  if (reviewStatus === null || reviewStatus === undefined || reviewStatus === "") {
+    return true;
+  }
+
+  if (typeof reviewStatus === "boolean") {
+    return !reviewStatus;
+  }
+
+  return ["pendiente", "pending", "no revisado", "unreviewed"].includes(
+    String(reviewStatus).trim().toLowerCase(),
+  );
+}
+
+function getTransactionTimestamp(transaction) {
+  const date = transaction.fecha ? new Date(transaction.fecha) : null;
+  const time = Number(transaction.hora || 0) * 60 * 60 * 1000;
+
+  return date && !Number.isNaN(date.getTime()) ? date.getTime() + time : time;
+}
 
 function Dashboard() {
   const [transactions, setTransactions] = useState([]);
@@ -41,7 +86,9 @@ function Dashboard() {
     name: user?.name || user?.email || "Analyst",
     role: user?.role || "Analyst",
   };
-
+  // Recarga stats y transacciones pendientes cada vez que se entra al dashboard.
+  // Pending Reviews se calcula desde la lista filtrada porque el endpoint de stats
+  // puede no reflejar inmediatamente las transacciones recién revisadas.
   useEffect(() => {
     let ignore = false;
 
@@ -52,40 +99,34 @@ function Dashboard() {
       setPendingCount(null);
 
       try {
-        const [statsResponse, transactionsResponse] = await Promise.all([
-          api.get("/trans/stats/dashboard"),
-          api.get("/trans", {
-            params: {
-              limite: 50000,
-              revisado: "Pendiente",
-            },
+        const [statsData, transactionsData] = await Promise.all([
+          getDashboardStats(),
+          getTransactions({
+            limite: DASHBOARD_TRANSACTION_LIMIT,
+            revisado: "Pendiente",
           }),
         ]);
         if (ignore) return;
 
-        const pendingTransactions = transactionsResponse.data.map((transaction) => ({
-          id: transaction.id_transaccion,
-          time: `${transaction.hora}:00`, // 9 => "09:00"
-          customer: transaction.id_usuario,
-          userId: transaction.id_usuario,
-          amount: Number(transaction.importe).toFixed(2), // "17.49" => 17.49 || "17" => 17.00
-          country: transaction.pais_pago,
-          score: Math.round(Number(transaction.f_score) * 100), // "0.87" => 87
-          fraudReason: transaction.shap_reasons?.razones_fraude,
-          legitReason: transaction.shap_reasons?.razones_legitima,
-        }));
+        const pendingTransactions = [...transactionsData]
+          .filter(isPendingTransaction)
+          .sort(
+            (firstTransaction, secondTransaction) =>
+              getTransactionTimestamp(secondTransaction) -
+              getTransactionTimestamp(firstTransaction),
+          )
+          .map(mapPendingTransaction);
 
-        setDashboardStats(statsResponse.data);
+        setDashboardStats(statsData);
         setPendingCount(pendingTransactions.length);
         setTransactions(pendingTransactions.slice(0, 100));
         setSelectedTransaction(null);
         setCurrentPage(1);
-      } catch (err) {
+      } catch {
         if (ignore) return;
 
         setStatsError("No se pudieron cargar las estadísticas del dashboard");
         setTransactionsError("No se pudieron cargar las transacciones");
-        console.log("ERROR:", err.message);
       } finally {
         if (!ignore) setIsLoading(false);
       }
@@ -98,7 +139,7 @@ function Dashboard() {
     };
   }, [location.key]);
 
-  // ESTADÍSTICAS
+  // Tarjetas superiores del dashboard.
   const stats = [
     {
       icon: CircleDot,
@@ -128,37 +169,35 @@ function Dashboard() {
     },
   ];
 
-  // Transacciones por página
   const transactionsPerPage = 5;
 
-  // PAGINADO DE TRANSACCIONES
-  // Calculamos el total de páginas
-  // Como necesitamos páginas completas, Math.ceil() redondea hacia arriba.
+  // Paginación de la tabla de pendientes.
   const totalPages = Math.ceil(transactions.length / transactionsPerPage);
 
-  // Calculamos desde qué posición del array empieza la página actual
   const startIndex = (currentPage - 1) * transactionsPerPage;
-
-  // Calculamos hasta qué posición del array llega la página
   const endIndex = startIndex + transactionsPerPage;
 
-  // Hacemos el corte real del array
   const paginatedTransactions = transactions.slice(startIndex, endIndex);
+  const hasNoPendingTransactions = transactions.length === 0;
 
-  // Si estás en una página que ya no existe, volver a página 1
-  useEffect(() => {
-    if (currentPage > totalPages && totalPages > 0) {
-      setCurrentPage(1);
-    }
-  }, [currentPage, totalPages]);
-
-  // LOGOUT
+  // Cierra la sesión del analista y vuelve al login.
   const handleLogout = async () => {
-    const isConfirmed = confirm("¿Está segur@ de que quiere cerrar la sesión?");
+    const isConfirmed = await confirmAction({
+      title: "Cerrar sesión",
+      text: "¿Está segur@ de que quiere cerrar la sesión?",
+      confirmButtonText: "Cerrar sesión",
+      icon: "question",
+      confirmButtonColor: "#0dd1e7",
+    });
+
     if (!isConfirmed) return;
 
-    await logout();
-    navigate("/login");
+    try {
+      await logout();
+      navigate("/login");
+    } catch (err) {
+      await showError("No se pudo cerrar la sesión", err.message);
+    }
   };
 
   return (
@@ -285,7 +324,7 @@ function Dashboard() {
                             <span>{transaction.country}</span>
                           </td>
                           <td className={styles.amount}>
-                            €{transaction.amount}
+                            {transaction.amount}
                           </td>
                           <td>
                             <span
@@ -298,6 +337,14 @@ function Dashboard() {
                           </td>
                         </tr>
                       ))}
+
+                    {!isLoading && !transactionsError && hasNoPendingTransactions && (
+                      <tr>
+                        <td colSpan="5">
+                          No hay transacciones pendientes por revisión.
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -305,7 +352,9 @@ function Dashboard() {
               <div className={styles.pagination}>
                 <button
                   disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(currentPage - 1)}
+                  onClick={() =>
+                    setCurrentPage((page) => Math.max(1, page - 1))
+                  }
                   type="button"
                 >
                   Previous
@@ -317,7 +366,9 @@ function Dashboard() {
 
                 <button
                   disabled={currentPage === totalPages || totalPages === 0}
-                  onClick={() => setCurrentPage(currentPage + 1)}
+                  onClick={() =>
+                    setCurrentPage((page) => Math.min(totalPages, page + 1))
+                  }
                   type="button"
                 >
                   Next
@@ -369,35 +420,6 @@ function Dashboard() {
                       : "-"}
                   </dd>
                 </div>
-
-                {/* <div>
-                  <dt>Category</dt>
-                  <dd>{selectedTransaction?.signal || "-"}</dd>
-                </div>
-
-                <div>
-                  <dt>Amount</dt>
-                  <dd>
-                    {selectedTransaction
-                      ? `€${selectedTransaction.amount}`
-                      : "-"}
-                  </dd>
-                </div>
-
-                <div>
-                  <dt>User</dt>
-                  <dd>{selectedTransaction?.userId || "-"}</dd>
-                </div>
-
-                <div>
-                  <dt>Country</dt>
-                  <dd>{selectedTransaction?.country || "-"}</dd>
-                </div>
-
-                <div>
-                  <dt>Status</dt>
-                  <dd>{selectedTransaction?.status || "-"}</dd>
-                </div> */}
               </dl>
 
               <div className={styles.detailActions}>
@@ -425,15 +447,6 @@ function Dashboard() {
                   <User aria-hidden="true" size={14} />
                   User
                 </button>
-                {/*<button className={styles.approveButton} type="button">
-                  <CheckCircle2 aria-hidden="true" size={16} />
-                  Approve
-                </button>
-                <button className={styles.rejectButton} type="button">
-                  <XCircle aria-hidden="true" size={16} />
-                  Mark Fraud
-                </button>
-              */}
               </div>
             </aside>
           </section>
