@@ -13,7 +13,7 @@ import {
 
 import styles from "./Transactions.module.css";
 import useAuth from "../../context/useAuth";
-import { api } from "../../services/api";
+import { api, updateTransaction } from "../../services/api";
 
 const navigationItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
@@ -168,9 +168,10 @@ function Transactions() {
         "¿Está segur@ de que quiere enviar el resultado de la transacción?",
       );
       if (!isConfirmed) return;
-      await api.patch(`/trans/${selectedTransaction.id}`, {
+      await updateTransaction(selectedTransaction.id, {
         revisado: "Revisado",
         es_fraude: reviewStatus === "Fraude",
+        auditor_fraude: reviewStatus === "Fraude",
       });
 
       setError("");
