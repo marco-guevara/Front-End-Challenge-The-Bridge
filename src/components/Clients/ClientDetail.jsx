@@ -17,6 +17,13 @@ function getTransactionId(transaction) {
   return transaction.id_transaccion || transaction.id;
 }
 
+function getTransactionTimestamp(transaction) {
+  const date = transaction.fecha ? new Date(transaction.fecha) : null;
+  const time = Number(transaction.hora || 0) * 60 * 60 * 1000;
+
+  return date && !Number.isNaN(date.getTime()) ? date.getTime() + time : time;
+}
+
 function isPendingReview(transaction) {
   return !transaction.revisado || transaction.revisado === "Pendiente";
 }
@@ -53,7 +60,17 @@ function ClientDetail() {
       .then(([clientData, transactionData]) => {
         if (ignore) return;
         setClient(clientData);
-        setTransactions(Array.isArray(transactionData) ? transactionData.slice(0, 5) : []);
+        const lastTransactions = Array.isArray(transactionData)
+          ? [...transactionData]
+              .sort(
+                (firstTransaction, secondTransaction) =>
+                  getTransactionTimestamp(secondTransaction) -
+                  getTransactionTimestamp(firstTransaction),
+              )
+              .slice(0, 5)
+          : [];
+
+        setTransactions(lastTransactions);
       })
       .catch((err) => {
         if (!ignore) setError(err.message);
@@ -172,7 +189,7 @@ function ClientDetail() {
             <div><dt>Country</dt><dd>{client?.pais_emision || "-"}</dd></div>
             <div><dt>Account age</dt><dd>{client?.dias_antiguedad_cuenta ?? "-"} days</dd></div>
             <div><dt>Email verified</dt><dd>{client?.email_verificado ? "Yes" : "No"}</dd></div>
-            <div><dt>3D Secure</dt><dd>{client?.paso_3d_secure ? "Passed" : "Pending"}</dd></div>
+            <div><dt>3D Secure</dt><dd>{client?.paso_3d_secure ? "Passed" : "Not passed"}</dd></div>
           </dl>
 
           <button
