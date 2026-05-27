@@ -1,12 +1,13 @@
 import { Navigate, Outlet } from "react-router-dom";
 
 import useAuth from "../../context/useAuth";
+import { LoadingSession } from "./AuthShell";
 
 function PublicRoute() {
   const { loading, user } = useAuth();
 
   if (loading) {
-    return <p>Loading session...</p>;
+    return <LoadingSession />;
   }
 
   if (user) {
