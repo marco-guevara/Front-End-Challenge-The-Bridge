@@ -7,6 +7,7 @@ import {
   getClientTransactions,
   updateClient,
 } from "../../services/api";
+import { confirmAction, showError, showSuccess } from "../../utils/alerts";
 import styles from "./Clients.module.css";
 
 function getClientName(client) {
@@ -98,6 +99,18 @@ function ClientDetail() {
   const toggleBlock = async () => {
     if (!client) return;
 
+    const willBlockClient = !client.bloqueado;
+    const isConfirmed = await confirmAction({
+      title: willBlockClient ? "Block client?" : "Unblock client?",
+      text: willBlockClient
+        ? "This will prevent the client from operating until the account is reviewed again."
+        : "This will restore the client account access.",
+      confirmButtonText: willBlockClient ? "Block Client" : "Unblock Client",
+      icon: willBlockClient ? "warning" : "question",
+    });
+
+    if (!isConfirmed) return;
+
     setSaving(true);
     setError("");
     setSuccessMessage("");
@@ -105,11 +118,13 @@ function ClientDetail() {
     try {
       const updated = await updateClient(id, { bloqueado: !client.bloqueado });
       setClient(updated);
-      setSuccessMessage(
-        updated.bloqueado ? "Client blocked" : "Client unblocked",
-      );
+      const message = updated.bloqueado ? "Client blocked" : "Client unblocked";
+
+      setSuccessMessage(message);
+      await showSuccess("Client updated", message);
     } catch (err) {
       setError(err.message);
+      await showError("Client not updated", err.message);
     } finally {
       setSaving(false);
     }
