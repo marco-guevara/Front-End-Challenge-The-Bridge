@@ -37,6 +37,7 @@ const getClients = (params = {}) => request(() => api.get("/clientes", { params 
 const getClientById = (id) => request(() => api.get(`/clientes/${id}`));
 const getClientTransactions = (id) => request(() => api.get(`/clientes/${id}/transacciones`));
 const updateClient = (id, payload) => request(() => api.patch(`/clientes/${id}`, payload));
+const getTransactionById = (id) => request(() => api.get(`/trans/${id}`))
 
 export {
   api,
@@ -47,4 +48,5 @@ export {
   getClientById,
   getClientTransactions,
   updateClient,
+  getTransactionById
 };

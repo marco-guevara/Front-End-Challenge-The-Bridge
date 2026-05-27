@@ -1,19 +1,45 @@
 import { useEffect, useState } from "react"
 import TransactionPieChart from "../TransactionPieChart/TransactionPieChart"
+import { useLocation } from "react-router-dom"
+import { getTransactionById } from "../../services/api"
+
 
 function Transaction () {
+  const location = useLocation()
   const [dataPie, setDataPie] = useState({name: '', value: 0})
   const [fraudPie, setFraudPie] = useState('')
   const [revisionPie, setRevisionPie] = useState('Si')
   const [analista, setAnalista] = useState('')
   const [typePie, setTypePie] = useState('')
+  const [transaction, setTransaction] = useState({})
+  const transactionId = location.state.transaction
+
+
+  
 
   useEffect(() => {
-    setDataPie([{name:'fraude', value:25, fill: '#FFBB28' },
-                {name: '', value: 75}
-    ])
+    console.log(transactionId.id)
+    const getTransaction = async () => {
+      const res = await getTransactionById(transactionId.id)
+      console.log(res)
+      setTransaction(res)
+    }
+    getTransaction()
+    
     setFraudPie('No')
+
   }, [])
+
+  useEffect(() => {
+    console.log('aqui')
+    console.log(transaction)
+    if (transaction) {
+      console.log(transaction.f_score)
+      setDataPie([{name:'fraude', value:transaction.f_score * 100, fill: '#FFBB28' },
+                {name: '', value: 100-transaction.f_score * 100}
+    ])
+  }
+  }, [transaction])
 
   return (
     <div>
@@ -30,19 +56,19 @@ function Transaction () {
             <table>
               <tr>
                 { dataPie  ? <th>Es Fraude</th> : null}
-                { fraudPie ? <th>{fraudPie}</th> : null}
+                { transaction.es_fraude ? <th>Si</th> : <th>No</th>}
               </tr>
               <tr>
                 <th>Require Revision</th>
-                <th>{revisionPie}</th>
+                { transaction ? <th>{transaction?.revisado}</th> : null}
               </tr>
               <tr>
                 <th>Tipo de Fraude</th>
-                <th>{typePie}</th>
+                { transaction ? <th>{transaction?.shap_reasons?.razones_fraude[1]}</th> : null}
               </tr>
               <tr>
                 <th>Analista</th>
-                <th>{analista}</th>
+                { transaction ? <th>{transaction?.analista}</th> : null}
               </tr>
             </table>
           </div>
@@ -57,27 +83,27 @@ function Transaction () {
           <table>
               <tr>
                 <th>ID Transaccion</th>
-                <th>{revisionPie}</th>
+                { transaction ? <th>{transaction.id_transaccion}</th> : null}
               </tr>
               <tr>
                 <th>ID Usuario</th>
-                <th>{typePie}</th>
+                { transaction ? <th>{transaction.id_usuario}</th> : null}
               </tr>
               <tr>
                 <th>Fecha</th>
-                <th>{analista}</th>
+                { transaction ? <th>{transaction.fecha}</th> : null}
               </tr>
               <tr>
                 <th>Importe</th>
-                <th>{analista}</th>
+                { transaction ? <th>{transaction.importe}</th> : null}
               </tr>
               <tr>
                 <th>Categoria</th>
-                <th>{analista}</th>
+                { transaction ? <th>{transaction.categoria}</th> : null}
               </tr>
               <tr>
                 <th>Hora</th>
-                <th>{analista}</th>
+                { transaction ? <th>{transaction.hora}</th> : null}
               </tr>
             </table>
         </div>
@@ -86,27 +112,27 @@ function Transaction () {
           <table>
               <tr>
                 <th>Pais Pago</th>
-                <th>{revisionPie}</th>
+                { transaction ? <th>{transaction?.pais_pago}</th> : null}
               </tr>
               <tr>
                 <th>Tipo de Tarjeta</th>
-                <th>{typePie}</th>
+                { transaction ? <th>{transaction?.tipo_tarjeta}</th> : null}
               </tr>
               <tr>
                 <th>Online</th>
-                <th>{analista}</th>
+                { transaction?.es_online ? <th>Si</th> : <th>No</th>}
               </tr>
               <tr>
                 <th>Mismo Envio/Facturacion</th>
-                <th>{analista}</th>
+                { transaction?.mismo_envio_facturacion ? <th>Si</th> : <th>No</th>}
               </tr>
               <tr>
                 <th>VPN/Proxy</th>
-                <th>{analista}</th>
+                { transaction?.uso_vpn_proxy ? <th>Si</th> : <th>No</th>}
               </tr>
               <tr>
                 <th>3D Secure</th>
-                <th>{analista}</th>
+                { transaction?.paso_3d_secure ? <th>Si</th> : <th>No</th>}
               </tr>
             </table>
         </div>
@@ -115,23 +141,23 @@ function Transaction () {
           <table>
               <tr>
                 <th>Tipo Dispositivo</th>
-                <th>{revisionPie}</th>
+                { transaction ? <th>{transaction?.tipo_dispositivo}</th> : null}
               </tr>
               <tr>
                 <th>Min desde ultima TX</th>
-                <th>{typePie}</th>
+                { transaction ? <th>{transaction?.minutos_desde_ultima_tx}</th> : null}
               </tr>
               <tr>
-                <th>Antiguidad Cuenta</th>
-                <th>{analista}</th>
+                <th>Antiguidad Cuenta (Dias)</th>
+                { transaction ? <th>{transaction?.dias_antiguedad_cuenta}</th> : null}
               </tr>
               <tr>
                 <th>Email Verificado</th>
-                <th>{analista}</th>
+                { transaction?.email_verificado ? <th>Si</th> : <th>No</th>}
               </tr>
               <tr>
                 <th>Pais Emiso</th>
-                <th>{analista}</th>
+                { transaction ? <th>{transaction?.pais_emision}</th> : null}
               </tr>
             </table>
         </div>

@@ -195,6 +195,15 @@ function Dashboard() {
     navigate("/login");
   };
 
+
+  useEffect(() => {
+    console.log(selectedTransaction)
+  }, [selectedTransaction])
+
+  const handleInfo = () => {
+    navigate('/transaction', { state: { transaction: selectedTransaction } })
+  }
+
   return (
     <div className={styles.dashboard}>
       <aside className={styles.sidebar}>
@@ -385,6 +394,7 @@ function Dashboard() {
                   </p>
                 </div>
                 <span className={styles.livePill}>Preview</span>
+                <button onClick={() => handleInfo()}>Details</button>
               </div>
 
               <div className={styles.scoreBlock}>
