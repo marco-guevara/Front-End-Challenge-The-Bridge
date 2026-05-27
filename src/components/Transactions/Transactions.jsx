@@ -419,7 +419,7 @@ function Transactions() {
                   disabled={currentPage === 1}
                   onClick={() => {
                     setSelectedTransaction(null);
-                    setCurrentPage(currentPage - 1);
+                    setCurrentPage((page) => Math.max(1, page - 1));
                   }}
                   type="button"
                 >
@@ -434,7 +434,7 @@ function Transactions() {
                   disabled={currentPage === totalPages || totalPages === 0}
                   onClick={() => {
                     setSelectedTransaction(null);
-                    setCurrentPage(currentPage + 1);
+                    setCurrentPage((page) => Math.min(totalPages, page + 1));
                   }}
                   type="button"
                 >

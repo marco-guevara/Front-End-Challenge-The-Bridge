@@ -311,7 +311,9 @@ function Dashboard() {
               <div className={styles.pagination}>
                 <button
                   disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(currentPage - 1)}
+                  onClick={() =>
+                    setCurrentPage((page) => Math.max(1, page - 1))
+                  }
                   type="button"
                 >
                   Previous
@@ -323,7 +325,9 @@ function Dashboard() {
 
                 <button
                   disabled={currentPage === totalPages || totalPages === 0}
-                  onClick={() => setCurrentPage(currentPage + 1)}
+                  onClick={() =>
+                    setCurrentPage((page) => Math.min(totalPages, page + 1))
+                  }
                   type="button"
                 >
                   Next
