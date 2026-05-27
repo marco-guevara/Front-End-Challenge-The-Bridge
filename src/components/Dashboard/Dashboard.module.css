@@ -142,11 +142,12 @@
   color: #9fb1c3;
 }
 
-.decisionButtons,
-.rowActions {
+.detailActions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.7rem;
+  border-top: 1px solid #1b2434;
+  padding: 1.1rem 1.35rem 1.25rem;
 }
 
 button,
@@ -155,10 +156,8 @@ input {
   font: inherit;
 }
 
-.filterBar button,
 .cardHeader button,
-.rowActions button,
-.decisionButtons button {
+.detailActions button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -173,11 +172,9 @@ input {
   font-weight: 900;
 }
 
-.primaryButton {
-  border-color: rgb(13 209 231 / 40%) !important;
-  background: #0dd1e7 !important;
-  color: #041827 !important;
-  box-shadow: 0 14px 36px rgb(13 209 231 / 20%);
+.detailActions button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .statsGrid {
@@ -188,8 +185,7 @@ input {
 
 .statCard,
 .ledger,
-.reviewPanel,
-.filterBar {
+.reviewPanel {
   border: 1px solid #1d2638;
   border-radius: 0.9rem;
   background: #111725;
@@ -264,69 +260,6 @@ input {
 .statCard p {
   margin: 0;
   font-size: 0.78rem;
-}
-
-.filterBar {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(7rem, 9rem)) minmax(
-      12rem,
-      18rem
-    ) max-content;
-  align-items: end;
-  gap: 0.65rem;
-  padding: 0.75rem;
-}
-
-.filterBar label {
-  display: grid;
-  gap: 0.25rem;
-}
-
-.filterBar span {
-  color: #8fa0b6;
-  font-size: 0.64rem;
-  font-weight: 900;
-  text-transform: uppercase;
-}
-
-.filterBar select,
-.filterBar input,
-.searchInput {
-  min-width: 0;
-  height: 2.25rem;
-  border: 1px solid #2b3548;
-  border-radius: 0.65rem;
-  background: #080e1e;
-  color: #ecfeff;
-  outline: 0;
-  padding-inline: 0.65rem;
-  font-size: 0.78rem;
-}
-
-.searchInput {
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
-}
-
-.searchInput svg {
-  flex-shrink: 0;
-  color: #67e8f9;
-}
-
-.searchInput input {
-  height: 100%;
-  flex: 1;
-  border: 0;
-  background: transparent;
-  padding: 0;
-}
-
-.filterBar button {
-  align-self: end;
-  height: 2.25rem;
-  min-width: 8.5rem;
-  padding-inline: 0.9rem;
 }
 
 .workspaceGrid {
@@ -436,8 +369,7 @@ tbody tr:hover {
 }
 
 .badge,
-.livePill,
-.statusGood {
+.livePill {
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
@@ -470,8 +402,7 @@ tbody tr:hover {
   padding: 0 1.35rem 1rem;
 }
 
-.scoreBlock span,
-.userSummary span {
+.scoreBlock span {
   color: #8fa0b6;
   font-size: 0.72rem;
   font-weight: 900;
@@ -523,23 +454,6 @@ tbody tr:hover {
   font-weight: 700;
 }
 
-.decisionButtons {
-  border-top: 1px solid #1b2434;
-  padding: 1.1rem 1.35rem 1.25rem;
-}
-
-.approveButton {
-  border-color: rgb(110 231 183 / 30%) !important;
-  background: rgb(110 231 183 / 12%) !important;
-  color: #d1fae5 !important;
-}
-
-.rejectButton {
-  border-color: rgb(248 113 113 / 32%) !important;
-  background: rgb(248 113 113 / 12%) !important;
-  color: #ffe4e6 !important;
-}
-
 .selectedRow {
   background: rgba(34, 211, 238, 0.08);
 }
@@ -552,14 +466,25 @@ tbody tr:hover {
   background: rgba(255, 255, 255, 0.04);
 }
 
-@media (max-width: 1200px) {
-  .statsGrid,
-  .filterBar {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+.errorMessage {
+  margin: 0;
+  border: 1px solid rgb(248 113 113 / 30%);
+  border-radius: 0.75rem;
+  background: rgb(248 113 113 / 10%);
+  color: #fecaca;
+  padding: 0.85rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
 
-  .searchField {
-    grid-column: span 2;
+.statsSection {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (max-width: 1200px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .workspaceGrid {
@@ -589,13 +514,8 @@ tbody tr:hover {
     padding: 1rem;
   }
 
-  .statsGrid,
-  .filterBar {
+  .statsGrid {
     grid-template-columns: 1fr;
-  }
-
-  .searchField {
-    grid-column: auto;
   }
 
   .pagination {
