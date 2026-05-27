@@ -300,6 +300,7 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
+  margin-bottom: 1.25rem;
 }
 
 .summaryGrid article {
@@ -322,6 +323,60 @@
 .summaryGrid strong {
   color: #ecfeff;
   font-size: 1.6rem;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.infoCard {
+  border: 1px solid #1d2638;
+  border-radius: 0.9rem;
+  background: #111725;
+  padding: 1.25rem;
+}
+
+.infoCard h2 {
+  border-bottom: 1px solid #1b2434;
+  margin: 0 0 1rem;
+  padding-bottom: 0.75rem;
+  color: #ecfeff;
+  font-size: 1.05rem;
+}
+
+.infoCard dl {
+  display: grid;
+  gap: 0.7rem;
+  margin: 0;
+}
+
+.infoCard div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid #1b2434;
+  padding-bottom: 0.65rem;
+}
+
+.infoCard div:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.infoCard dt {
+  color: #8fa0b6;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.infoCard dd {
+  margin: 0;
+  color: #ecfeff;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+  text-align: right;
 }
 
 .loading,
@@ -365,7 +420,8 @@
     text-align: left;
   }
 
-  .summaryGrid {
+  .summaryGrid,
+  .infoGrid {
     grid-template-columns: 1fr;
   }
 }

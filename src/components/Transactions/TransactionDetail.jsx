@@ -41,6 +41,15 @@ function getReasonImpact(reason) {
   return Number(reason.impacto ?? reason.valor ?? reason.value ?? 0);
 }
 
+function displayValue(value) {
+  return value === null || value === undefined || value === "" ? "-" : value;
+}
+
+function displayBoolean(value) {
+  if (value === null || value === undefined) return "-";
+  return value ? "Yes" : "No";
+}
+
 function TransactionDetail() {
   const { id } = useParams();
   const [transaction, setTransaction] = useState(null);
@@ -217,6 +226,43 @@ function TransactionDetail() {
           <CalendarClock aria-hidden="true" size={22} />
           <span>Category</span>
           <strong>{transaction.categoria || "-"}</strong>
+        </article>
+      </section>
+
+      <section className={styles.infoGrid}>
+        <article className={styles.infoCard}>
+          <h2>General Information</h2>
+          <dl>
+            <div><dt>Transaction ID</dt><dd>{transaction.id_transaccion || id}</dd></div>
+            <div><dt>User ID</dt><dd>{transaction.id_usuario || "-"}</dd></div>
+            <div><dt>Date</dt><dd>{formatDateTime(transaction)}</dd></div>
+            <div><dt>Amount</dt><dd>€{amount}</dd></div>
+            <div><dt>Category</dt><dd>{displayValue(transaction.categoria)}</dd></div>
+            <div><dt>Hour</dt><dd>{transaction.hora !== undefined ? `${transaction.hora}:00` : "-"}</dd></div>
+          </dl>
+        </article>
+
+        <article className={styles.infoCard}>
+          <h2>Payment Information</h2>
+          <dl>
+            <div><dt>Payment Country</dt><dd>{displayValue(transaction.pais_pago)}</dd></div>
+            <div><dt>Card Type</dt><dd>{displayValue(transaction.tipo_tarjeta)}</dd></div>
+            <div><dt>Online</dt><dd>{displayBoolean(transaction.es_online)}</dd></div>
+            <div><dt>Same Shipping/Billing</dt><dd>{displayBoolean(transaction.mismo_envio_facturacion)}</dd></div>
+            <div><dt>VPN/Proxy</dt><dd>{displayBoolean(transaction.uso_vpn_proxy)}</dd></div>
+            <div><dt>3D Secure</dt><dd>{displayBoolean(transaction.paso_3d_secure)}</dd></div>
+          </dl>
+        </article>
+
+        <article className={styles.infoCard}>
+          <h2>Device and Account</h2>
+          <dl>
+            <div><dt>Device Type</dt><dd>{displayValue(transaction.tipo_dispositivo)}</dd></div>
+            <div><dt>Min Since Last TX</dt><dd>{transaction.minutos_desde_ultima_tx ?? "-"} min</dd></div>
+            <div><dt>Account Age</dt><dd>{transaction.dias_antiguedad_cuenta ?? "-"} days</dd></div>
+            <div><dt>Email Verified</dt><dd>{displayBoolean(transaction.email_verificado)}</dd></div>
+            <div><dt>Issuing Country</dt><dd>{displayValue(transaction.pais_emision)}</dd></div>
+          </dl>
         </article>
       </section>
     </main>
