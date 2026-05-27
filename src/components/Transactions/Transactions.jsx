@@ -28,19 +28,8 @@ const navigationItems = [
   { label: "Users", icon: Users, path: "/clients" },
 ];
 
-function Transactions() {
-  const [transactions, setTransactions] = useState([]);
-  const [fraudFilter, setFraudFilter] = useState("");
-  const [reviewedFilter, setReviewedFilter] = useState("");
-  const [transactionId, setTransactionId] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-
-  const { logout } = useAuth();
-  const navigate = useNavigate();
-
-  const mapTransaction = (transaction) => ({
+function mapTransaction(transaction) {
+  return {
     id: transaction.id_transaccion,
     date: transaction.fecha,
     time: `${transaction.hora}:00`,
@@ -51,7 +40,20 @@ function Transactions() {
     status: transaction.revisado,
     isFraud: transaction.es_fraude,
     category: transaction.categoria,
-  });
+  };
+}
+
+function Transactions() {
+  const [transactions, setTransactions] = useState([]);
+  const [fraudFilter, setFraudFilter] = useState("");
+  const [reviewedFilter, setReviewedFilter] = useState("");
+  const [transactionId, setTransactionId] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
   const getTransactions = async () => {
     try {
@@ -97,7 +99,29 @@ function Transactions() {
   };
 
   useEffect(() => {
-    getTransactions();
+    let ignore = false;
+
+    api
+      .get("/trans")
+      .then((response) => {
+        if (ignore) return;
+
+        setTransactions(response.data.map(mapTransaction));
+        setCurrentPage(1);
+      })
+      .catch((err) => {
+        if (ignore) return;
+
+        console.log("ERROR:", err.message);
+        setError("No se pudieron cargar las transacciones");
+      })
+      .finally(() => {
+        if (!ignore) setIsLoading(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   const transactionsPerPage = 10;
@@ -276,6 +300,15 @@ function Transactions() {
                           <td>{transaction.status}</td>
                           <td>
                             <div className={styles.rowActions}>
+                              <button
+                                onClick={() =>
+                                  navigate(`/transactions/${transaction.id}`)
+                                }
+                                type="button"
+                              >
+                                <ShieldAlert aria-hidden="true" size={14} />
+                                Detail
+                              </button>
                               <button
                                 onClick={() =>
                                   navigate(`/clients/${transaction.userId}`)

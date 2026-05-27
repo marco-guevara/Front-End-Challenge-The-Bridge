@@ -13,7 +13,9 @@ import { getTransactionById } from "../../services/api";
 import styles from "./TransactionDetail.module.css";
 
 function normalizeTransaction(data) {
-  return Array.isArray(data) ? data[0] : data;
+  const payload = data?.data || data?.transaction || data?.transaccion || data;
+
+  return Array.isArray(payload) ? payload[0] : payload;
 }
 
 function formatDateTime(transaction) {
@@ -29,16 +31,60 @@ function formatDateTime(transaction) {
     : formattedDate;
 }
 
-function getShapReasons(transaction) {
-  return transaction.shap_reasons || transaction.shapReasons || transaction.explainability || [];
+function parseJsonValue(value) {
+  if (typeof value !== "string") return value;
+
+  try {
+    return JSON.parse(value);
+  } catch {
+    return value;
+  }
 }
 
-function getReasonLabel(reason, index) {
-  return reason.feature || reason.caracteristica || reason.nombre || `Feature ${index + 1}`;
+function isPlainObject(value) {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function getReasonImpact(reason) {
-  return Number(reason.impacto ?? reason.valor ?? reason.value ?? 0);
+function hasStructuredExplainability(explainability) {
+  const parsedExplainability = parseJsonValue(explainability);
+
+  return Boolean(
+    isPlainObject(parsedExplainability) &&
+      (parsedExplainability.razones_fraude ||
+        parsedExplainability.razones_legitima ||
+        parsedExplainability.razones_legitimas ||
+        parsedExplainability.explicacion ||
+        parsedExplainability.explanation ||
+        parsedExplainability.nivel ||
+        parsedExplainability.score),
+  );
+}
+
+function getStructuredExplainability(transaction) {
+  const candidates = [
+    transaction.shap_reasons,
+    transaction.explicabilidad,
+    transaction.explainability,
+    transaction.explainability_data,
+  ];
+
+  return (
+    candidates.map(parseJsonValue).find(hasStructuredExplainability) || null
+  );
+}
+
+function getReasonList(value) {
+  const parsedValue = parseJsonValue(value);
+
+  if (!parsedValue) return [];
+  if (Array.isArray(parsedValue)) return parsedValue.flatMap(getReasonList);
+  if (!isPlainObject(parsedValue)) return [String(parsedValue)];
+
+  return Object.entries(parsedValue).map(([key, itemValue]) =>
+    typeof itemValue === "string" || typeof itemValue === "number"
+      ? `${key}: ${itemValue}`
+      : key,
+  );
 }
 
 function displayValue(value) {
@@ -91,20 +137,30 @@ function TransactionDetail() {
     );
   }
 
-  const score = Math.round(Number(transaction.f_score || 0) * 100);
-  const amount = Number(transaction.importe || 0).toFixed(2);
-  const shapReasons = getShapReasons(transaction);
-  const maxImpact = Math.max(
-    1,
-    ...shapReasons.map((reason) => Math.abs(getReasonImpact(reason))),
+  const score = Math.min(
+    100,
+    Math.max(0, Math.round(Number(transaction.f_score || 0) * 100)),
   );
+  const amount = Number(transaction.importe || 0).toFixed(2);
+  const structuredExplainability = getStructuredExplainability(transaction);
+  const fraudReasons = getReasonList(structuredExplainability?.razones_fraude);
+  const legitReasons = getReasonList(
+    structuredExplainability?.razones_legitima ||
+      structuredExplainability?.razones_legitimas,
+  );
+  const explanationText =
+    structuredExplainability?.explicacion ||
+    structuredExplainability?.explanation ||
+    structuredExplainability?.resumen ||
+    structuredExplainability?.summary ||
+    "";
 
   return (
     <main className={styles.page}>
       <nav className={styles.breadcrumb}>
         <Link to="/transactions">Transactions</Link>
         <span>/</span>
-        <strong>{id.slice(0, 12)}...</strong>
+        <strong>{String(id).slice(0, 12)}...</strong>
       </nav>
 
       <section className={styles.hero}>
@@ -146,7 +202,10 @@ function TransactionDetail() {
 
       <section className={styles.riskGrid}>
         <article className={styles.scoreCard}>
-          <div className={styles.scoreRing}>
+          <div
+            className={styles.scoreRing}
+            style={{ "--score": `${score}%` }}
+          >
             <span>{score}%</span>
           </div>
           <p>Fraud Score</p>
@@ -161,12 +220,12 @@ function TransactionDetail() {
               <dd>{transaction.revisar ? "Yes" : "No"}</dd>
             </div>
             <div>
-              <dt>Fraud Type</dt>
-              <dd>{transaction.tipo_fraude || "-"}</dd>
+              <dt>Category</dt>
+              <dd>{displayValue(transaction.categoria)}</dd>
             </div>
             <div>
-              <dt>Analyst</dt>
-              <dd>{transaction.analista || "-"}</dd>
+              <dt>Amount</dt>
+              <dd>€{amount}</dd>
             </div>
           </dl>
         </article>
@@ -177,36 +236,56 @@ function TransactionDetail() {
             <p>Model signals that influenced this fraud score.</p>
           </div>
 
-          {shapReasons.length === 0 ? (
-            <p className={styles.emptyState}>No explainability data available</p>
-          ) : (
-            <div className={styles.shapList}>
-              <div className={styles.shapLegend}>
-                <span className={styles.legit}>Legitimate</span>
-                <span className={styles.fraud}>Fraud</span>
+          {structuredExplainability ? (
+            <div className={styles.explainabilitySummary}>
+              <div className={styles.explainabilityMetrics}>
+                <div>
+                  <span>Risk level</span>
+                  <strong>{displayValue(structuredExplainability.nivel)}</strong>
+                </div>
+                <div>
+                  <span>Model score</span>
+                  <strong>{displayValue(structuredExplainability.score)}</strong>
+                </div>
               </div>
 
-              {shapReasons.map((reason, index) => {
-                const impact = getReasonImpact(reason);
-                const width = `${Math.max(8, (Math.abs(impact) / maxImpact) * 100)}%`;
-                const isFraudSignal = impact > 0;
+              <div className={styles.reasonColumns}>
+                <section>
+                  <h3>Fraud reasons</h3>
+                  {fraudReasons.length === 0 ? (
+                    <p>No fraud reasons available</p>
+                  ) : (
+                    <ul>
+                      {fraudReasons.map((reason) => (
+                        <li key={reason}>{reason}</li>
+                      ))}
+                    </ul>
+                  )}
+                </section>
 
-                return (
-                  <div className={styles.shapRow} key={getReasonLabel(reason, index)}>
-                    <span>{getReasonLabel(reason, index)}</span>
-                    <div className={styles.shapTrack}>
-                      <div
-                        className={isFraudSignal ? styles.fraudBar : styles.legitBar}
-                        style={{ width }}
-                      />
-                    </div>
-                    <strong className={isFraudSignal ? styles.fraud : styles.legit}>
-                      {impact.toFixed(4)}
-                    </strong>
-                  </div>
-                );
-              })}
+                <section>
+                  <h3>Legitimate reasons</h3>
+                  {legitReasons.length === 0 ? (
+                    <p>No legitimate reasons available</p>
+                  ) : (
+                    <ul>
+                      {legitReasons.map((reason) => (
+                        <li key={reason}>{reason}</li>
+                      ))}
+                    </ul>
+                  )}
+                </section>
+              </div>
+
+              {explanationText && (
+                <section className={styles.explanationText}>
+                  <h3>API explanation</h3>
+                  <p>{explanationText}</p>
+                </section>
+              )}
             </div>
+          ) : (
+            <p className={styles.emptyState}>No explainability data available</p>
           )}
         </article>
       </section>

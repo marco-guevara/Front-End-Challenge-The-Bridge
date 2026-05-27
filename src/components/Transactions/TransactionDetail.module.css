@@ -124,16 +124,23 @@
 }
 
 .scoreRing {
+  --score: 0%;
+
+  position: relative;
   display: grid;
   width: 9rem;
   height: 9rem;
   place-items: center;
-  border: 0.65rem solid #ef4444;
-  border-left-color: #263246;
   border-radius: 999px;
+  background:
+    radial-gradient(circle at center, #111725 58%, transparent 59%),
+    conic-gradient(#fb444b var(--score), #263246 0);
+  transition: background 180ms ease;
 }
 
 .scoreRing span {
+  position: relative;
+  z-index: 1;
   color: #ecfeff;
   font-size: 1.9rem;
   font-weight: 900;
@@ -198,72 +205,91 @@
   color: #9fb1c3;
 }
 
-.shapList {
+.explainabilitySummary {
   display: grid;
-  gap: 0.8rem;
+  gap: 1rem;
 }
 
-.shapLegend {
-  display: flex;
-  justify-content: center;
-  gap: 1.5rem;
-  font-size: 0.78rem;
-  font-weight: 900;
-}
-
-.shapRow {
+.explainabilityMetrics {
   display: grid;
-  grid-template-columns: minmax(7rem, 10rem) 1fr 4.5rem;
-  align-items: center;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
 }
 
-.shapRow > span {
-  color: #dbe7f0;
-  font-size: 0.78rem;
+.explainabilityMetrics div {
+  border: 1px solid #1d2638;
+  border-radius: 0.7rem;
+  background: #0d1422;
+  padding: 0.8rem;
+}
+
+.explainabilityMetrics span {
+  display: block;
+  color: #8fa0b6;
+  font-size: 0.7rem;
   font-weight: 900;
-  overflow: hidden;
-  text-align: right;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  text-transform: uppercase;
 }
 
-.shapTrack {
-  display: flex;
-  align-items: center;
-  height: 1.25rem;
-  border-radius: 999px;
-  background: #1b2638;
-  overflow: hidden;
+.explainabilityMetrics strong {
+  display: block;
+  margin-top: 0.25rem;
+  color: #ecfeff;
+  font-size: 1.15rem;
 }
 
-.fraudBar,
-.legitBar {
-  height: 100%;
-  border-radius: 999px;
+.reasonColumns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
 }
 
-.fraudBar {
-  background: linear-gradient(90deg, #fca5a5, #ef4444);
+.reasonColumns section {
+  border: 1px solid #1d2638;
+  border-radius: 0.7rem;
+  background: #0d1422;
+  padding: 0.9rem;
 }
 
-.legitBar {
-  margin-left: auto;
-  background: linear-gradient(90deg, #22c55e, #86efac);
+.reasonColumns h3 {
+  margin: 0 0 0.75rem;
+  color: #ecfeff;
+  font-size: 0.9rem;
 }
 
-.shapRow strong {
-  font-family: Consolas, monospace;
-  font-size: 0.78rem;
-  text-align: right;
+.reasonColumns ul {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+  padding-left: 1rem;
 }
 
-.fraud {
-  color: #ffaca2;
+.reasonColumns li,
+.reasonColumns p {
+  margin: 0;
+  color: #c9d8e8;
+  font-size: 0.86rem;
+  line-height: 1.45;
 }
 
-.legit {
-  color: #86efac;
+.explanationText {
+  border: 1px solid rgb(103 232 249 / 18%);
+  border-radius: 0.7rem;
+  background: rgb(103 232 249 / 6%);
+  padding: 0.9rem;
+}
+
+.explanationText h3 {
+  margin: 0 0 0.55rem;
+  color: #ecfeff;
+  font-size: 0.9rem;
+}
+
+.explanationText p {
+  margin: 0;
+  color: #c9d8e8;
+  font-size: 0.88rem;
+  line-height: 1.5;
 }
 
 .dangerBadge,
@@ -411,17 +437,13 @@
     grid-template-columns: 1fr;
   }
 
-  .shapRow {
+  .summaryGrid,
+  .infoGrid {
     grid-template-columns: 1fr;
   }
 
-  .shapRow > span,
-  .shapRow strong {
-    text-align: left;
-  }
-
-  .summaryGrid,
-  .infoGrid {
+  .explainabilityMetrics,
+  .reasonColumns {
     grid-template-columns: 1fr;
   }
 }
