@@ -11,6 +11,7 @@ function Login() {
 
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { error, login } = useAuth();
 
   const handleChange = (event) => {
@@ -23,10 +24,16 @@ function Login() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    const response = await login(formData);
-    if (!response) return;
+    try {
+      setIsSubmitting(true);
 
-    navigate("/dashboard");
+      const response = await login(formData);
+      if (!response) return;
+
+      navigate("/dashboard");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -42,6 +49,7 @@ function Login() {
               <input
                 autoComplete="email"
                 className={styles.input}
+                disabled={isSubmitting}
                 name="email"
                 onChange={handleChange}
                 placeholder="Enter your credentials"
@@ -76,6 +84,7 @@ function Login() {
               <input
                 autoComplete="current-password"
                 className={styles.input}
+                disabled={isSubmitting}
                 name="password"
                 onChange={handleChange}
                 placeholder="Password"
@@ -86,6 +95,7 @@ function Login() {
               <button
                 aria-label={showPassword ? "Hide password" : "Show password"}
                 className={styles.revealButton}
+                disabled={isSubmitting}
                 onClick={() => setShowPassword((visible) => !visible)}
                 type="button"
               >
@@ -126,8 +136,12 @@ function Login() {
             Enforce session encryption
           </label>
 
-          <button className={styles.submitButton} type="submit">
-            Initialize Session
+          <button
+            className={styles.submitButton}
+            disabled={isSubmitting}
+            type="submit"
+          >
+            {isSubmitting ? "Initializing..." : "Initialize Session"}
           </button>
 
           {error && (

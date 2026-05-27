@@ -145,6 +145,13 @@
   background: #42e4f5;
 }
 
+.input:disabled,
+.revealButton:disabled,
+.submitButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
 .submitButton:focus-visible {
   outline: 2px solid #a5f3fc;
   outline-offset: 4px;
