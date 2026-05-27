@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -17,112 +19,176 @@ import {
 } from "lucide-react";
 
 import styles from "./Dashboard.module.css";
-
 import useAuth from "../../context/useAuth";
-import { useNavigate } from "react-router-dom";
-
-const analyst = {
-  name: "Marta Soler",
-  role: "Analyst",
-  queue: "High Risk First",
-};
-
-const transactions = [
-  {
-    id: "TX-82910",
-    time: "10:42",
-    customer: "Apex Holdings",
-    userId: "USR-4912",
-    amount: "245,000.00",
-    country: "Singapore",
-    score: 92,
-    status: "Pending",
-    signal: "Velocity spike",
-  },
-  {
-    id: "TX-82908",
-    time: "10:28",
-    customer: "Unknown Node",
-    userId: "USR-1180",
-    amount: "89,000.00",
-    country: "Estonia",
-    score: 87,
-    status: "On review",
-    signal: "VPN and card mismatch",
-  },
-  {
-    id: "TX-82907",
-    time: "09:51",
-    customer: "Blue River LLC",
-    userId: "USR-7621",
-    amount: "12,450.00",
-    country: "Spain",
-    score: 64,
-    status: "On review",
-    signal: "Repeated small transfers",
-  },
-  {
-    id: "TX-82901",
-    time: "09:12",
-    customer: "Lumen Market",
-    userId: "USR-9034",
-    amount: "4,320.00",
-    country: "France",
-    score: 38,
-    status: "Completed",
-    signal: "Normal pattern",
-  },
-];
-
-const stats = [
-  {
-    icon: CircleDot,
-    label: "Visible Reviews",
-    value: "46",
-    detail: analyst.role,
-  },
-  {
-    icon: Triangle,
-    label: "Low / Medium Risk",
-    value: "34",
-    detail: "< 70%",
-  },
-  {
-    icon: AlertTriangle,
-    label: "High Risk",
-    value: "12",
-    detail: ">= 70%",
-    danger: true,
-  },
-  {
-    icon: Gauge,
-    label: "Avg Fraud Score",
-    value: "55%",
-    detail: "Current queue",
-    success: true,
-  },
-];
+import { api } from "../../services/api";
 
 const navigationItems = [
-  { label: "Dashboard", icon: LayoutDashboard },
-  { label: "Transactions", icon: ListChecks },
-  { label: "Risk Review", icon: ShieldAlert },
-  { label: "Users", icon: Users },
+  { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
+  { label: "Transactions", icon: ListChecks, path: "/transactions" },
+  { label: "Users", icon: Users, path: "/clients" },
 ];
 
 function Dashboard() {
-  const { logout } = useAuth();
+  const [transactions, setTransactions] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [dashboardStats, setDashboardStats] = useState(null);
+
+  const { user, logout, loading } = useAuth();
   const navigate = useNavigate();
-  const prioritizedTransactions = [...transactions].sort((a, b) => {
+
+  const analyst = {
+    name: user?.name || user?.email || "Analyst",
+    role: user?.role || "Analyst",
+    // role: "Admin"
+  };
+
+  useEffect(() => {
+    const getDashboardStats = async () => {
+      try {
+        const response = await api.get("/trans/stats/dashboard");
+        setDashboardStats(response.data);
+      } catch (err) {
+        setError("No se pudieron cargar las estadísticas del dashboard");
+        console.log("ERROR STATS:", err.message);
+      }
+    };
+
+    const getTransactions = async () => {
+      try {
+        const response = await api.get("/trans", {
+          params: {
+            limite: 100,
+          },
+        });
+
+        const mappedTransactions = response.data.map((transaction) => ({
+          id: transaction.id_transaccion,
+          time: `${transaction.hora}:00`, // 9 => "09:00"
+          customer: transaction.id_usuario,
+          userId: transaction.id_usuario,
+          amount: Number(transaction.importe).toFixed(2), // "17.49" => 17.49 || "17" => 17.00
+          country: transaction.pais_pago,
+          score: Math.round(Number(transaction.f_score) * 100), // "0.87" => 87
+          status: transaction.revisado,
+          signal: transaction.categoria,
+        }));
+
+        setTransactions(mappedTransactions);
+      } catch (err) {
+        setError("No se pudieron cargar las transacciones");
+        console.log("ERROR:", err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    getDashboardStats();
+    getTransactions();
+  }, []);
+  console.log(transactions);
+
+  // Filtramos transacciones por rol de analista
+  const visibleTransactions = transactions.filter((transaction) => {
     if (analyst.role === "Admin") {
-      return a.score - b.score;
+      return transaction.score < 70;
     }
 
+    if (analyst.role === "Analyst") {
+      return transaction.score >= 70;
+    }
+
+    return false;
+  });
+
+  // ESTADÍSTICAS
+  const lowMediumRisk = transactions.filter(
+    (transaction) => transaction.score < 70,
+  ).length;
+
+  const highRisk = transactions.filter(
+    (transaction) => transaction.score >= 70,
+  ).length;
+
+  const averageFraudScore =
+    visibleTransactions.length > 0
+      ? Math.round(
+          visibleTransactions.reduce(
+            (total, transaction) => total + transaction.score,
+            0,
+          ) / visibleTransactions.length,
+        )
+      : 0;
+
+  const stats = [
+    {
+      icon: CircleDot,
+      label: "Pending Reviews",
+      value: dashboardStats?.pending ?? 0,
+      detail: "Pending",
+    },
+    {
+      icon: Triangle,
+      label: "Clean Transactions",
+      value: dashboardStats?.clean ?? 0,
+      detail: "Clean",
+    },
+    {
+      icon: AlertTriangle,
+      label: "Fraud Transactions",
+      value: dashboardStats?.fraud ?? 0,
+      detail: "Fraud",
+      danger: true,
+    },
+    {
+      icon: Gauge,
+      label: "Total Transactions",
+      value: dashboardStats?.total ?? 0,
+      detail: "Total",
+      success: true,
+    },
+  ];
+
+  // TABLA DE TRANSACCIONES
+  // Ordenamos transacciones por score (riesgo) de mayor a menor
+  const prioritizedTransactions = [...visibleTransactions].sort((a, b) => {
     return b.score - a.score;
   });
 
+  // Transacciones por página
+  const transactionsPerPage = 5;
+
+  // PAGINADO DE TRANSACCIONES
+  // Calculamos el total de páginas
+  // Como necesitamos páginas completas, Math.ceil() redondea hacia arriba.
+  const totalPages = Math.ceil(
+    prioritizedTransactions.length / transactionsPerPage,
+  );
+
+  // Calculamos desde qué posición del array empieza la página actual
+  const startIndex = (currentPage - 1) * transactionsPerPage;
+
+  // Calculamos hasta qué posición del array llega la página
+  const endIndex = startIndex + transactionsPerPage;
+
+  // Hacemos el corte real del array
+  const paginatedTransactions = prioritizedTransactions.slice(
+    startIndex,
+    endIndex,
+  );
+
+  // Si estás en una página que ya no existe, volver a página 1
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1);
+    }
+  }, [currentPage, totalPages]);
+
+  // LOGOUT
   const handleLogout = async () => {
-    const isConfirmed = confirm("¿Está segur@ de que quiere cerrar la sesión?")
+    const isConfirmed = confirm("¿Está segur@ de que quiere cerrar la sesión?");
     if (!isConfirmed) return;
 
     await logout();
@@ -141,16 +207,17 @@ function Dashboard() {
         </div>
 
         <nav className={styles.nav}>
-          {navigationItems.map(({ label, icon: Icon }, index) => (
-              <button
-                className={index === 0 ? styles.activeNav : styles.navItem}
-                key={label}
-                type="button"
-              >
-                <Icon aria-hidden="true" size={18} />
-                {label}
-              </button>
-            ))}
+          {navigationItems.map(({ label, icon: Icon, path }, index) => (
+            <button
+              className={index === 0 ? styles.activeNav : styles.navItem}
+              key={label}
+              onClick={() => navigate(path)}
+              type="button"
+            >
+              <Icon aria-hidden="true" size={18} />
+              {label}
+            </button>
+          ))}
         </nav>
 
         <div className={styles.sidebarBottom}>
@@ -159,7 +226,11 @@ function Dashboard() {
             <strong>{analyst.name}</strong>
             <span>{analyst.role}</span>
           </div>
-          <button className={styles.logout} onClick={handleLogout} type="button">
+          <button
+            className={styles.logout}
+            onClick={handleLogout}
+            type="button"
+          >
             <LogOut aria-hidden="true" size={16} />
             Logout
           </button>
@@ -196,35 +267,11 @@ function Dashboard() {
             ))}
           </section>
 
-          <section className={styles.filterBar}>
-            {["Risk", "Status"].map((label) => (
-              <label key={label}>
-                <span>{label}</span>
-                <select defaultValue="">
-                  <option value="">All</option>
-                  <option>High priority</option>
-                  <option>Pending</option>
-                </select>
-              </label>
-            ))}
-            <label className={styles.searchField}>
-              <span>Search</span>
-              <div className={styles.searchInput}>
-                <Search aria-hidden="true" size={16} />
-                <input placeholder="Transaction, user or customer" />
-              </div>
-            </label>
-            <button className={styles.primaryButton} type="button">
-              <SlidersHorizontal aria-hidden="true" size={16} />
-              Apply Filters
-            </button>
-          </section>
-
           <section className={styles.workspaceGrid}>
             <article className={styles.ledger}>
               <div className={styles.cardHeader}>
                 <div>
-                  <h3>Transaction Review Queue</h3>
+                  <h3>Last Transactions Review Queue</h3>
                 </div>
               </div>
 
@@ -242,47 +289,88 @@ function Dashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {prioritizedTransactions.map((transaction) => (
-                      <tr key={transaction.id}>
-                        <td>{transaction.id}</td>
-                        <td>{transaction.time}</td>
-                        <td>
-                          <strong>{transaction.customer}</strong>
-                          <span>{transaction.country}</span>
-                        </td>
-                        <td className={styles.amount}>€{transaction.amount}</td>
-                        <td>
-                          <span
-                            className={`${styles.badge} ${
-                              transaction.score >= 80 ? styles.redBadge : ""
-                            }`}
-                          >
-                            {transaction.score}%
-                          </span>
-                        </td>
-                        <td>{transaction.status}</td>
-                        <td>
-                          <div className={styles.rowActions}>
-                            <button type="button">
-                              <ShieldAlert aria-hidden="true" size={14} />
-                              Review
-                            </button>
-                            <button type="button">
-                              <User aria-hidden="true" size={14} />
-                              User
-                            </button>
-                          </div>
-                        </td>
+                    {isLoading && (
+                      <tr>
+                        <td colSpan="7">Cargando transacciones...</td>
                       </tr>
-                    ))}
+                    )}
+
+                    {error && (
+                      <tr>
+                        <td colSpan="7">{error}</td>
+                      </tr>
+                    )}
+                    {!isLoading &&
+                      !error &&
+                      paginatedTransactions.map((transaction) => (
+                        <tr
+                          className={
+                            selectedTransaction?.id === transaction.id
+                              ? styles.selectedRow
+                              : ""
+                          }
+                          key={transaction.id}
+                          onClick={() => setSelectedTransaction(transaction)}
+                        >
+                          <td>{transaction.id}</td>
+                          <td>{transaction.time}</td>
+                          <td>
+                            <strong>{transaction.customer}</strong>
+                            <span>{transaction.country}</span>
+                          </td>
+                          <td className={styles.amount}>
+                            €{transaction.amount}
+                          </td>
+                          <td>
+                            <span
+                              className={`${styles.badge} ${
+                                transaction.score >= 80 ? styles.redBadge : ""
+                              }`}
+                            >
+                              {transaction.score}%
+                            </span>
+                          </td>
+                          <td>{transaction.status}</td>
+                          <td>
+                            <div className={styles.rowActions}>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/clients/${transaction.userId}`);
+                                }}
+                                type="button"
+                              >
+                                <User aria-hidden="true" size={14} />
+                                User
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>
 
               <div className={styles.pagination}>
-                <button type="button">Previous</button>
-                <span>Page 1 of 8</span>
-                <button type="button">Next</button>
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  type="button"
+                >
+                  Previous
+                </button>
+
+                <span>
+                  Page {currentPage} of {totalPages || 1}
+                </span>
+
+                <button
+                  disabled={currentPage === totalPages || totalPages === 0}
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  type="button"
+                >
+                  Next
+                </button>
               </div>
             </article>
 
@@ -290,7 +378,11 @@ function Dashboard() {
               <div className={styles.cardHeader}>
                 <div>
                   <h3>Transaction Detail</h3>
-                  <p>TX-82910 selected</p>
+                  <p>
+                    {selectedTransaction
+                      ? `${selectedTransaction.id} selected`
+                      : "Select a transaction"}
+                  </p>
                 </div>
                 <span className={styles.livePill}>Preview</span>
               </div>
@@ -298,23 +390,45 @@ function Dashboard() {
               <div className={styles.scoreBlock}>
                 <div>
                   <span>Fraud score</span>
-                  <strong>92%</strong>
+                  <strong>
+                    {selectedTransaction
+                      ? `${selectedTransaction.score}%`
+                      : "-"}
+                  </strong>
                 </div>
-                <div className={styles.scoreRing}>92</div>
+                <div className={styles.scoreRing}>
+                  {selectedTransaction ? selectedTransaction.score : "-"}
+                </div>
               </div>
 
               <dl className={styles.detailList}>
                 <div>
-                  <dt>Signal</dt>
-                  <dd>Velocity spike and country mismatch</dd>
+                  <dt>Category</dt>
+                  <dd>{selectedTransaction?.signal || "-"}</dd>
                 </div>
+
                 <div>
-                  <dt>Payment method</dt>
-                  <dd>Corporate virtual card</dd>
+                  <dt>Amount</dt>
+                  <dd>
+                    {selectedTransaction
+                      ? `€${selectedTransaction.amount}`
+                      : "-"}
+                  </dd>
                 </div>
+
                 <div>
-                  <dt>Model reason</dt>
-                  <dd>Amount anomaly, VPN usage, new device</dd>
+                  <dt>User</dt>
+                  <dd>{selectedTransaction?.userId || "-"}</dd>
+                </div>
+
+                <div>
+                  <dt>Country</dt>
+                  <dd>{selectedTransaction?.country || "-"}</dd>
+                </div>
+
+                <div>
+                  <dt>Status</dt>
+                  <dd>{selectedTransaction?.status || "-"}</dd>
                 </div>
               </dl>
 
