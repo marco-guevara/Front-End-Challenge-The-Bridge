@@ -18,6 +18,8 @@ import {
   formatHour,
   getTransactionScore,
 } from "../../utils/formatters";
+import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
+import PageNavigation from "../PageNavigation/PageNavigation";
 import styles from "./TransactionDetail.module.css";
 
 function normalizeTransaction(data) {
@@ -166,7 +168,10 @@ function TransactionDetail() {
   if (loading) {
     return (
       <main className={styles.page}>
-        <p className={styles.loading}>Cargando transacción...</p>
+        <PageNavigation />
+        <p className={styles.loading}>
+          <LoadingSpinner label="Cargando transacción..." />
+        </p>
       </main>
     );
   }
@@ -174,6 +179,7 @@ function TransactionDetail() {
   if (error || !transaction) {
     return (
       <main className={styles.page}>
+        <PageNavigation />
         <nav className={styles.breadcrumb}>
           <Link to="/transactions">Transacciones</Link>
           <span>/</span>
@@ -205,6 +211,8 @@ function TransactionDetail() {
 
   return (
     <main className={styles.page}>
+      <PageNavigation />
+
       <nav className={styles.breadcrumb}>
         <Link to="/transactions">Transacciones</Link>
         <span>/</span>

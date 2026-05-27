@@ -4,6 +4,8 @@ import { Search, UserRound } from "lucide-react";
 
 import { getClients } from "../../services/api";
 import styles from "./Clients.module.css";
+import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
+import PageNavigation from "../PageNavigation/PageNavigation";
 
 function getClientId(client) {
   return client.Clienteid || client.id_usuario || client.id || client.userId;
@@ -72,6 +74,8 @@ function Clients() {
 
   return (
     <main className={styles.page}>
+      <PageNavigation />
+
       <header className={styles.header}>
         <div>
           <span className={styles.eyebrow}>Inteligencia de clientes</span>
@@ -131,7 +135,9 @@ function Clients() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="5">Cargando...</td>
+                  <td colSpan="5">
+                    <LoadingSpinner label="Cargando clientes..." />
+                  </td>
                 </tr>
               ) : filteredClients.length === 0 ? (
                 <tr>

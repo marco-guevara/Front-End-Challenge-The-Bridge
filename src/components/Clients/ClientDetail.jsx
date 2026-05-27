@@ -14,6 +14,8 @@ import {
   formatDateTime,
 } from "../../utils/formatters";
 import styles from "./Clients.module.css";
+import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
+import PageNavigation from "../PageNavigation/PageNavigation";
 
 function getClientName(client) {
   return `${client?.nombre || client?.name || "Sin nombre"} ${client?.apellido || ""}`.trim();
@@ -125,7 +127,10 @@ function ClientDetail() {
   if (loading) {
     return (
       <main className={styles.page}>
-        <p className={styles.loading}>Cargando cliente...</p>
+        <PageNavigation />
+        <p className={styles.loading}>
+          <LoadingSpinner label="Cargando cliente..." />
+        </p>
       </main>
     );
   }
@@ -133,6 +138,7 @@ function ClientDetail() {
   if (error && !client) {
     return (
       <main className={styles.page}>
+        <PageNavigation />
         <Link className={styles.backLink} to="/clients">
           Volver a clientes
         </Link>
@@ -143,6 +149,8 @@ function ClientDetail() {
 
   return (
     <main className={styles.page}>
+      <PageNavigation />
+
       <Link className={styles.backLink} to="/clients">
         Volver a clientes
       </Link>

@@ -24,6 +24,7 @@ import {
   formatHour,
   getTransactionScore,
 } from "../../utils/formatters";
+import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
 
 const navigationItems = [
   { label: "Panel", icon: LayoutDashboard, path: "/dashboard" },
@@ -153,7 +154,7 @@ function Transactions() {
       text: "¿Seguro que quieres cerrar la sesión?",
       confirmButtonText: "Cerrar sesión",
       icon: "question",
-      confirmButtonColor: "#0dd1e7",
+      confirmButtonColor: "#7c3aed",
     });
 
     if (!isConfirmed) return;
@@ -237,7 +238,12 @@ function Transactions() {
     <div className={styles.dashboard}>
       <aside className={styles.sidebar}>
         <div className={styles.brand}>
-          <span className={styles.brandMark}>N</span>
+          <img
+            alt=""
+            aria-hidden="true"
+            className={styles.brandMark}
+            src="/novapay-icon.png"
+          />
           <div>
             <h1>NovaPay</h1>
             <span>Gestor de transacciones</span>
@@ -348,7 +354,9 @@ function Transactions() {
                   <tbody>
                     {isLoading && (
                       <tr>
-                        <td colSpan="6">Cargando transacciones...</td>
+                        <td colSpan="6">
+                          <LoadingSpinner label="Cargando transacciones..." />
+                        </td>
                       </tr>
                     )}
 
@@ -453,7 +461,14 @@ function Transactions() {
                       : "-"}
                   </strong>
                 </div>
-                <div className={styles.scoreRing}>
+                <div
+                  className={styles.scoreRing}
+                  style={{
+                    "--score": selectedTransaction
+                      ? `${selectedTransaction.score}%`
+                      : "0%",
+                  }}
+                >
                   {selectedTransaction ? selectedTransaction.score : "-"}
                 </div>
               </div>

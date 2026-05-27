@@ -1,18 +1,18 @@
 .dashboard {
   display: flex;
   min-height: 100vh;
-  background: #080d1a;
-  color: #dbe7f0;
+  background: var(--color-background);
+  color: var(--color-text);
 }
 
 .sidebar {
   position: fixed;
   inset: 0 auto 0 0;
   display: flex;
-  width: 16rem;
+  width: var(--sidebar-width);
   flex-direction: column;
-  border-right: 1px solid rgb(226 232 240 / 8%);
-  background: #111827;
+  border-right: 1px solid var(--color-border);
+  background: linear-gradient(180deg, var(--color-surface-strong), var(--color-background));
   padding: 1.4rem 0.9rem;
 }
 
@@ -24,26 +24,22 @@
 }
 
 .brandMark {
-  display: grid;
+  display: block;
   width: 2.45rem;
   height: 2.45rem;
-  place-items: center;
-  border: 1px solid rgb(103 232 249 / 28%);
-  border-radius: 0.75rem;
-  background: #123b4d;
-  color: #67e8f9;
-  font-weight: 900;
-  box-shadow: 0 0 26px rgb(0 221 235 / 12%);
+  border-radius: 0;
+  filter: drop-shadow(0 0 14px rgb(124 58 237 / 35%));
+  object-fit: contain;
 }
 
 .brand h1 {
   margin: 0;
-  color: #ecfeff;
+  color: var(--color-text);
   font-size: 1.25rem;
 }
 
 .brand span:not(.brandMark) {
-  color: #748094;
+  color: var(--color-text-soft);
   font-size: 0.64rem;
   font-weight: 800;
   letter-spacing: 0;
@@ -63,7 +59,7 @@
   gap: 0.8rem;
   border: 0;
   background: transparent;
-  color: #aeb9c9;
+  color: var(--color-text-muted);
   cursor: pointer;
   font-weight: 700;
   padding: 0.85rem 0.95rem;
@@ -73,14 +69,14 @@
 .navItem svg,
 .activeNav svg {
   flex-shrink: 0;
-  color: #67e8f9;
+  color: var(--color-primary-soft);
 }
 
 .activeNav {
-  border: 1px solid rgb(103 232 249 / 38%);
+  border: 1px solid var(--color-border-strong);
   border-radius: 0.75rem;
-  background: rgb(18 59 77 / 80%);
-  color: #ecfeff;
+  background: rgb(124 58 237 / 14%);
+  color: var(--color-text);
 }
 
 .sidebarBottom {
@@ -94,41 +90,41 @@
   grid-template-columns: auto 1fr;
   align-items: center;
   gap: 0.2rem 0.65rem;
-  border: 1px solid rgb(226 232 240 / 8%);
+  border: 1px solid var(--color-border);
   border-radius: 0.8rem;
-  background: #0b1222;
+  background: var(--color-background);
   padding: 0.9rem;
 }
 
 .analystCard svg {
   grid-row: span 2;
-  color: #67e8f9;
+  color: var(--color-primary-soft);
 }
 
 .analystCard strong {
-  color: #ecfeff;
+  color: var(--color-text);
   font-size: 0.9rem;
 }
 
 .analystCard span {
-  color: #7f8ba0;
+  color: var(--color-text-soft);
   font-size: 0.72rem;
   font-weight: 700;
 }
 
 .logout {
   justify-content: center;
-  border: 1px solid rgb(226 232 240 / 10%);
+  border: 1px solid var(--color-border);
   border-radius: 0.75rem;
 }
 
 .logout svg {
-  color: #67e8f9;
+  color: var(--color-primary-soft);
 }
 
 .main {
   width: 100%;
-  margin-left: 16rem;
+  margin-left: var(--sidebar-width);
 }
 
 .content {
@@ -139,15 +135,15 @@
 
 .cardHeader p,
 .statCard p {
-  color: #9fb1c3;
+  color: var(--color-text-muted);
 }
 
 .detailActions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.7rem;
-  border-top: 1px solid #1b2434;
-  padding: 1.1rem 1.35rem 1.25rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+  border-top: 1px solid var(--color-border);
+  padding: 0.85rem 1.15rem 1rem;
 }
 
 button,
@@ -162,12 +158,13 @@ input {
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
-  border: 1px solid #354156;
+  border: 1px solid var(--color-border);
   border-radius: 0.65rem;
-  background: #111a2d;
-  color: #d8fbff;
+  background: var(--color-surface);
+  color: var(--color-text);
   cursor: pointer;
-  padding: 0.7rem 1rem;
+  min-height: 2.35rem;
+  padding: 0.62rem 0.85rem;
   font-size: 0.75rem;
   font-weight: 900;
 }
@@ -186,9 +183,10 @@ input {
 .statCard,
 .ledger,
 .reviewPanel {
-  border: 1px solid #1d2638;
+  border: 1px solid var(--color-border);
   border-radius: 0.9rem;
-  background: #111725;
+  background: var(--color-surface-strong);
+  box-shadow: var(--shadow-card);
 }
 
 .statCard {
@@ -200,12 +198,12 @@ input {
 }
 
 .dangerCard {
-  border-color: #4a2633;
-  background: #15101e;
+  border-color: rgb(255 107 122 / 22%);
+  background: rgb(255 107 122 / 7%);
 }
 
 .statLabel {
-  color: #a6b1c0;
+  color: var(--color-text-muted);
   font-size: 0.78rem;
   font-weight: 900;
   letter-spacing: 0;
@@ -224,8 +222,8 @@ input {
   height: 2.8rem;
   place-items: center;
   border-radius: 0.7rem;
-  background: #243143;
-  color: #cdfaff;
+  background: var(--color-surface-soft);
+  color: var(--color-primary-soft);
   font-size: 1.2rem;
 }
 
@@ -240,19 +238,19 @@ input {
 }
 
 .cyan {
-  color: #00ddeb;
+  color: var(--color-primary-soft);
 }
 
 .green {
-  color: #d9ff8c;
+  color: var(--color-success);
 }
 
 .red {
-  color: #ffaca2;
+  color: var(--color-danger);
 }
 
 .statCard strong {
-  color: #ecfeff;
+  color: var(--color-text);
   font-size: 2.4rem;
   line-height: 1;
 }
@@ -273,17 +271,27 @@ input {
   overflow: hidden;
 }
 
+.ledger {
+  display: flex;
+  min-height: 28rem;
+  flex-direction: column;
+}
+
+.reviewPanel {
+  align-self: start;
+}
+
 .cardHeader {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1.2rem 1.35rem;
+  padding: 1rem 1.15rem 0.85rem;
 }
 
 .cardHeader h3 {
   margin: 0;
-  color: #ecfeff;
+  color: var(--color-text);
   font-size: 1.05rem;
 }
 
@@ -293,6 +301,7 @@ input {
 }
 
 .tableWrap {
+  flex: 1;
   overflow-x: auto;
 }
 
@@ -301,15 +310,16 @@ input {
   align-items: center;
   justify-content: flex-end;
   gap: 0.75rem;
-  border-top: 1px solid #1b2434;
+  margin-top: auto;
+  border-top: 1px solid var(--color-border);
   padding: 1rem 1.35rem;
 }
 
 .pagination button {
-  border: 1px solid #354156;
+  border: 1px solid var(--color-border);
   border-radius: 0.65rem;
-  background: #111a2d;
-  color: #d8fbff;
+  background: var(--color-surface);
+  color: var(--color-text);
   cursor: pointer;
   padding: 0.65rem 1rem;
   font-size: 0.75rem;
@@ -317,7 +327,7 @@ input {
 }
 
 .pagination span {
-  color: #8fa0b6;
+  color: var(--color-text-muted);
   font-size: 0.78rem;
   font-weight: 800;
 }
@@ -330,20 +340,20 @@ table {
 
 th,
 td {
-  border-top: 1px solid #1b2434;
+  border-top: 1px solid var(--color-border);
   padding: 0.9rem 1.1rem;
   text-align: left;
 }
 
 th {
-  color: #69758a;
+  color: var(--color-text-soft);
   font-size: 0.68rem;
   letter-spacing: 0;
   text-transform: uppercase;
 }
 
 td {
-  color: #c8d2df;
+  color: var(--color-text-muted);
   font-size: 0.82rem;
   font-weight: 700;
 }
@@ -355,7 +365,7 @@ td span {
 
 td span {
   margin-top: 0.2rem;
-  color: #7f8ba0;
+  color: var(--color-text-soft);
   font-size: 0.72rem;
 }
 
@@ -364,7 +374,7 @@ tbody tr:hover {
 }
 
 .amount {
-  color: #ecfeff;
+  color: var(--color-text);
   font-family: Consolas, monospace;
 }
 
@@ -378,32 +388,41 @@ tbody tr:hover {
 }
 
 .badge {
-  background: #253141;
-  color: #d9ff8c;
+  background: var(--color-success-soft);
+  color: var(--color-success);
   padding: 0.3rem 0.7rem;
 }
 
 .redBadge {
-  background: rgb(248 113 113 / 12%);
-  color: #ffaca2;
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
 }
 
 .livePill {
-  border: 1px solid rgb(103 232 249 / 25%);
-  color: #67e8f9;
-  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-primary-soft);
+  min-height: 1.9rem;
+  justify-content: center;
+  line-height: 1;
+  padding: 0.35rem 0.75rem;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .scoreBlock {
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
-  gap: 1rem;
-  padding: 0 1.35rem 1rem;
+  gap: 0.85rem;
+  margin: 0 1.15rem 0.85rem;
+  border: 1px solid rgb(192 132 252 / 12%);
+  border-radius: var(--radius-card);
+  background: rgb(124 58 237 / 6%);
+  padding: 0.85rem;
 }
 
 .scoreBlock span {
-  color: #8fa0b6;
+  color: var(--color-text-muted);
   font-size: 0.72rem;
   font-weight: 900;
   text-transform: uppercase;
@@ -412,36 +431,41 @@ tbody tr:hover {
 .scoreBlock strong {
   display: block;
   margin-top: 0.25rem;
-  color: #ffaca2;
-  font-size: 2.35rem;
+  color: var(--color-danger);
+  font-size: 1.95rem;
+  line-height: 1;
 }
 
 .scoreRing {
+  --score: 0%;
+
   display: grid;
-  width: 5rem;
-  height: 5rem;
+  width: 4.6rem;
+  height: 4.6rem;
   place-items: center;
-  border: 8px solid #f87171;
-  border-left-color: #263246;
   border-radius: 999px;
-  color: #ecfeff;
+  background:
+    radial-gradient(circle at center, var(--color-surface-strong) 56%, transparent 57%),
+    conic-gradient(var(--color-danger) var(--score), var(--color-surface-soft) 0);
+  color: var(--color-text);
   font-weight: 900;
+  transition: background 180ms ease;
 }
 
 .detailList {
   display: grid;
-  gap: 0.7rem;
+  gap: 0.55rem;
   margin: 0;
-  padding: 0 1.35rem 1.1rem;
+  padding: 0 1.15rem 0.95rem;
 }
 
 .detailList div {
-  border-top: 1px solid #1b2434;
-  padding-top: 0.7rem;
+  border-top: 1px solid var(--color-border);
+  padding-top: 0.6rem;
 }
 
 .detailList dt {
-  color: #7f8ba0;
+  color: var(--color-text-soft);
   font-size: 0.72rem;
   font-weight: 900;
   text-transform: uppercase;
@@ -449,13 +473,15 @@ tbody tr:hover {
 
 .detailList dd {
   margin: 0.25rem 0 0;
-  color: #dbe7f0;
-  font-size: 0.88rem;
+  color: var(--color-text);
+  font-size: 0.82rem;
   font-weight: 700;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .selectedRow {
-  background: rgba(34, 211, 238, 0.08);
+  background: rgb(124 58 237 / 12%);
 }
 
 .ledger tbody tr {
@@ -468,10 +494,10 @@ tbody tr:hover {
 
 .errorMessage {
   margin: 0;
-  border: 1px solid rgb(248 113 113 / 30%);
+  border: 1px solid rgb(255 107 122 / 30%);
   border-radius: 0.75rem;
-  background: rgb(248 113 113 / 10%);
-  color: #fecaca;
+  background: var(--color-danger-soft);
+  color: var(--color-text);
   padding: 0.85rem 1rem;
   font-size: 0.85rem;
   font-weight: 800;
@@ -500,10 +526,35 @@ tbody tr:hover {
   .sidebar {
     position: static;
     width: 100%;
+    border-right: 0;
+    border-bottom: 1px solid var(--color-border);
+    padding: 0.85rem;
+  }
+
+  .brand {
+    justify-content: center;
+    padding: 0.1rem 0 0.85rem;
   }
 
   .nav {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem;
+  }
+
+  .navItem,
+  .activeNav,
+  .logout {
+    justify-content: center;
+    padding: 0.72rem 0.6rem;
+    font-size: 0.8rem;
+  }
+
+  .sidebarBottom {
+    margin-top: 0.75rem;
+  }
+
+  .analystCard {
+    display: none;
   }
 
   .main {
@@ -511,15 +562,138 @@ tbody tr:hover {
   }
 
   .content {
-    padding: 1rem;
+    gap: 0.9rem;
+    padding: 0.85rem;
   }
 
   .statsGrid {
     grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .statCard {
+    min-height: auto;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+
+  .statCard strong {
+    font-size: 1.9rem;
+  }
+
+  .workspaceGrid {
+    gap: 0.85rem;
+  }
+
+  .ledger {
+    min-height: auto;
+  }
+
+  .cardHeader {
+    padding: 0.9rem;
+  }
+
+  .cardHeader h3 {
+    font-size: 0.95rem;
+  }
+
+  .tableWrap {
+    overflow: visible;
+    padding: 0 0.75rem 0.75rem;
+  }
+
+  table,
+  thead,
+  tbody,
+  tr,
+  td {
+    display: block;
+    min-width: 0;
+    width: 100%;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tbody {
+    display: grid;
+    gap: 0.7rem;
+  }
+
+  tbody tr {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: rgb(26 31 46 / 62%);
+    padding: 0.8rem;
+  }
+
+  td {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    border-top: 0;
+    padding: 0.25rem 0;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+
+  td::before {
+    flex-shrink: 0;
+    color: var(--color-text-soft);
+    content: "";
+    font-size: 0.68rem;
+    font-weight: 900;
+    text-align: left;
+    text-transform: uppercase;
+  }
+
+  td:nth-child(1)::before {
+    content: "ID";
+  }
+
+  td:nth-child(2)::before {
+    content: "Hora";
+  }
+
+  td:nth-child(3)::before {
+    content: "Cliente";
+  }
+
+  td:nth-child(4)::before {
+    content: "Importe";
+  }
+
+  td:nth-child(5)::before {
+    content: "Puntuación";
+  }
+
+  td[colspan] {
+    display: block;
+    text-align: center;
+  }
+
+  td[colspan]::before {
+    content: none;
   }
 
   .pagination {
+    flex-wrap: wrap;
     justify-content: center;
+    padding: 0.8rem;
+  }
+
+  .scoreBlock {
+    margin: 0 0.9rem 0.75rem;
+  }
+
+  .detailList {
+    padding-inline: 0.9rem;
+  }
+
+  .detailActions {
+    padding: 0.8rem 0.9rem 0.9rem;
   }
 }
 

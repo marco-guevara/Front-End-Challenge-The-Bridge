@@ -1,3 +1,5 @@
+import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
+
 import styles from "./AuthShell.module.css";
 
 function BoltMark({ compact = false }) {
@@ -6,20 +8,11 @@ function BoltMark({ compact = false }) {
       aria-hidden="true"
       className={`${styles.boltMark} ${compact ? styles.boltMarkCompact : ""}`}
     >
-      <svg
+      <img
+        alt=""
         className={compact ? styles.boltIconCompact : ""}
-        fill="none"
-        height="25"
-        viewBox="0 0 24 24"
-        width="25"
-      >
-        <path
-          d="M13.4 2.75 5.9 13.3h5.35l-.7 7.95 7.55-11.1h-5.25l.55-7.4Z"
-          stroke="currentColor"
-          strokeLinejoin="round"
-          strokeWidth="2.1"
-        />
-      </svg>
+        src="/novapay-icon.png"
+      />
     </span>
   );
 }
@@ -56,7 +49,9 @@ function StatusMessage({ kind, children }) {
 function LoadingSession() {
   return (
     <AuthShell>
-      <StatusMessage kind="success">Cargando sesión...</StatusMessage>
+      <StatusMessage kind="success">
+        <LoadingSpinner label="Cargando sesión..." />
+      </StatusMessage>
     </AuthShell>
   );
 }

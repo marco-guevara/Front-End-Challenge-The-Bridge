@@ -1,3 +1,33 @@
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap");
+
+:root {
+  --color-primary: #7c3aed;
+  --color-primary-light: #a855f7;
+  --color-primary-soft: #c084fc;
+  --color-background: #0b1020;
+  --color-surface: #1a1f2e;
+  --color-surface-strong: #111725;
+  --color-surface-soft: #22283a;
+  --color-border: rgb(192 132 252 / 16%);
+  --color-border-strong: rgb(168 85 247 / 32%);
+  --color-text: #f8fafc;
+  --color-text-muted: #aab3c5;
+  --color-text-soft: #7d879c;
+  --color-success: #7dd3a8;
+  --color-success-soft: rgb(125 211 168 / 12%);
+  --color-warning: #f8c96a;
+  --color-warning-soft: rgb(248 201 106 / 12%);
+  --color-danger: #ff6b7a;
+  --color-danger-soft: rgb(255 107 122 / 12%);
+  --color-info: #8bb7ff;
+  --color-info-soft: rgb(139 183 255 / 12%);
+  --shadow-card: 0 18px 54px rgb(0 0 0 / 24%);
+  --shadow-glow: 0 0 40px rgb(124 58 237 / 18%);
+  --radius-card: 0.75rem;
+  --radius-control: 0.65rem;
+  --sidebar-width: 16rem;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -5,16 +35,20 @@
 body {
   margin: 0;
   min-width: 320px;
-  background: #090f1f;
-  color: #dbe7f0;
+  background:
+    radial-gradient(circle at top left, rgb(124 58 237 / 12%), transparent 30rem),
+    var(--color-background);
+  color: var(--color-text);
   font-family:
-    Inter,
+    Sora,
     ui-sans-serif,
     system-ui,
     -apple-system,
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 #root {
@@ -38,4 +72,31 @@ select {
 
 a {
   text-decoration: none;
+}
+
+::selection {
+  background: rgb(168 85 247 / 35%);
+  color: var(--color-text);
+}
+
+button {
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    color 180ms ease,
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+button:not(:disabled):hover,
+a:hover {
+  transform: translateY(-1px);
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--color-primary-soft);
+  outline-offset: 2px;
 }
