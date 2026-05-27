@@ -69,6 +69,7 @@ function Dashboard() {
           country: transaction.pais_pago,
           score: Math.round(Number(transaction.f_score) * 100), // "0.87" => 87
           fraudReason: transaction.shap_reasons?.razones_fraude,
+          legitReason: transaction.shap_reasons?.razones_legitima,
         }));
 
         setTransactions(mappedTransactions);
@@ -344,6 +345,14 @@ function Dashboard() {
                   <dd>
                     {selectedTransaction?.fraudReason?.length > 0
                       ? selectedTransaction.fraudReason.join(", ")
+                      : "-"}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Legitimate Reason</dt>
+                  <dd>
+                    {selectedTransaction?.legitReason?.length > 0
+                      ? selectedTransaction.legitReason.join(", ")
                       : "-"}
                   </dd>
                 </div>
