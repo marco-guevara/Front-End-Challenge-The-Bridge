@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import Swal from "sweetalert2";
+import "sweetalert2/dist/sweetalert2.min.css";
 import {
   CheckCircle2,
   CalendarClock,
@@ -96,6 +98,23 @@ function displayBoolean(value) {
   return value ? "Yes" : "No";
 }
 
+async function confirmDecision({ title, text, confirmButtonText, icon }) {
+  const result = await Swal.fire({
+    title,
+    text,
+    icon,
+    showCancelButton: true,
+    confirmButtonText,
+    cancelButtonText: "Cancel",
+    confirmButtonColor: icon === "warning" ? "#ef4444" : "#16a34a",
+    cancelButtonColor: "#64748b",
+    background: "#111725",
+    color: "#ecfeff",
+  });
+
+  return result.isConfirmed;
+}
+
 function TransactionDetail() {
   const { id } = useParams();
   const [transaction, setTransaction] = useState(null);
@@ -124,7 +143,16 @@ function TransactionDetail() {
     };
   }, [id]);
 
-  const saveDecision = async (payload, message, loadingKey, localPatch = payload) => {
+  const saveDecision = async ({
+    payload,
+    message,
+    loadingKey,
+    localPatch = payload,
+    confirmOptions,
+  }) => {
+    const isConfirmed = await confirmDecision(confirmOptions);
+    if (!isConfirmed) return;
+
     try {
       setDecisionLoading(loadingKey);
       setDecisionError("");
@@ -146,8 +174,26 @@ function TransactionDetail() {
         };
       });
       setDecisionMessage(message);
+      await Swal.fire({
+        title: "Decision saved",
+        text: message,
+        icon: "success",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#0dd1e7",
+        background: "#111725",
+        color: "#ecfeff",
+      });
     } catch (err) {
       setDecisionError(err.message);
+      await Swal.fire({
+        title: "Decision not saved",
+        text: err.message,
+        icon: "error",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#ef4444",
+        background: "#111725",
+        color: "#ecfeff",
+      });
     } finally {
       setDecisionLoading("");
     }
@@ -186,6 +232,8 @@ function TransactionDetail() {
     structuredExplainability?.resumen ||
     structuredExplainability?.summary ||
     "";
+  const isReviewed = transaction.revisado === "Revisado";
+  const isDecisionDisabled = Boolean(decisionLoading) || isReviewed;
 
   return (
     <main className={styles.page}>
@@ -217,45 +265,73 @@ function TransactionDetail() {
       <section className={styles.actionBar}>
         <button
           className={styles.approveButton}
-          disabled={Boolean(decisionLoading)}
+          disabled={isDecisionDisabled}
           onClick={() =>
-            saveDecision(
-              { es_fraude: false, revisado: "Revisado", auditor_fraude: false },
-              "Transaction approved",
-              "approve",
-              {
+            saveDecision({
+              payload: {
+                es_fraude: false,
+                revisado: "Revisado",
+                auditor_fraude: false,
+              },
+              message: "Transaction approved",
+              loadingKey: "approve",
+              localPatch: {
                 es_fraude: false,
                 revisar: false,
                 revisado: "Revisado",
                 auditor_fraude: false,
               },
-            )
+              confirmOptions: {
+                title: "Approve transaction?",
+                text: "This will mark the transaction as reviewed and not fraudulent. This action can only be changed through technical support.",
+                confirmButtonText: "Approve",
+                icon: "question",
+              },
+            })
           }
           type="button"
         >
           <CheckCircle2 aria-hidden="true" size={16} />
-          {decisionLoading === "approve" ? "Approving..." : "Approve Transaction"}
+          {isReviewed
+            ? "Decision Saved"
+            : decisionLoading === "approve"
+              ? "Approving..."
+              : "Approve Transaction"}
         </button>
         <button
           className={styles.rejectButton}
-          disabled={Boolean(decisionLoading)}
+          disabled={isDecisionDisabled}
           onClick={() =>
-            saveDecision(
-              { es_fraude: true, revisado: "Revisado", auditor_fraude: true },
-              "Transaction marked as fraud",
-              "fraud",
-              {
+            saveDecision({
+              payload: {
+                es_fraude: true,
+                revisado: "Revisado",
+                auditor_fraude: true,
+              },
+              message: "Transaction marked as fraud",
+              loadingKey: "fraud",
+              localPatch: {
                 es_fraude: true,
                 revisar: false,
                 revisado: "Revisado",
                 auditor_fraude: true,
               },
-            )
+              confirmOptions: {
+                title: "Mark as fraud?",
+                text: "This will mark the transaction as reviewed and fraudulent. This action can only be changed through technical support.",
+                confirmButtonText: "Mark Fraud",
+                icon: "warning",
+              },
+            })
           }
           type="button"
         >
           <XCircle aria-hidden="true" size={16} />
-          {decisionLoading === "fraud" ? "Saving..." : "Mark as Fraud"}
+          {isReviewed
+            ? "Decision Saved"
+            : decisionLoading === "fraud"
+              ? "Saving..."
+              : "Mark as Fraud"}
         </button>
         <Link className={styles.clientButton} to={`/clients/${transaction.id_usuario}`}>
           <UserRound aria-hidden="true" size={16} />
