@@ -167,8 +167,12 @@ function Transactions() {
 
     if (!isConfirmed) return;
 
-    await logout();
-    navigate("/login");
+    try {
+      await logout();
+      navigate("/login");
+    } catch (err) {
+      await showError("No se pudo cerrar la sesión", err.message);
+    }
   };
 
   const handleReviewTransaction = async (reviewStatus) => {

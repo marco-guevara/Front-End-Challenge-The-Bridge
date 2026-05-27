@@ -16,7 +16,7 @@ import {
 import styles from "./Dashboard.module.css";
 import useAuth from "../../context/useAuth";
 import { api } from "../../services/api";
-import { confirmAction } from "../../utils/alerts";
+import { confirmAction, showError } from "../../utils/alerts";
 
 const navigationItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
@@ -159,8 +159,12 @@ function Dashboard() {
 
     if (!isConfirmed) return;
 
-    await logout();
-    navigate("/login");
+    try {
+      await logout();
+      navigate("/login");
+    } catch (err) {
+      await showError("No se pudo cerrar la sesión", err.message);
+    }
   };
 
   return (
