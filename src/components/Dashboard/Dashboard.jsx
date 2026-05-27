@@ -2,20 +2,15 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   AlertTriangle,
-  CheckCircle2,
   CircleDot,
   Gauge,
   LayoutDashboard,
   ListChecks,
   LogOut,
-  Search,
-  ShieldAlert,
-  SlidersHorizontal,
   Triangle,
   User,
   UserCircle,
   Users,
-  XCircle,
 } from "lucide-react";
 
 import styles from "./Dashboard.module.css";
@@ -31,18 +26,18 @@ const navigationItems = [
 function Dashboard() {
   const [transactions, setTransactions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [transactionsError, setTransactionsError] = useState("");
+  const [statsError, setStatsError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [dashboardStats, setDashboardStats] = useState(null);
 
-  const { user, logout, loading } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const analyst = {
     name: user?.name || user?.email || "Analyst",
     role: user?.role || "Analyst",
-    // role: "Admin"
   };
 
   useEffect(() => {
@@ -51,7 +46,7 @@ function Dashboard() {
         const response = await api.get("/trans/stats/dashboard");
         setDashboardStats(response.data);
       } catch (err) {
-        setError("No se pudieron cargar las estadísticas del dashboard");
+        setStatsError("No se pudieron cargar las estadísticas del dashboard");
         console.log("ERROR STATS:", err.message);
       }
     };
@@ -61,6 +56,7 @@ function Dashboard() {
         const response = await api.get("/trans", {
           params: {
             limite: 100,
+            revisado: "Pendiente",
           },
         });
 
@@ -72,13 +68,13 @@ function Dashboard() {
           amount: Number(transaction.importe).toFixed(2), // "17.49" => 17.49 || "17" => 17.00
           country: transaction.pais_pago,
           score: Math.round(Number(transaction.f_score) * 100), // "0.87" => 87
-          status: transaction.revisado,
-          signal: transaction.categoria,
+          fraudReason: transaction.shap_reasons?.razones_fraude,
+          legitReason: transaction.shap_reasons?.razones_legitima,
         }));
 
         setTransactions(mappedTransactions);
       } catch (err) {
-        setError("No se pudieron cargar las transacciones");
+        setTransactionsError("No se pudieron cargar las transacciones");
         console.log("ERROR:", err.message);
       } finally {
         setIsLoading(false);
@@ -88,40 +84,8 @@ function Dashboard() {
     getDashboardStats();
     getTransactions();
   }, []);
-  console.log(transactions);
-
-  // Filtramos transacciones por rol de analista
-  const visibleTransactions = transactions.filter((transaction) => {
-    if (analyst.role === "Admin") {
-      return transaction.score < 70;
-    }
-
-    if (analyst.role === "Analyst") {
-      return transaction.score >= 70;
-    }
-
-    return false;
-  });
 
   // ESTADÍSTICAS
-  const lowMediumRisk = transactions.filter(
-    (transaction) => transaction.score < 70,
-  ).length;
-
-  const highRisk = transactions.filter(
-    (transaction) => transaction.score >= 70,
-  ).length;
-
-  const averageFraudScore =
-    visibleTransactions.length > 0
-      ? Math.round(
-          visibleTransactions.reduce(
-            (total, transaction) => total + transaction.score,
-            0,
-          ) / visibleTransactions.length,
-        )
-      : 0;
-
   const stats = [
     {
       icon: CircleDot,
@@ -151,21 +115,13 @@ function Dashboard() {
     },
   ];
 
-  // TABLA DE TRANSACCIONES
-  // Ordenamos transacciones por score (riesgo) de mayor a menor
-  const prioritizedTransactions = [...visibleTransactions].sort((a, b) => {
-    return b.score - a.score;
-  });
-
   // Transacciones por página
   const transactionsPerPage = 5;
 
   // PAGINADO DE TRANSACCIONES
   // Calculamos el total de páginas
   // Como necesitamos páginas completas, Math.ceil() redondea hacia arriba.
-  const totalPages = Math.ceil(
-    prioritizedTransactions.length / transactionsPerPage,
-  );
+  const totalPages = Math.ceil(transactions.length / transactionsPerPage);
 
   // Calculamos desde qué posición del array empieza la página actual
   const startIndex = (currentPage - 1) * transactionsPerPage;
@@ -174,10 +130,7 @@ function Dashboard() {
   const endIndex = startIndex + transactionsPerPage;
 
   // Hacemos el corte real del array
-  const paginatedTransactions = prioritizedTransactions.slice(
-    startIndex,
-    endIndex,
-  );
+  const paginatedTransactions = transactions.slice(startIndex, endIndex);
 
   // Si estás en una página que ya no existe, volver a página 1
   useEffect(() => {
@@ -248,39 +201,41 @@ function Dashboard() {
 
       <main className={styles.main}>
         <section className={styles.content}>
-          <section className={styles.statsGrid}>
-            {stats.map((stat) => (
-              <article
-                className={`${styles.statCard} ${stat.danger ? styles.dangerCard : ""}`}
-                key={stat.label}
-              >
-                <div className={styles.statTop}>
-                  <span className={styles.statIcon}>
-                    <stat.icon aria-hidden="true" size={22} />
-                  </span>
-                  <span
-                    className={
-                      stat.success
-                        ? styles.green
-                        : stat.danger
-                          ? styles.red
-                          : styles.cyan
-                    }
-                  >
-                    {stat.detail}
-                  </span>
-                </div>
-                <span className={styles.statLabel}>{stat.label}</span>
-                <strong>{stat.value}</strong>
-              </article>
-            ))}
+          <section className={styles.statsSection}>
+            {statsError && <p className={styles.errorMessage}>{statsError}</p>}
+            <section className={styles.statsGrid}>
+              {stats.map((stat) => (
+                <article
+                  className={`${styles.statCard} ${stat.danger ? styles.dangerCard : ""}`}
+                  key={stat.label}
+                >
+                  <div className={styles.statTop}>
+                    <span className={styles.statIcon}>
+                      <stat.icon aria-hidden="true" size={22} />
+                    </span>
+                    <span
+                      className={
+                        stat.success
+                          ? styles.green
+                          : stat.danger
+                            ? styles.red
+                            : styles.cyan
+                      }
+                    >
+                      {stat.detail}
+                    </span>
+                  </div>
+                  <span className={styles.statLabel}>{stat.label}</span>
+                  <strong>{stat.value}</strong>
+                </article>
+              ))}
+            </section>
           </section>
-
           <section className={styles.workspaceGrid}>
             <article className={styles.ledger}>
               <div className={styles.cardHeader}>
                 <div>
-                  <h3>Last Transactions Review Queue</h3>
+                  <h3>Last 100 Pending Transactions</h3>
                 </div>
               </div>
 
@@ -293,24 +248,22 @@ function Dashboard() {
                       <th>Customer</th>
                       <th>Amount</th>
                       <th>Score</th>
-                      <th>Status</th>
-                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {isLoading && (
                       <tr>
-                        <td colSpan="7">Cargando transacciones...</td>
+                        <td colSpan="5">Cargando transacciones...</td>
                       </tr>
                     )}
 
-                    {error && (
+                    {transactionsError && (
                       <tr>
-                        <td colSpan="7">{error}</td>
+                        <td colSpan="5">{transactionsError}</td>
                       </tr>
                     )}
                     {!isLoading &&
-                      !error &&
+                      !transactionsError &&
                       paginatedTransactions.map((transaction) => (
                         <tr
                           className={
@@ -338,21 +291,6 @@ function Dashboard() {
                             >
                               {transaction.score}%
                             </span>
-                          </td>
-                          <td>{transaction.status}</td>
-                          <td>
-                            <div className={styles.rowActions}>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  navigate(`/clients/${transaction.userId}`);
-                                }}
-                                type="button"
-                              >
-                                <User aria-hidden="true" size={14} />
-                                User
-                              </button>
-                            </div>
                           </td>
                         </tr>
                       ))}
@@ -413,6 +351,23 @@ function Dashboard() {
 
               <dl className={styles.detailList}>
                 <div>
+                  <dt>Fraud Reason</dt>
+                  <dd>
+                    {selectedTransaction?.fraudReason?.length > 0
+                      ? selectedTransaction.fraudReason.join(", ")
+                      : "-"}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Legitimate Reason</dt>
+                  <dd>
+                    {selectedTransaction?.legitReason?.length > 0
+                      ? selectedTransaction.legitReason.join(", ")
+                      : "-"}
+                  </dd>
+                </div>
+
+                {/* <div>
                   <dt>Category</dt>
                   <dd>{selectedTransaction?.signal || "-"}</dd>
                 </div>
@@ -439,11 +394,23 @@ function Dashboard() {
                 <div>
                   <dt>Status</dt>
                   <dd>{selectedTransaction?.status || "-"}</dd>
-                </div>
+                </div> */}
               </dl>
 
-              <div className={styles.decisionButtons}>
-                <button className={styles.approveButton} type="button">
+              <div className={styles.detailActions}>
+                <button
+                  type="button"
+                  disabled={!selectedTransaction}
+                  onClick={() => {
+                    if (!selectedTransaction) return;
+
+                    navigate(`/clients/${selectedTransaction.userId}`);
+                  }}
+                >
+                  <User aria-hidden="true" size={14} />
+                  User
+                </button>
+                {/*<button className={styles.approveButton} type="button">
                   <CheckCircle2 aria-hidden="true" size={16} />
                   Approve
                 </button>
@@ -451,6 +418,7 @@ function Dashboard() {
                   <XCircle aria-hidden="true" size={16} />
                   Mark Fraud
                 </button>
+              */}
               </div>
             </aside>
           </section>
