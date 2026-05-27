@@ -33,6 +33,9 @@ const request = async (callback) => {
 const loginUser = (payload) => request(() => api.post("/auth/login", payload));
 const logoutUser = () => request(() => api.post("/auth/logout"));
 const getActiveUser = () => request(() => api.get("/auth/active-user"));
+const getTransactions = (params = {}) => request(() => api.get("/trans", { params }));
+const getTransactionById = (id) => request(() => api.get(`/trans/${id}`));
+const updateTransaction = (id, payload) => request(() => api.patch(`/trans/${id}`, payload));
 const getClients = (params = {}) => request(() => api.get("/clientes", { params }));
 const getClientById = (id) => request(() => api.get(`/clientes/${id}`));
 const getClientTransactions = (id) => request(() => api.get(`/clientes/${id}/transacciones`));
@@ -43,6 +46,9 @@ export {
   loginUser,
   logoutUser,
   getActiveUser,
+  getTransactions,
+  getTransactionById,
+  updateTransaction,
   getClients,
   getClientById,
   getClientTransactions,
