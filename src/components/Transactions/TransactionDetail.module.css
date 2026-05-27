@@ -67,6 +67,112 @@
   gap: 0.55rem;
 }
 
+.actionBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.actionBar button,
+.actionBar a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.7rem;
+  border-radius: 0.7rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 900;
+  padding-inline: 1.15rem;
+  text-decoration: none;
+}
+
+.approveButton {
+  border: 1px solid rgb(110 231 183 / 30%);
+  background: rgb(110 231 183 / 14%);
+  color: #d1fae5;
+}
+
+.rejectButton {
+  border: 1px solid rgb(248 113 113 / 32%);
+  background: rgb(248 113 113 / 14%);
+  color: #ffe4e6;
+}
+
+.clientButton {
+  border: 1px solid rgb(103 232 249 / 25%);
+  background: rgb(103 232 249 / 10%);
+  color: #cffafe;
+}
+
+.riskGrid {
+  display: grid;
+  grid-template-columns: minmax(18rem, 24rem) 1fr;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.scoreCard {
+  display: grid;
+  justify-items: center;
+  border: 1px solid #1d2638;
+  border-radius: 0.9rem;
+  background: #111725;
+  padding: 1.5rem;
+}
+
+.scoreRing {
+  display: grid;
+  width: 9rem;
+  height: 9rem;
+  place-items: center;
+  border: 0.65rem solid #ef4444;
+  border-left-color: #263246;
+  border-radius: 999px;
+}
+
+.scoreRing span {
+  color: #ecfeff;
+  font-size: 1.9rem;
+  font-weight: 900;
+}
+
+.scoreCard p {
+  margin: 0.75rem 0 1.2rem;
+  color: #9fb1c3;
+  font-weight: 800;
+}
+
+.scoreFacts {
+  display: grid;
+  width: 100%;
+  gap: 0.65rem;
+  margin: 0;
+}
+
+.scoreFacts div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  border-top: 1px solid #1b2434;
+  padding-top: 0.65rem;
+}
+
+.scoreFacts dt {
+  color: #8fa0b6;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.scoreFacts dd {
+  margin: 0;
+  color: #ecfeff;
+  font-weight: 900;
+  text-align: right;
+}
+
 .dangerBadge,
 .successBadge,
 .warningBadge,
@@ -151,6 +257,10 @@
 
   .badges {
     justify-content: flex-start;
+  }
+
+  .riskGrid {
+    grid-template-columns: 1fr;
   }
 
   .summaryGrid {

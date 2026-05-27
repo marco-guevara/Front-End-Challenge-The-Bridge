@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { CalendarClock, CreditCard, ShieldAlert } from "lucide-react";
+import {
+  CheckCircle2,
+  CalendarClock,
+  CreditCard,
+  ShieldAlert,
+  UserRound,
+  XCircle,
+} from "lucide-react";
 
 import { getTransactionById } from "../../services/api";
 import styles from "./TransactionDetail.module.css";
@@ -94,6 +101,49 @@ function TransactionDetail() {
             Auditor: {transaction.analista || "Pending"}
           </span>
         </div>
+      </section>
+
+      <section className={styles.actionBar}>
+        <button className={styles.approveButton} type="button">
+          <CheckCircle2 aria-hidden="true" size={16} />
+          Approve Transaction
+        </button>
+        <button className={styles.rejectButton} type="button">
+          <XCircle aria-hidden="true" size={16} />
+          Mark as Fraud
+        </button>
+        <Link className={styles.clientButton} to={`/clients/${transaction.id_usuario}`}>
+          <UserRound aria-hidden="true" size={16} />
+          View Client
+        </Link>
+      </section>
+
+      <section className={styles.riskGrid}>
+        <article className={styles.scoreCard}>
+          <div className={styles.scoreRing}>
+            <span>{score}%</span>
+          </div>
+          <p>Fraud Score</p>
+
+          <dl className={styles.scoreFacts}>
+            <div>
+              <dt>Is Fraud</dt>
+              <dd>{transaction.es_fraude ? "Yes" : "No"}</dd>
+            </div>
+            <div>
+              <dt>Needs Review</dt>
+              <dd>{transaction.revisar ? "Yes" : "No"}</dd>
+            </div>
+            <div>
+              <dt>Fraud Type</dt>
+              <dd>{transaction.tipo_fraude || "-"}</dd>
+            </div>
+            <div>
+              <dt>Analyst</dt>
+              <dd>{transaction.analista || "-"}</dd>
+            </div>
+          </dl>
+        </article>
       </section>
 
       <section className={styles.summaryGrid}>
