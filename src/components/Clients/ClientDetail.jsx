@@ -141,6 +141,9 @@ function ClientDetail() {
   if (error && !client) {
     return (
       <main className={styles.page}>
+        <Link className={styles.backLink} to="/clients">
+          Back to clients
+        </Link>
         <p className={styles.error}>{error}</p>
       </main>
     );

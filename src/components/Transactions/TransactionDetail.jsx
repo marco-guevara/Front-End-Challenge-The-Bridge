@@ -176,6 +176,11 @@ function TransactionDetail() {
   if (error || !transaction) {
     return (
       <main className={styles.page}>
+        <nav className={styles.breadcrumb}>
+          <Link to="/transactions">Transactions</Link>
+          <span>/</span>
+          <strong>{String(id).slice(0, 12)}...</strong>
+        </nav>
         <p className={styles.error}>{error || "Transaction not found"}</p>
       </main>
     );
