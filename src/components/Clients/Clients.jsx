@@ -87,7 +87,8 @@ function Clients() {
             <Search aria-hidden="true" size={16} />
             <input
               onChange={(event) => updateFilter("q", event.target.value)}
-              placeholder="Client id..."
+              placeholder="Search by id, email or country..."
+              type="search"
               value={filters.q}
             />
           </div>
