@@ -67,6 +67,7 @@ function Transactions() {
     name: user?.name || user?.email || "Analyst",
     role: user?.role || "Analyst",
   };
+  const normalizedRole = analyst.role.toLowerCase();
 
   const loadTransactions = async () => {
     try {
@@ -126,15 +127,15 @@ function Transactions() {
   }, []);
 
   const visibleTransactions = transactions.filter((transaction) => {
-    if (analyst.role === "Analyst") {
+    if (normalizedRole === "analyst") {
       return transaction.score >= 70;
     }
 
-    if (analyst.role === "Admin") {
+    if (normalizedRole === "admin") {
       return transaction.score < 70;
     }
 
-    return false;
+    return true;
   });
 
   const prioritizedTransactions = [...visibleTransactions].sort((a, b) => {
@@ -335,7 +336,7 @@ function Transactions() {
                 <div>
                   <h3>Pending Transactions</h3>
                   <p>
-                    {analyst.role === "Analyst"
+                    {normalizedRole === "analyst"
                       ? "Showing pending transactions with score >= 70"
                       : "Showing pending transactions with score < 70"}
                   </p>
