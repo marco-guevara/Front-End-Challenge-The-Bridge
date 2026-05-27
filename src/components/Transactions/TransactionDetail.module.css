@@ -1,0 +1,159 @@
+.page {
+  min-height: 100vh;
+  background: #080d1a;
+  color: #dbe7f0;
+  padding: 1.5rem;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 1rem;
+  color: #8fa0b6;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.breadcrumb a {
+  color: #67e8f9;
+  text-decoration: none;
+}
+
+.hero,
+.summaryGrid article,
+.loading,
+.error {
+  border: 1px solid #1d2638;
+  border-radius: 0.9rem;
+  background: #111725;
+}
+
+.hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+  padding: 1.35rem 1.5rem;
+}
+
+.eyebrow {
+  color: #00ddeb;
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  margin: 0.25rem 0 0.5rem;
+  color: #ecfeff;
+  font-size: 2rem;
+}
+
+.hero p {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin: 0;
+  color: #9fb1c3;
+  font-weight: 800;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.55rem;
+}
+
+.dangerBadge,
+.successBadge,
+.warningBadge,
+.infoBadge {
+  border-radius: 999px;
+  padding: 0.38rem 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.dangerBadge {
+  background: rgb(248 113 113 / 12%);
+  color: #ffe4e6;
+}
+
+.successBadge {
+  background: rgb(110 231 183 / 10%);
+  color: #d1fae5;
+}
+
+.warningBadge {
+  background: rgb(250 204 21 / 12%);
+  color: #fef3c7;
+}
+
+.infoBadge {
+  background: rgb(103 232 249 / 10%);
+  color: #cffafe;
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.summaryGrid article {
+  display: grid;
+  gap: 0.45rem;
+  padding: 1.15rem;
+}
+
+.summaryGrid svg {
+  color: #67e8f9;
+}
+
+.summaryGrid span {
+  color: #8fa0b6;
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.summaryGrid strong {
+  color: #ecfeff;
+  font-size: 1.6rem;
+}
+
+.loading,
+.error {
+  padding: 0.85rem 1rem;
+}
+
+.loading {
+  color: #9fb1c3;
+}
+
+.error {
+  border-color: rgb(248 113 113 / 24%);
+  background: rgb(248 113 113 / 10%);
+  color: #ffe4e6;
+}
+
+@media (max-width: 760px) {
+  .page {
+    padding: 1rem;
+  }
+
+  .hero {
+    display: grid;
+  }
+
+  .badges {
+    justify-content: flex-start;
+  }
+
+  .summaryGrid {
+    grid-template-columns: 1fr;
+  }
+}
