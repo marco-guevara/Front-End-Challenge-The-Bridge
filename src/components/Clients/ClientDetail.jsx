@@ -13,6 +13,23 @@ function getClientName(client) {
   return `${client?.nombre || client?.name || "Unknown"} ${client?.apellido || ""}`.trim();
 }
 
+function getTransactionId(transaction) {
+  return transaction.id_transaccion || transaction.id;
+}
+
+function formatTransactionDate(transaction) {
+  if (!transaction.fecha) return "-";
+
+  const date = new Date(transaction.fecha);
+  const formattedDate = Number.isNaN(date.getTime())
+    ? transaction.fecha
+    : date.toLocaleDateString();
+
+  return transaction.hora !== undefined
+    ? `${formattedDate} · ${transaction.hora}:00`
+    : formattedDate;
+}
+
 function ClientDetail() {
   const { id } = useParams();
   const [client, setClient] = useState(null);
@@ -177,13 +194,24 @@ function ClientDetail() {
             {transactions.length === 0 ? (
               <p>No transactions found</p>
             ) : (
-              transactions.map((transaction) => (
-                <div key={transaction.id_transaccion || transaction.id}>
-                  <span>{transaction.id_transaccion || transaction.id}</span>
-                  <span>{transaction.revisado || "Pending"}</span>
-                  <strong>€{Number(transaction.importe || 0).toFixed(2)}</strong>
-                </div>
-              ))
+              transactions.map((transaction) => {
+                const transactionId = getTransactionId(transaction);
+
+                return (
+                  <Link
+                    className={styles.transactionRow}
+                    key={transactionId}
+                    to={`/transactions/${transactionId}`}
+                  >
+                    <span>
+                      <strong>{transaction.categoria || "-"}</strong>
+                      <small>{formatTransactionDate(transaction)}</small>
+                    </span>
+                    <span>{transaction.pais_pago || "-"}</span>
+                    <strong>€{Number(transaction.importe || 0).toFixed(2)}</strong>
+                  </Link>
+                );
+              })
             )}
           </div>
         </article>
