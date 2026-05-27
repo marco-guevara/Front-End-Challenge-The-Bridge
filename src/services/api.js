@@ -33,6 +33,7 @@ const request = async (callback) => {
 const loginUser = (payload) => request(() => api.post("/auth/login", payload));
 const logoutUser = () => request(() => api.post("/auth/logout"));
 const getActiveUser = () => request(() => api.get("/auth/active-user"));
+const getDashboardStats = () => request(() => api.get("/trans/stats/dashboard"));
 const getTransactions = (params = {}) => request(() => api.get("/trans", { params }));
 const getTransactionById = (id) => request(() => api.get(`/trans/${id}`));
 const updateTransaction = (id, payload) => request(() => api.patch(`/trans/${id}`, payload));
@@ -46,6 +47,7 @@ export {
   loginUser,
   logoutUser,
   getActiveUser,
+  getDashboardStats,
   getTransactions,
   getTransactionById,
   updateTransaction,

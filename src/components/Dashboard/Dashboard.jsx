@@ -15,7 +15,7 @@ import {
 
 import styles from "./Dashboard.module.css";
 import useAuth from "../../context/useAuth";
-import { api } from "../../services/api";
+import { getDashboardStats, getTransactions } from "../../services/api";
 import { confirmAction, showError } from "../../utils/alerts";
 
 const navigationItems = [
@@ -71,21 +71,18 @@ function Dashboard() {
       setPendingCount(null);
 
       try {
-        const [statsResponse, transactionsResponse] = await Promise.all([
-          api.get("/trans/stats/dashboard"),
-          api.get("/trans", {
-            params: {
-              limite: 50000,
-              revisado: "Pendiente",
-            },
+        const [statsData, transactionsData] = await Promise.all([
+          getDashboardStats(),
+          getTransactions({
+            limite: 50000,
+            revisado: "Pendiente",
           }),
         ]);
         if (ignore) return;
 
-        const pendingTransactions =
-          transactionsResponse.data.map(mapPendingTransaction);
+        const pendingTransactions = transactionsData.map(mapPendingTransaction);
 
-        setDashboardStats(statsResponse.data);
+        setDashboardStats(statsData);
         setPendingCount(pendingTransactions.length);
         setTransactions(pendingTransactions.slice(0, 100));
         setSelectedTransaction(null);

@@ -13,7 +13,11 @@ import {
 
 import styles from "./Transactions.module.css";
 import useAuth from "../../context/useAuth";
-import { api, updateTransaction } from "../../services/api";
+import {
+  getTransactionById,
+  getTransactions,
+  updateTransaction,
+} from "../../services/api";
 import { confirmAction, showError, showSuccess } from "../../utils/alerts";
 
 const navigationItems = [
@@ -37,14 +41,12 @@ function mapTransaction(transaction) {
 }
 
 async function fetchPendingTransactions(params = {}) {
-  const response = await api.get("/trans", {
-    params: {
-      revisado: "Pendiente",
-      ...params,
-    },
+  const transactions = await getTransactions({
+    revisado: "Pendiente",
+    ...params,
   });
 
-  return response.data.map(mapTransaction);
+  return transactions.map(mapTransaction);
 }
 
 function Transactions() {
@@ -65,19 +67,15 @@ function Transactions() {
     role: user?.role || "Analyst",
   };
 
-  const getTransactions = async () => {
+  const loadTransactions = async () => {
     try {
       setIsLoading(true);
       setError("");
 
-      let response;
-
       if (transactionId.trim()) {
-        response = await api.get(`/trans/${transactionId.trim()}`);
+        const response = await getTransactionById(transactionId.trim());
 
-        const transaction = Array.isArray(response.data)
-          ? response.data[0]
-          : response.data;
+        const transaction = Array.isArray(response) ? response[0] : response;
 
         setTransactions(transaction ? [mapTransaction(transaction)] : []);
         setCurrentPage(1);
@@ -315,7 +313,7 @@ function Transactions() {
 
             <button
               className={styles.primaryButton}
-              onClick={getTransactions}
+              onClick={loadTransactions}
               type="button"
             >
               <SlidersHorizontal aria-hidden="true" size={16} />
