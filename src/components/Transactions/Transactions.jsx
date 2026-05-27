@@ -1,3 +1,21 @@
+  // Filtramos transacciones por rol de analista
+  // const visibleTransactions = transactions.filter((transaction) => {
+  //   if (analyst.role === "Admin") {
+  //     return transaction.score < 70;
+  //   }
+
+  //   if (analyst.role === "Analyst") {
+  //     return transaction.score >= 70;
+  //   }
+
+  //   return false;
+  // });
+
+    // Ordenamos transacciones por score (riesgo) de mayor a menor
+  // const prioritizedTransactions = [...visibleTransactions].sort((a, b) => {
+  //   return b.score - a.score;
+  // });
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
