@@ -4,13 +4,15 @@ import { Search, UserRound } from "lucide-react";
 
 import { getClients } from "../../services/api";
 import styles from "./Clients.module.css";
+import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
+import PageNavigation from "../PageNavigation/PageNavigation";
 
 function getClientId(client) {
   return client.Clienteid || client.id_usuario || client.id || client.userId;
 }
 
 function getClientName(client) {
-  return `${client.nombre || client.name || "Unknown"} ${client.apellido || ""}`.trim();
+  return `${client.nombre || client.name || "Sin nombre"} ${client.apellido || ""}`.trim();
 }
 
 function Clients() {
@@ -72,36 +74,38 @@ function Clients() {
 
   return (
     <main className={styles.page}>
+      <PageNavigation />
+
       <header className={styles.header}>
         <div>
-          <span className={styles.eyebrow}>Client Intelligence</span>
-          <h1>Clients</h1>
-          <p>Search customers, inspect account status and open risk profiles.</p>
+          <span className={styles.eyebrow}>Inteligencia de clientes</span>
+          <h1>Clientes</h1>
+          <p>Busca clientes, revisa su estado y abre perfiles de riesgo.</p>
         </div>
       </header>
 
       <form className={styles.filters} onSubmit={handleFilterSubmit}>
         <label>
-          <span>Search</span>
+          <span>Búsqueda</span>
           <div className={styles.searchInput}>
             <Search aria-hidden="true" size={16} />
             <input
               onChange={(event) => updateFilter("q", event.target.value)}
-              placeholder="Search by id, email or country..."
+              placeholder="Buscar por id, email o país..."
               type="search"
               value={filters.q}
             />
           </div>
         </label>
         <label>
-          <span>Status</span>
+          <span>Estado</span>
           <select
             onChange={(event) => updateFilter("bloqueado", event.target.value)}
             value={filters.bloqueado}
           >
-            <option value="">All</option>
-            <option value="false">Active</option>
-            <option value="true">Blocked</option>
+            <option value="">Todos</option>
+            <option value="false">Activo</option>
+            <option value="true">Bloqueado</option>
           </select>
         </label>
       </form>
@@ -111,8 +115,8 @@ function Clients() {
       <section className={styles.card}>
         <div className={styles.cardHeader}>
           <div>
-            <h2>Client Directory</h2>
-            <p>{loading ? "Loading clients..." : `${filteredClients.length} clients visible`}</p>
+            <h2>Directorio de clientes</h2>
+            <p>{loading ? "Cargando clientes..." : `${filteredClients.length} clientes visibles`}</p>
           </div>
           <UserRound aria-hidden="true" size={22} />
         </div>
@@ -121,21 +125,23 @@ function Clients() {
           <table>
             <thead>
               <tr>
-                <th>Client</th>
+                <th>Cliente</th>
                 <th>Email</th>
-                <th>Country</th>
-                <th>Status</th>
+                <th>País</th>
+                <th>Estado</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="5">Loading...</td>
+                  <td colSpan="5">
+                    <LoadingSpinner label="Cargando clientes..." />
+                  </td>
                 </tr>
               ) : filteredClients.length === 0 ? (
                 <tr>
-                  <td colSpan="5">No clients found</td>
+                  <td colSpan="5">No se encontraron clientes</td>
                 </tr>
               ) : (
                 paginatedClients.map((client) => {
@@ -151,12 +157,12 @@ function Clients() {
                       <td>{client.pais_emision || client.country || "-"}</td>
                       <td>
                         <span className={client.bloqueado ? styles.blocked : styles.active}>
-                          {client.bloqueado ? "Blocked" : "Active"}
+                          {client.bloqueado ? "Bloqueado" : "Activo"}
                         </span>
                       </td>
                       <td>
                         <Link className={styles.linkButton} to={`/clients/${id}`}>
-                          Detail
+                          Detalle
                         </Link>
                       </td>
                     </tr>
@@ -174,17 +180,17 @@ function Clients() {
               onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
               type="button"
             >
-              Previous
+              Anterior
             </button>
             <span>
-              Page {currentPage} of {totalPages}
+              Página {currentPage} de {totalPages}
             </span>
             <button
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
               type="button"
             >
-              Next
+              Siguiente
             </button>
           </div>
         )}

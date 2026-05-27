@@ -1,7 +1,7 @@
 .page {
   min-height: 100vh;
-  background: #080d1a;
-  color: #dbe7f0;
+  background: var(--color-background);
+  color: var(--color-text);
   padding: 1.5rem;
 }
 
@@ -14,7 +14,7 @@
 }
 
 .eyebrow {
-  color: #00ddeb;
+  color: var(--color-primary-soft);
   font-size: 0.68rem;
   font-weight: 900;
   text-transform: uppercase;
@@ -22,14 +22,14 @@
 
 .header h1 {
   margin: 0.25rem 0;
-  color: #ecfeff;
+  color: var(--color-text);
   font-size: 2rem;
 }
 
 .header p,
 .cardHeader p {
   margin: 0;
-  color: #9fb1c3;
+  color: var(--color-text-muted);
 }
 
 .filters {
@@ -38,9 +38,9 @@
   gap: 0.7rem;
   align-items: end;
   margin-bottom: 1.25rem;
-  border: 1px solid #1d2638;
+  border: 1px solid var(--color-border);
   border-radius: 0.9rem;
-  background: #111725;
+  background: var(--color-surface-strong);
   padding: 0.8rem;
 }
 
@@ -50,7 +50,7 @@
 }
 
 .filters span {
-  color: #8fa0b6;
+  color: var(--color-text-muted);
   font-size: 0.64rem;
   font-weight: 900;
   text-transform: uppercase;
@@ -60,10 +60,10 @@
 .filters select,
 .searchInput {
   height: 2.35rem;
-  border: 1px solid #2b3548;
+  border: 1px solid var(--color-border);
   border-radius: 0.65rem;
-  background: #080e1e;
-  color: #ecfeff;
+  background: var(--color-background);
+  color: var(--color-text);
   outline: 0;
   padding-inline: 0.7rem;
 }
@@ -76,7 +76,7 @@
 
 .searchInput svg {
   flex-shrink: 0;
-  color: #67e8f9;
+  color: var(--color-primary-soft);
 }
 
 .searchInput input {
@@ -89,9 +89,9 @@
 
 .card {
   overflow: hidden;
-  border: 1px solid #1d2638;
+  border: 1px solid var(--color-border);
   border-radius: 0.9rem;
-  background: #111725;
+  background: var(--color-surface-strong);
 }
 
 .cardHeader {
@@ -104,12 +104,12 @@
 
 .cardHeader h2 {
   margin: 0;
-  color: #ecfeff;
+  color: var(--color-text);
   font-size: 1.05rem;
 }
 
 .cardHeader svg {
-  color: #67e8f9;
+  color: var(--color-primary-soft);
 }
 
 .tableWrap {
@@ -121,15 +121,15 @@
   align-items: center;
   justify-content: flex-end;
   gap: 0.75rem;
-  border-top: 1px solid #1b2434;
+  border-top: 1px solid var(--color-border);
   padding: 1rem 1.25rem;
 }
 
 .pagination button {
-  border: 1px solid #354156;
+  border: 1px solid var(--color-border);
   border-radius: 0.65rem;
-  background: #111a2d;
-  color: #d8fbff;
+  background: var(--color-surface);
+  color: var(--color-text);
   cursor: pointer;
   padding: 0.65rem 1rem;
   font-size: 0.75rem;
@@ -142,7 +142,7 @@
 }
 
 .pagination span {
-  color: #8fa0b6;
+  color: var(--color-text-muted);
   font-size: 0.78rem;
   font-weight: 800;
 }
@@ -155,19 +155,19 @@ table {
 
 th,
 td {
-  border-top: 1px solid #1b2434;
+  border-top: 1px solid var(--color-border);
   padding: 0.9rem 1rem;
   text-align: left;
 }
 
 th {
-  color: #69758a;
+  color: var(--color-text-soft);
   font-size: 0.68rem;
   text-transform: uppercase;
 }
 
 td {
-  color: #c8d2df;
+  color: var(--color-text-muted);
   font-size: 0.82rem;
   font-weight: 700;
 }
@@ -179,7 +179,7 @@ td span {
 
 td span {
   margin-top: 0.2rem;
-  color: #7f8ba0;
+  color: var(--color-text-soft);
   font-size: 0.72rem;
 }
 
@@ -194,13 +194,13 @@ td span {
 }
 
 .active {
-  background: rgb(110 231 183 / 10%);
-  color: #d1fae5;
+  background: var(--color-success-soft);
+  color: var(--color-text);
 }
 
 .blocked {
-  background: rgb(248 113 113 / 12%);
-  color: #ffe4e6;
+  background: var(--color-danger-soft);
+  color: var(--color-text);
 }
 
 .linkButton {
@@ -208,10 +208,10 @@ td span {
   align-items: center;
   justify-content: center;
   height: 2.25rem;
-  border: 1px solid rgb(13 209 231 / 40%);
+  border: 1px solid var(--color-border-strong);
   border-radius: 0.65rem;
-  background: #0dd1e7;
-  color: #041827;
+  background: var(--color-primary);
+  color: white;
   font-size: 0.78rem;
   font-weight: 900;
   padding-inline: 1rem;
@@ -219,33 +219,33 @@ td span {
 }
 
 .error {
-  border: 1px solid rgb(248 113 113 / 24%);
+  border: 1px solid rgb(255 107 122 / 24%);
   border-radius: 0.75rem;
-  background: rgb(248 113 113 / 10%);
-  color: #ffe4e6;
+  background: var(--color-danger-soft);
+  color: var(--color-text);
   padding: 0.85rem 1rem;
 }
 
 .success {
-  border: 1px solid rgb(110 231 183 / 24%);
+  border: 1px solid rgb(125 211 168 / 24%);
   border-radius: 0.75rem;
-  background: rgb(110 231 183 / 10%);
-  color: #d1fae5;
+  background: var(--color-success-soft);
+  color: var(--color-text);
   padding: 0.85rem 1rem;
 }
 
 .loading {
-  border: 1px solid #1d2638;
+  border: 1px solid var(--color-border);
   border-radius: 0.75rem;
-  background: #111725;
-  color: #9fb1c3;
+  background: var(--color-surface-strong);
+  color: var(--color-text-muted);
   padding: 0.85rem 1rem;
 }
 
 .backLink {
   display: inline-block;
   margin-bottom: 1rem;
-  color: #67e8f9;
+  color: var(--color-primary-soft);
   font-weight: 800;
   text-decoration: none;
 }
@@ -255,21 +255,21 @@ td span {
   align-items: center;
   gap: 1.25rem;
   margin-bottom: 1.25rem;
-  border: 1px solid #1d2638;
+  border: 1px solid var(--color-border);
   border-radius: 0.9rem;
-  background: #111725;
+  background: var(--color-surface-strong);
   padding: 1.25rem;
 }
 
 .profileHeader h1 {
   margin: 0.25rem 0;
-  color: #ecfeff;
+  color: var(--color-text);
   font-size: 2rem;
 }
 
 .profileHeader p {
   margin: 0;
-  color: #9fb1c3;
+  color: var(--color-text-muted);
 }
 
 .profileHeader .active,
@@ -284,8 +284,8 @@ td span {
   flex-shrink: 0;
   place-items: center;
   border-radius: 1rem;
-  background: #123b4d;
-  color: #67e8f9;
+  background: rgb(124 58 237 / 14%);
+  color: var(--color-primary-soft);
 }
 
 .statsGrid {
@@ -298,21 +298,21 @@ td span {
 .statsGrid article {
   display: grid;
   gap: 0.45rem;
-  border: 1px solid #1d2638;
+  border: 1px solid var(--color-border);
   border-radius: 0.9rem;
-  background: #111725;
+  background: var(--color-surface-strong);
   padding: 1.15rem;
 }
 
 .statsGrid span {
-  color: #8fa0b6;
+  color: var(--color-text-muted);
   font-size: 0.7rem;
   font-weight: 900;
   text-transform: uppercase;
 }
 
 .statsGrid strong {
-  color: #ecfeff;
+  color: var(--color-text);
   font-size: 1.65rem;
 }
 
@@ -331,12 +331,12 @@ td span {
 
 .detailList div,
 .transactionRow {
-  border-top: 1px solid #1b2434;
+  border-top: 1px solid var(--color-border);
   padding-top: 0.7rem;
 }
 
 .detailList dt {
-  color: #7f8ba0;
+  color: var(--color-text-soft);
   font-size: 0.72rem;
   font-weight: 900;
   text-transform: uppercase;
@@ -344,7 +344,7 @@ td span {
 
 .detailList dd {
   margin: 0.25rem 0 0;
-  color: #dbe7f0;
+  color: var(--color-text);
   font-weight: 700;
 }
 
@@ -370,15 +370,15 @@ td span {
 }
 
 .blockButton {
-  border: 1px solid rgb(248 113 113 / 32%);
-  background: rgb(248 113 113 / 12%);
-  color: #ffe4e6;
+  border: 1px solid rgb(255 107 122 / 32%);
+  background: var(--color-danger-soft);
+  color: var(--color-text);
 }
 
 .unblockButton {
-  border: 1px solid rgb(110 231 183 / 30%);
-  background: rgb(110 231 183 / 12%);
-  color: #d1fae5;
+  border: 1px solid rgb(125 211 168 / 30%);
+  background: var(--color-success-soft);
+  color: var(--color-text);
 }
 
 .miniTable {
@@ -392,40 +392,140 @@ td span {
   grid-template-columns: minmax(0, 1.25fr) 0.75fr auto;
   align-items: center;
   gap: 0.7rem;
-  color: #aeb9c9;
+  color: var(--color-text-muted);
   font-size: 0.82rem;
   font-weight: 700;
   text-decoration: none;
 }
 
 .transactionRow:hover {
-  color: #ecfeff;
+  color: var(--color-text);
 }
 
 .miniTable strong {
-  color: #ecfeff;
+  color: var(--color-text);
 }
 
 .miniTable small {
   display: block;
   margin-top: 0.25rem;
-  color: #7f8ba0;
+  color: var(--color-text-soft);
   font-size: 0.72rem;
   font-weight: 800;
 }
 
 @media (max-width: 760px) {
   .page {
-    padding: 1rem;
+    padding: 0.85rem;
+  }
+
+  .header {
+    margin-bottom: 0.9rem;
+  }
+
+  .header h1,
+  .profileHeader h1 {
+    font-size: 1.55rem;
   }
 
   .filters {
     grid-template-columns: 1fr;
+    gap: 0.55rem;
+    margin-bottom: 0.9rem;
+    padding: 0.7rem;
+  }
+
+  .cardHeader {
+    padding: 0.9rem;
+  }
+
+  .tableWrap {
+    overflow: visible;
+    padding: 0 0.75rem 0.75rem;
+  }
+
+  table,
+  thead,
+  tbody,
+  tr,
+  td {
+    display: block;
+    min-width: 0;
+    width: 100%;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tbody {
+    display: grid;
+    gap: 0.7rem;
+  }
+
+  tbody tr {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: rgb(26 31 46 / 62%);
+    padding: 0.8rem;
+  }
+
+  td {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    border-top: 0;
+    padding: 0.28rem 0;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+
+  td::before {
+    flex-shrink: 0;
+    color: var(--color-text-soft);
+    content: "";
+    font-size: 0.68rem;
+    font-weight: 900;
+    text-align: left;
+    text-transform: uppercase;
+  }
+
+  td:nth-child(1)::before {
+    content: "Cliente";
+  }
+
+  td:nth-child(2)::before {
+    content: "Email";
+  }
+
+  td:nth-child(3)::before {
+    content: "País";
+  }
+
+  td:nth-child(4)::before {
+    content: "Estado";
+  }
+
+  td:nth-child(5)::before {
+    content: "";
+  }
+
+  td[colspan] {
+    display: block;
+    text-align: center;
+  }
+
+  td[colspan]::before {
+    content: none;
   }
 
   .profileHeader {
     align-items: flex-start;
     flex-direction: column;
+    gap: 0.85rem;
+    margin-bottom: 0.9rem;
+    padding: 1rem;
   }
 
   .profileHeader .active,
@@ -436,13 +536,33 @@ td span {
   .statsGrid,
   .detailGrid {
     grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+
+  .statsGrid {
+    margin-bottom: 0.9rem;
+  }
+
+  .statsGrid article {
+    padding: 0.95rem;
+  }
+
+  .detailList {
+    padding-inline: 0.95rem;
+  }
+
+  .miniTable {
+    padding: 0 0.95rem 0.95rem;
   }
 
   .transactionRow {
     grid-template-columns: 1fr;
+    gap: 0.35rem;
   }
 
   .pagination {
+    flex-wrap: wrap;
     justify-content: center;
+    padding: 0.8rem;
   }
 }

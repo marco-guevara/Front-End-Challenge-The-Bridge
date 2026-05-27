@@ -2,7 +2,7 @@ function displayValue(value) {
   return value === null || value === undefined || value === "" ? "-" : value;
 }
 
-function formatBoolean(value, trueLabel = "Yes", falseLabel = "No") {
+function formatBoolean(value, trueLabel = "Sí", falseLabel = "No") {
   if (value === null || value === undefined) return "-";
   return value ? trueLabel : falseLabel;
 }
