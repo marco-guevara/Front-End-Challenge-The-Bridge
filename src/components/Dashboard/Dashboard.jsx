@@ -17,13 +17,18 @@ import styles from "./Dashboard.module.css";
 import useAuth from "../../context/useAuth";
 import { getDashboardStats, getTransactions } from "../../services/api";
 import { confirmAction, showError } from "../../utils/alerts";
-import { formatCurrency, formatHour, formatScore } from "../../utils/formatters";
+import {
+  formatCurrency,
+  formatHour,
+  getTransactionScore,
+} from "../../utils/formatters";
 
 const navigationItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
   { label: "Transactions", icon: ListChecks, path: "/transactions" },
   { label: "Users", icon: Users, path: "/clients" },
 ];
+const DASHBOARD_TRANSACTION_LIMIT = 1000;
 
 // Normaliza la respuesta de la API al formato que usa la tabla del dashboard.
 function mapPendingTransaction(transaction) {
@@ -34,10 +39,33 @@ function mapPendingTransaction(transaction) {
     userId: transaction.id_usuario,
     amount: formatCurrency(transaction.importe),
     country: transaction.pais_pago,
-    score: formatScore(transaction.f_score),
+    score: getTransactionScore(transaction),
     fraudReason: transaction.shap_reasons?.razones_fraude,
     legitReason: transaction.shap_reasons?.razones_legitima,
   };
+}
+
+function isPendingTransaction(transaction) {
+  const reviewStatus = transaction.revisado ?? transaction.reviewed;
+
+  if (reviewStatus === null || reviewStatus === undefined || reviewStatus === "") {
+    return true;
+  }
+
+  if (typeof reviewStatus === "boolean") {
+    return !reviewStatus;
+  }
+
+  return ["pendiente", "pending", "no revisado", "unreviewed"].includes(
+    String(reviewStatus).trim().toLowerCase(),
+  );
+}
+
+function getTransactionTimestamp(transaction) {
+  const date = transaction.fecha ? new Date(transaction.fecha) : null;
+  const time = Number(transaction.hora || 0) * 60 * 60 * 1000;
+
+  return date && !Number.isNaN(date.getTime()) ? date.getTime() + time : time;
 }
 
 function Dashboard() {
@@ -58,7 +86,6 @@ function Dashboard() {
     name: user?.name || user?.email || "Analyst",
     role: user?.role || "Analyst",
   };
-
   // Recarga stats y transacciones pendientes cada vez que se entra al dashboard.
   // Pending Reviews se calcula desde la lista filtrada porque el endpoint de stats
   // puede no reflejar inmediatamente las transacciones recién revisadas.
@@ -75,13 +102,20 @@ function Dashboard() {
         const [statsData, transactionsData] = await Promise.all([
           getDashboardStats(),
           getTransactions({
-            limite: 50000,
+            limite: DASHBOARD_TRANSACTION_LIMIT,
             revisado: "Pendiente",
           }),
         ]);
         if (ignore) return;
 
-        const pendingTransactions = transactionsData.map(mapPendingTransaction);
+        const pendingTransactions = [...transactionsData]
+          .filter(isPendingTransaction)
+          .sort(
+            (firstTransaction, secondTransaction) =>
+              getTransactionTimestamp(secondTransaction) -
+              getTransactionTimestamp(firstTransaction),
+          )
+          .map(mapPendingTransaction);
 
         setDashboardStats(statsData);
         setPendingCount(pendingTransactions.length);
@@ -144,6 +178,7 @@ function Dashboard() {
   const endIndex = startIndex + transactionsPerPage;
 
   const paginatedTransactions = transactions.slice(startIndex, endIndex);
+  const hasNoPendingTransactions = transactions.length === 0;
 
   // Cierra la sesión del analista y vuelve al login.
   const handleLogout = async () => {
@@ -302,6 +337,14 @@ function Dashboard() {
                           </td>
                         </tr>
                       ))}
+
+                    {!isLoading && !transactionsError && hasNoPendingTransactions && (
+                      <tr>
+                        <td colSpan="5">
+                          No hay transacciones pendientes por revisión.
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>

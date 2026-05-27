@@ -19,7 +19,11 @@ import {
   updateTransaction,
 } from "../../services/api";
 import { confirmAction, showError, showSuccess } from "../../utils/alerts";
-import { formatCurrency, formatHour, formatScore } from "../../utils/formatters";
+import {
+  formatCurrency,
+  formatHour,
+  getTransactionScore,
+} from "../../utils/formatters";
 
 const navigationItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
@@ -34,18 +38,15 @@ function mapTransaction(transaction) {
     userId: transaction.id_usuario,
     amount: formatCurrency(transaction.importe),
     country: transaction.pais_pago,
-    score: formatScore(transaction.f_score),
+    score: getTransactionScore(transaction),
     isFraud: transaction.es_fraude,
     fraudReason: transaction.shap_reasons?.razones_fraude,
     legitReason: transaction.shap_reasons?.razones_legitima,
   };
 }
 
-async function fetchPendingTransactions(params = {}) {
-  const transactions = await getTransactions({
-    revisado: "Pendiente",
-    ...params,
-  });
+async function fetchTransactions(params = {}) {
+  const transactions = await getTransactions(params);
 
   return transactions.map(mapTransaction);
 }
@@ -67,8 +68,6 @@ function Transactions() {
     name: user?.name || user?.email || "Analyst",
     role: user?.role || "Analyst",
   };
-  const normalizedRole = analyst.role.toLowerCase();
-
   const loadTransactions = async () => {
     try {
       setIsLoading(true);
@@ -91,7 +90,7 @@ function Transactions() {
         params.es_fraude = fraudFilter;
       }
 
-      const mappedTransactions = await fetchPendingTransactions(params);
+      const mappedTransactions = await fetchTransactions(params);
 
       setTransactions(mappedTransactions);
       setCurrentPage(1);
@@ -106,7 +105,7 @@ function Transactions() {
   useEffect(() => {
     let ignore = false;
 
-    fetchPendingTransactions()
+    fetchTransactions()
       .then((mappedTransactions) => {
         if (ignore) return;
 
@@ -126,19 +125,7 @@ function Transactions() {
     };
   }, []);
 
-  const visibleTransactions = transactions.filter((transaction) => {
-    if (normalizedRole === "analyst") {
-      return transaction.score >= 70;
-    }
-
-    if (normalizedRole === "admin") {
-      return transaction.score < 70;
-    }
-
-    return true;
-  });
-
-  const prioritizedTransactions = [...visibleTransactions].sort((a, b) => {
+  const prioritizedTransactions = [...transactions].sort((a, b) => {
     return b.score - a.score;
   });
 
@@ -200,8 +187,10 @@ function Transactions() {
 
       setError("");
       setTransactions((prevTransactions) =>
-        prevTransactions.filter(
-          (transaction) => transaction.id !== selectedTransaction.id,
+        prevTransactions.map((transaction) =>
+          transaction.id === selectedTransaction.id
+            ? { ...transaction, isFraud: isFraudDecision }
+            : transaction,
         ),
       );
 
@@ -228,7 +217,7 @@ function Transactions() {
       setIsLoading(true);
       setError("");
 
-      setTransactions(await fetchPendingTransactions());
+      setTransactions(await fetchTransactions());
       setFraudFilter("");
       setTransactionId("");
       setCurrentPage(1);
@@ -334,12 +323,8 @@ function Transactions() {
             <article className={styles.ledger}>
               <div className={styles.cardHeader}>
                 <div>
-                  <h3>Pending Transactions</h3>
-                  <p>
-                    {normalizedRole === "analyst"
-                      ? "Showing pending transactions with score >= 70"
-                      : "Showing pending transactions with score < 70"}
-                  </p>
+                  <h3>Transactions</h3>
+                  <p>Showing all transactions</p>
                 </div>
               </div>
 
@@ -517,10 +502,14 @@ function Transactions() {
                 <button
                   className={styles.approveButton}
                   type="button"
-                  disabled={!selectedTransaction || isReviewing}
+                  disabled={
+                    !selectedTransaction ||
+                    selectedTransaction.isFraud ||
+                    isReviewing
+                  }
                   onClick={() => handleReviewTransaction("Aprobada")}
                 >
-                  Approve
+                  {selectedTransaction?.isFraud ? "Already Fraud" : "Approve"}
                 </button>
 
                 <button

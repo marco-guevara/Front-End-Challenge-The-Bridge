@@ -29,7 +29,21 @@ function formatDateTime(dateValue, hour) {
 }
 
 function formatScore(score) {
-  return Math.min(100, Math.max(0, Math.round(Number(score || 0) * 100)));
+  const numericScore = Number(score || 0);
+  const percentScore = numericScore <= 1 ? numericScore * 100 : numericScore;
+
+  return Math.min(100, Math.max(0, Math.round(percentScore)));
+}
+
+function getTransactionScore(transaction) {
+  return formatScore(
+    transaction.f_score ??
+      transaction.score ??
+      transaction.fraud_score ??
+      transaction.fraudScore ??
+      transaction.risk_score ??
+      transaction.riskScore,
+  );
 }
 
 export {
@@ -39,4 +53,5 @@ export {
   formatDateTime,
   formatHour,
   formatScore,
+  getTransactionScore,
 };

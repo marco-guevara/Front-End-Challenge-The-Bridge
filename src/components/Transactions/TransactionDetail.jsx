@@ -16,7 +16,7 @@ import {
   formatBoolean as formatDisplayBoolean,
   formatCurrency,
   formatHour,
-  formatScore,
+  getTransactionScore,
 } from "../../utils/formatters";
 import styles from "./TransactionDetail.module.css";
 
@@ -184,7 +184,7 @@ function TransactionDetail() {
     );
   }
 
-  const score = formatScore(transaction.f_score);
+  const score = getTransactionScore(transaction);
   const amount = formatCurrency(transaction.importe);
   const structuredExplainability = getStructuredExplainability(transaction);
   const fraudReasons = getReasonList(structuredExplainability?.razones_fraude);
@@ -199,7 +199,9 @@ function TransactionDetail() {
     structuredExplainability?.summary ||
     "";
   const isReviewed = transaction.revisado === "Revisado";
-  const isDecisionDisabled = Boolean(decisionLoading) || isReviewed;
+  const isApproveDisabled =
+    Boolean(decisionLoading) || isReviewed || transaction.es_fraude;
+  const isFraudDisabled = Boolean(decisionLoading) || isReviewed;
 
   return (
     <main className={styles.page}>
@@ -231,7 +233,7 @@ function TransactionDetail() {
       <section className={styles.actionBar}>
         <button
           className={styles.approveButton}
-          disabled={isDecisionDisabled}
+          disabled={isApproveDisabled}
           onClick={() =>
             saveDecision({
               payload: {
@@ -260,13 +262,15 @@ function TransactionDetail() {
           <CheckCircle2 aria-hidden="true" size={16} />
           {isReviewed
             ? "Decision Saved"
+            : transaction.es_fraude
+              ? "Already Fraud"
             : decisionLoading === "approve"
               ? "Approving..."
               : "Approve Transaction"}
         </button>
         <button
           className={styles.rejectButton}
-          disabled={isDecisionDisabled}
+          disabled={isFraudDisabled}
           onClick={() =>
             saveDecision({
               payload: {
