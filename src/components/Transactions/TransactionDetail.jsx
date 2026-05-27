@@ -9,7 +9,7 @@ import {
   XCircle,
 } from "lucide-react";
 
-import { getTransactionById } from "../../services/api";
+import { getTransactionById, updateTransaction } from "../../services/api";
 import styles from "./TransactionDetail.module.css";
 
 function normalizeTransaction(data) {
@@ -101,6 +101,9 @@ function TransactionDetail() {
   const [transaction, setTransaction] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [decisionLoading, setDecisionLoading] = useState("");
+  const [decisionError, setDecisionError] = useState("");
+  const [decisionMessage, setDecisionMessage] = useState("");
 
   useEffect(() => {
     let ignore = false;
@@ -120,6 +123,35 @@ function TransactionDetail() {
       ignore = true;
     };
   }, [id]);
+
+  const saveDecision = async (payload, message, loadingKey) => {
+    try {
+      setDecisionLoading(loadingKey);
+      setDecisionError("");
+      setDecisionMessage("");
+
+      const updatedTransaction = normalizeTransaction(
+        await updateTransaction(transaction.id_transaccion || id, payload),
+      );
+
+      setTransaction((currentTransaction) => {
+        if (!isPlainObject(updatedTransaction)) {
+          return { ...currentTransaction, ...payload };
+        }
+
+        return {
+          ...currentTransaction,
+          ...payload,
+          ...updatedTransaction,
+        };
+      });
+      setDecisionMessage(message);
+    } catch (err) {
+      setDecisionError(err.message);
+    } finally {
+      setDecisionLoading("");
+    }
+  };
 
   if (loading) {
     return (
@@ -186,19 +218,51 @@ function TransactionDetail() {
       </section>
 
       <section className={styles.actionBar}>
-        <button className={styles.approveButton} type="button">
+        <button
+          className={styles.approveButton}
+          disabled={Boolean(decisionLoading)}
+          onClick={() =>
+            saveDecision(
+              { es_fraude: false, revisado: "Revisado", auditor_fraude: false },
+              "Transaction approved",
+              "approve",
+            )
+          }
+          type="button"
+        >
           <CheckCircle2 aria-hidden="true" size={16} />
-          Approve Transaction
+          {decisionLoading === "approve" ? "Approving..." : "Approve Transaction"}
         </button>
-        <button className={styles.rejectButton} type="button">
+        <button
+          className={styles.rejectButton}
+          disabled={Boolean(decisionLoading)}
+          onClick={() =>
+            saveDecision(
+              { es_fraude: true, revisado: "Revisado", auditor_fraude: true },
+              "Transaction marked as fraud",
+              "fraud",
+            )
+          }
+          type="button"
+        >
           <XCircle aria-hidden="true" size={16} />
-          Mark as Fraud
+          {decisionLoading === "fraud" ? "Saving..." : "Mark as Fraud"}
         </button>
         <Link className={styles.clientButton} to={`/clients/${transaction.id_usuario}`}>
           <UserRound aria-hidden="true" size={16} />
           View Client
         </Link>
       </section>
+
+      {(decisionMessage || decisionError) && (
+        <p
+          className={
+            decisionError ? styles.decisionError : styles.decisionFeedback
+          }
+        >
+          {decisionError || decisionMessage}
+        </p>
+      )}
 
       <section className={styles.riskGrid}>
         <article className={styles.scoreCard}>
