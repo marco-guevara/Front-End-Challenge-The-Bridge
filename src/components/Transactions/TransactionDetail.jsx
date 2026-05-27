@@ -124,7 +124,7 @@ function TransactionDetail() {
     };
   }, [id]);
 
-  const saveDecision = async (payload, message, loadingKey) => {
+  const saveDecision = async (payload, message, loadingKey, localPatch = payload) => {
     try {
       setDecisionLoading(loadingKey);
       setDecisionError("");
@@ -136,12 +136,12 @@ function TransactionDetail() {
 
       setTransaction((currentTransaction) => {
         if (!isPlainObject(updatedTransaction)) {
-          return { ...currentTransaction, ...payload };
+          return { ...currentTransaction, ...localPatch };
         }
 
         return {
           ...currentTransaction,
-          ...payload,
+          ...localPatch,
           ...updatedTransaction,
         };
       });
@@ -211,9 +211,6 @@ function TransactionDetail() {
             {transaction.es_fraude ? "Fraud Detected" : "No Fraud"}
           </span>
           <span className={styles.warningBadge}>{transaction.revisado || "Pending"}</span>
-          <span className={styles.infoBadge}>
-            Auditor: {transaction.analista || "Pending"}
-          </span>
         </div>
       </section>
 
@@ -226,6 +223,12 @@ function TransactionDetail() {
               { es_fraude: false, revisado: "Revisado", auditor_fraude: false },
               "Transaction approved",
               "approve",
+              {
+                es_fraude: false,
+                revisar: false,
+                revisado: "Revisado",
+                auditor_fraude: false,
+              },
             )
           }
           type="button"
@@ -241,6 +244,12 @@ function TransactionDetail() {
               { es_fraude: true, revisado: "Revisado", auditor_fraude: true },
               "Transaction marked as fraud",
               "fraud",
+              {
+                es_fraude: true,
+                revisar: false,
+                revisado: "Revisado",
+                auditor_fraude: true,
+              },
             )
           }
           type="button"
