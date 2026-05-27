@@ -322,7 +322,7 @@ td span {
 }
 
 .detailList div,
-.miniTable div {
+.transactionRow {
   border-top: 1px solid #1b2434;
   padding-top: 0.7rem;
 }
@@ -379,17 +379,31 @@ td span {
   padding: 0 1.25rem 1.25rem;
 }
 
-.miniTable div {
+.transactionRow {
   display: grid;
-  grid-template-columns: 1fr 0.75fr auto;
+  grid-template-columns: minmax(0, 1.25fr) 0.75fr auto;
+  align-items: center;
   gap: 0.7rem;
   color: #aeb9c9;
   font-size: 0.82rem;
   font-weight: 700;
+  text-decoration: none;
+}
+
+.transactionRow:hover {
+  color: #ecfeff;
 }
 
 .miniTable strong {
   color: #ecfeff;
+}
+
+.miniTable small {
+  display: block;
+  margin-top: 0.25rem;
+  color: #7f8ba0;
+  font-size: 0.72rem;
+  font-weight: 800;
 }
 
 @media (max-width: 760px) {
@@ -413,6 +427,10 @@ td span {
 
   .statsGrid,
   .detailGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .transactionRow {
     grid-template-columns: 1fr;
   }
 
