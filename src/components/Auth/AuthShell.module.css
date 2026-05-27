@@ -1,0 +1,112 @@
+.shell {
+  min-height: 100svh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at top, rgb(124 58 237 / 24%), transparent 24rem),
+    var(--color-background);
+  color: var(--color-text);
+}
+
+.stage {
+  display: flex;
+  min-height: 100svh;
+  width: 100%;
+  max-width: 40rem;
+  flex-direction: column;
+  margin: 0 auto;
+  padding-inline: 1rem;
+}
+
+.loginStage {
+  align-items: center;
+  justify-content: center;
+  padding-block: 1.75rem;
+}
+
+.boltMark {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 0.8rem;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-glow);
+  overflow: hidden;
+}
+
+.boltMarkCompact {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.95rem;
+  transform: rotate(12deg);
+}
+
+.boltIconCompact {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.loginBrandName {
+  margin-top: 1.25rem;
+  color: var(--color-text);
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.loginHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.75rem;
+  text-align: center;
+}
+
+.grade {
+  margin-top: 0.35rem;
+  color: var(--color-primary-soft);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.status {
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  padding: 0.65rem 0.8rem;
+  font-size: 0.8rem;
+}
+
+.errorStatus {
+  border-color: rgb(255 107 122 / 28%);
+  background: var(--color-danger-soft);
+  color: var(--color-text);
+}
+
+.successStatus {
+  border-color: rgb(125 211 168 / 24%);
+  background: var(--color-success-soft);
+  color: var(--color-text);
+}
+
+@media (min-width: 640px) {
+  .stage {
+    padding-inline: 1.5rem;
+  }
+
+  .loginStage {
+    padding-block: 2rem;
+  }
+}
+
+@media (max-height: 760px) {
+  .loginStage {
+    justify-content: flex-start;
+  }
+
+  .loginHeader {
+    margin-top: auto;
+  }
+}

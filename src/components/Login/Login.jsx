@@ -1,30 +1,163 @@
-import { useEffect, useState } from "react"
-import { Link } from "react-router-dom"
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-function Login () {
-  const [formData, setFormData] = useState({email: '', password: ''})
+import { AuthShell, StatusMessage } from "../Auth/AuthShell";
 
+import styles from "./Login.module.css";
+import useAuth from "../../context/useAuth";
 
-  const handleLogin = (e) => {
-    e.preventDefault()
-    
-    setFormData({email: '', password: ''})
-  }
+function Login() {
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { error, login } = useAuth();
+
+  const handleChange = (event) => {
+    setFormData({
+      ...formData,
+      [event.target.name]: event.target.value,
+    });
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    try {
+      setIsSubmitting(true);
+
+      const response = await login(formData);
+      if (!response) return;
+
+      navigate("/dashboard");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
-    <div>
-      <form>
-        <input type="email" 
-        value={formData.email}
-        onChange={(e) => setFormData((prev) => { return {...prev, email: e.target.value}})}/>
-        <input type="password" 
-        value={formData.password}
-        onChange={(e) => setFormData((prev) => { return {...prev, password: e.target.value}})}/>
-        <button type="submit" onClick={(e) => handleLogin(e)}>Login</button>
-      </form>
-      <Link to='/register'>Register</Link>
-    </div>
-  )
+    <AuthShell>
+      <section className={styles.card}>
+        <form className={styles.form} onSubmit={handleSubmit}>
+          <label className={styles.field}>
+            <span className={styles.label}>ID corporativo / Email</span>
+            <span className={styles.inputRow}>
+              <span aria-hidden="true" className={styles.atIcon}>
+                @
+              </span>
+              <input
+                autoComplete="email"
+                className={styles.input}
+                disabled={isSubmitting}
+                name="email"
+                onChange={handleChange}
+                placeholder="Introduce tus credenciales"
+                required
+                type="email"
+                value={formData.email}
+              />
+            </span>
+          </label>
+
+          <label className={styles.field}>
+            <span className={styles.splitLabel}>
+              Contraseña
+            </span>
+            <span className={styles.inputRow}>
+              <svg
+                aria-hidden="true"
+                className={styles.keyIcon}
+                fill="none"
+                height="25"
+                viewBox="0 0 24 24"
+                width="25"
+              >
+                <path
+                  d="M10 14a4 4 0 1 1 1.2-2.86H22v2.1h-2.2v2H17v-2h-2.35A4 4 0 0 1 10 14Z"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.9"
+                />
+              </svg>
+              <input
+                autoComplete="current-password"
+                className={styles.input}
+                disabled={isSubmitting}
+                name="password"
+                onChange={handleChange}
+                placeholder="Contraseña"
+                required
+                type={showPassword ? "text" : "password"}
+                value={formData.password}
+              />
+              <button
+                aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                className={styles.revealButton}
+                disabled={isSubmitting}
+                onClick={() => setShowPassword((visible) => !visible)}
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  fill="none"
+                  height="23"
+                  viewBox="0 0 24 24"
+                  width="23"
+                >
+                  <path
+                    d={
+                      showPassword
+                        ? "M3.5 12s3-5 8.5-5 8.5 5 8.5 5-3 5-8.5 5-8.5-5-8.5-5Z"
+                        : "m3 3 18 18M10.6 10.6A2 2 0 0 0 13.4 13.4M9.9 5.2A11 11 0 0 1 12 5c5.5 0 8.5 7 8.5 7a15.4 15.4 0 0 1-3 3.8M6.2 6.3C4.4 7.7 3.5 9.6 3.5 12c0 0 3 7 8.5 7a10 10 0 0 0 3.1-.5"
+                    }
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="1.9"
+                  />
+                  {showPassword && (
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="2.7"
+                      stroke="currentColor"
+                      strokeWidth="1.9"
+                    />
+                  )}
+                </svg>
+              </button>
+            </span>
+          </label>
+
+          <label className={styles.checkboxField}>
+            <input className={styles.checkbox} defaultChecked type="checkbox" />
+            Forzar cifrado de sesión
+          </label>
+
+          <button
+            className={styles.submitButton}
+            disabled={isSubmitting}
+            type="submit"
+          >
+            {isSubmitting ? "Iniciando..." : "Iniciar sesión"}
+          </button>
+
+          {error && (
+            <div className={styles.messages}>
+              <StatusMessage kind="error">{error}</StatusMessage>
+            </div>
+          )}
+        </form>
+      </section>
+
+      <footer className={styles.footer}>
+        <span>NovaPay</span>
+        <span>Gestor de transacciones</span>
+      </footer>
+    </AuthShell>
+  );
 }
 
-export default Login
+export default Login;

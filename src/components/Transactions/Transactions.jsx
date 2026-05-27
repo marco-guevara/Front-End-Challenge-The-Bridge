@@ -1,0 +1,551 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  LayoutDashboard,
+  ListChecks,
+  LogOut,
+  Search,
+  SlidersHorizontal,
+  User,
+  UserCircle,
+  Users,
+} from "lucide-react";
+
+import styles from "./Transactions.module.css";
+import useAuth from "../../context/useAuth";
+import {
+  getTransactionById,
+  getTransactions,
+  updateTransaction,
+} from "../../services/api";
+import { confirmAction, showError, showSuccess } from "../../utils/alerts";
+import {
+  formatCurrency,
+  formatHour,
+  getTransactionScore,
+} from "../../utils/formatters";
+import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
+
+const navigationItems = [
+  { label: "Panel", icon: LayoutDashboard, path: "/dashboard" },
+  { label: "Transacciones", icon: ListChecks, path: "/transactions" },
+  { label: "Clientes", icon: Users, path: "/clients" },
+];
+
+function mapTransaction(transaction) {
+  return {
+    id: transaction.id_transaccion,
+    time: formatHour(transaction.hora),
+    userId: transaction.id_usuario,
+    amount: formatCurrency(transaction.importe),
+    country: transaction.pais_pago,
+    score: getTransactionScore(transaction),
+    isFraud: transaction.es_fraude,
+    fraudReason: transaction.shap_reasons?.razones_fraude,
+    legitReason: transaction.shap_reasons?.razones_legitima,
+  };
+}
+
+async function fetchTransactions(params = {}) {
+  const transactions = await getTransactions(params);
+
+  return transactions.map(mapTransaction);
+}
+
+function formatRole(role) {
+  return role === "Analyst" ? "Analista" : role || "Analista";
+}
+
+function Transactions() {
+  const [transactions, setTransactions] = useState([]);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [isReviewing, setIsReviewing] = useState(false);
+  const [fraudFilter, setFraudFilter] = useState("");
+  const [transactionId, setTransactionId] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const analyst = {
+    name: user?.name || user?.email || "Analista",
+    role: formatRole(user?.role),
+  };
+  const loadTransactions = async () => {
+    try {
+      setIsLoading(true);
+      setError("");
+
+      if (transactionId.trim()) {
+        const response = await getTransactionById(transactionId.trim());
+
+        const transaction = Array.isArray(response) ? response[0] : response;
+
+        setTransactions(transaction ? [mapTransaction(transaction)] : []);
+        setCurrentPage(1);
+        setSelectedTransaction(null);
+        return;
+      }
+
+      const params = {};
+
+      if (fraudFilter !== "") {
+        params.es_fraude = fraudFilter;
+      }
+
+      const mappedTransactions = await fetchTransactions(params);
+
+      setTransactions(mappedTransactions);
+      setCurrentPage(1);
+      setSelectedTransaction(null);
+    } catch {
+      setError("No se pudieron cargar las transacciones");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    let ignore = false;
+
+    fetchTransactions()
+      .then((mappedTransactions) => {
+        if (ignore) return;
+
+        setTransactions(mappedTransactions);
+        setCurrentPage(1);
+        setSelectedTransaction(null);
+      })
+      .catch(() => {
+        if (!ignore) setError("No se pudieron cargar las transacciones");
+      })
+      .finally(() => {
+        if (!ignore) setIsLoading(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  const prioritizedTransactions = [...transactions].sort((a, b) => {
+    return b.score - a.score;
+  });
+
+  const transactionsPerPage = 10;
+
+  const totalPages = Math.ceil(
+    prioritizedTransactions.length / transactionsPerPage,
+  );
+
+  const startIndex = (currentPage - 1) * transactionsPerPage;
+  const endIndex = startIndex + transactionsPerPage;
+
+  const paginatedTransactions = prioritizedTransactions.slice(
+    startIndex,
+    endIndex,
+  );
+
+  const handleLogout = async () => {
+    const isConfirmed = await confirmAction({
+      title: "Cerrar sesión",
+      text: "¿Seguro que quieres cerrar la sesión?",
+      confirmButtonText: "Cerrar sesión",
+      icon: "question",
+      confirmButtonColor: "#7c3aed",
+    });
+
+    if (!isConfirmed) return;
+
+    try {
+      await logout();
+      navigate("/login");
+    } catch (err) {
+      await showError("No se pudo cerrar la sesión", err.message);
+    }
+  };
+
+  const handleReviewTransaction = async (reviewStatus) => {
+    if (!selectedTransaction) return;
+
+    const isFraudDecision = reviewStatus === "Fraude";
+    const isConfirmed = await confirmAction({
+      title: isFraudDecision ? "¿Marcar como fraude?" : "¿Aprobar transacción?",
+      text: isFraudDecision
+        ? "La transacción quedará revisada y marcada como fraude. Esta acción solo podrá cambiarse mediante soporte técnico."
+        : "La transacción quedará revisada y marcada como no fraudulenta. Esta acción solo podrá cambiarse mediante soporte técnico.",
+      confirmButtonText: isFraudDecision ? "Marcar fraude" : "Aprobar",
+      icon: isFraudDecision ? "warning" : "question",
+    });
+
+    if (!isConfirmed) return;
+
+    try {
+      setIsReviewing(true);
+      await updateTransaction(selectedTransaction.id, {
+        revisado: "Revisado",
+        es_fraude: isFraudDecision,
+        auditor_fraude: isFraudDecision,
+      });
+
+      setError("");
+      setTransactions((prevTransactions) =>
+        prevTransactions.map((transaction) =>
+          transaction.id === selectedTransaction.id
+            ? { ...transaction, isFraud: isFraudDecision }
+            : transaction,
+        ),
+      );
+
+      setSelectedTransaction(null);
+      await showSuccess(
+        "Decisión guardada",
+        isFraudDecision
+          ? "Transacción marcada como fraude"
+          : "Transacción aprobada",
+      );
+    } catch {
+      setError("No se pudo actualizar la transacción");
+      await showError(
+        "No se guardó la decisión",
+        "No se pudo actualizar la transacción",
+      );
+    } finally {
+      setIsReviewing(false);
+    }
+  };
+
+  const handleResetFilters = async () => {
+    try {
+      setIsLoading(true);
+      setError("");
+
+      setTransactions(await fetchTransactions());
+      setFraudFilter("");
+      setTransactionId("");
+      setCurrentPage(1);
+      setSelectedTransaction(null);
+    } catch {
+      setError("No se pudieron resetear los filtros");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className={styles.dashboard}>
+      <aside className={styles.sidebar}>
+        <div className={styles.brand}>
+          <img
+            alt=""
+            aria-hidden="true"
+            className={styles.brandMark}
+            src="/novapay-icon.png"
+          />
+          <div>
+            <h1>NovaPay</h1>
+            <span>Gestor de transacciones</span>
+          </div>
+        </div>
+
+        <nav className={styles.nav}>
+          {navigationItems.map(({ label, icon: Icon, path }) => (
+            <button
+              className={
+                path === "/transactions" ? styles.activeNav : styles.navItem
+              }
+              key={label}
+              onClick={() => navigate(path)}
+              type="button"
+            >
+              <Icon aria-hidden="true" size={18} />
+              {label}
+            </button>
+          ))}
+        </nav>
+
+        <div className={styles.sidebarBottom}>
+          <div className={styles.analystCard}>
+            <UserCircle aria-hidden="true" size={20} />
+            <strong>{analyst.name}</strong>
+            <span>{analyst.role}</span>
+          </div>
+
+          <button
+            className={styles.logout}
+            onClick={handleLogout}
+            type="button"
+          >
+            <LogOut aria-hidden="true" size={16} />
+            Cerrar sesión
+          </button>
+        </div>
+      </aside>
+
+      <main className={styles.main}>
+        <section className={styles.content}>
+          <section className={styles.filterBar}>
+            <label>
+              <span>Fraude</span>
+              <select
+                value={fraudFilter}
+                onChange={(e) => setFraudFilter(e.target.value)}
+              >
+                <option value="">Todas</option>
+                <option value="true">Sí</option>
+                <option value="false">No</option>
+              </select>
+            </label>
+
+            <label className={styles.searchField}>
+              <span>ID de transacción</span>
+              <div className={styles.searchInput}>
+                <Search aria-hidden="true" size={16} />
+                <input
+                  onChange={(e) => setTransactionId(e.target.value)}
+                  placeholder="Buscar por ID de transacción"
+                  type="text"
+                  value={transactionId}
+                />
+              </div>
+            </label>
+
+            <button
+              className={styles.primaryButton}
+              onClick={loadTransactions}
+              type="button"
+            >
+              <SlidersHorizontal aria-hidden="true" size={16} />
+              Aplicar filtros
+            </button>
+            <button
+              className={styles.secondaryButton}
+              onClick={handleResetFilters}
+              type="button"
+            >
+              Limpiar filtros
+            </button>
+          </section>
+
+          <section className={styles.workspaceGrid}>
+            <article className={styles.ledger}>
+              <div className={styles.cardHeader}>
+                <div>
+                  <h3>Transacciones</h3>
+                  <p>Mostrando todas las transacciones</p>
+                </div>
+              </div>
+
+              <div className={styles.tableWrap}>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Hora</th>
+                      <th>Usuario</th>
+                      <th>Importe</th>
+                      <th>Puntuación</th>
+                      <th>Fraude</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {isLoading && (
+                      <tr>
+                        <td colSpan="6">
+                          <LoadingSpinner label="Cargando transacciones..." />
+                        </td>
+                      </tr>
+                    )}
+
+                    {error && (
+                      <tr>
+                        <td colSpan="6">{error}</td>
+                      </tr>
+                    )}
+
+                    {!isLoading &&
+                      !error &&
+                      paginatedTransactions.map((transaction) => (
+                        <tr
+                          className={
+                            selectedTransaction?.id === transaction.id
+                              ? styles.selectedRow
+                              : ""
+                          }
+                          key={transaction.id}
+                          onClick={() => setSelectedTransaction(transaction)}
+                        >
+                          <td>{transaction.id}</td>
+                          <td>{transaction.time}</td>
+                          <td>
+                            <strong>{transaction.userId}</strong>
+                            <span>{transaction.country}</span>
+                          </td>
+                          <td className={styles.amount}>
+                            {transaction.amount}
+                          </td>
+                          <td>
+                            <span
+                              className={`${styles.badge} ${
+                                transaction.score >= 80 ? styles.redBadge : ""
+                              }`}
+                            >
+                              {transaction.score}%
+                            </span>
+                          </td>
+                          <td>{transaction.isFraud ? "Sí" : "No"}</td>
+                        </tr>
+                      ))}
+
+                    {!isLoading &&
+                      !error &&
+                      prioritizedTransactions.length === 0 && (
+                        <tr>
+                          <td colSpan="6">No hay transacciones</td>
+                        </tr>
+                      )}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className={styles.pagination}>
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => {
+                    setSelectedTransaction(null);
+                    setCurrentPage((page) => Math.max(1, page - 1));
+                  }}
+                  type="button"
+                >
+                  Anterior
+                </button>
+
+                <span>
+                  Página {currentPage} de {totalPages || 1}
+                </span>
+
+                <button
+                  disabled={currentPage === totalPages || totalPages === 0}
+                  onClick={() => {
+                    setSelectedTransaction(null);
+                    setCurrentPage((page) => Math.min(totalPages, page + 1));
+                  }}
+                  type="button"
+                >
+                  Siguiente
+                </button>
+              </div>
+            </article>
+            <aside className={styles.reviewPanel}>
+              <div className={styles.cardHeader}>
+                <div>
+                  <h3>Detalle de transacción</h3>
+                  <p>
+                    {selectedTransaction
+                      ? `${selectedTransaction.id} seleccionada`
+                      : "Selecciona una transacción"}
+                  </p>
+                </div>
+                <span className={styles.livePill}>Revisión</span>
+              </div>
+
+              <div className={styles.scoreBlock}>
+                <div>
+                  <span>Puntuación de fraude</span>
+                  <strong>
+                    {selectedTransaction
+                      ? `${selectedTransaction.score}%`
+                      : "-"}
+                  </strong>
+                </div>
+                <div
+                  className={styles.scoreRing}
+                  style={{
+                    "--score": selectedTransaction
+                      ? `${selectedTransaction.score}%`
+                      : "0%",
+                  }}
+                >
+                  {selectedTransaction ? selectedTransaction.score : "-"}
+                </div>
+              </div>
+
+              <dl className={styles.detailList}>
+                <div>
+                  <dt>Motivo de fraude</dt>
+                  <dd>
+                    {selectedTransaction?.fraudReason?.length > 0
+                      ? selectedTransaction.fraudReason.join(", ")
+                      : "-"}
+                  </dd>
+                </div>
+
+                <div>
+                  <dt>Motivo legítimo</dt>
+                  <dd>
+                    {selectedTransaction?.legitReason?.length > 0
+                      ? selectedTransaction.legitReason.join(", ")
+                      : "-"}
+                  </dd>
+                </div>
+              </dl>
+
+              <div className={styles.detailActions}>
+                <button
+                  type="button"
+                  disabled={!selectedTransaction}
+                  onClick={() => {
+                    if (!selectedTransaction) return;
+                    navigate(`/transactions/${selectedTransaction.id}`);
+                  }}
+                >
+                  <ListChecks aria-hidden="true" size={14} />
+                  Detalle
+                </button>
+
+                <button
+                  type="button"
+                  disabled={!selectedTransaction}
+                  onClick={() => {
+                    if (!selectedTransaction) return;
+                    navigate(`/clients/${selectedTransaction.userId}`);
+                  }}
+                >
+                  <User aria-hidden="true" size={14} />
+                  Cliente
+                </button>
+
+                <button
+                  className={styles.approveButton}
+                  type="button"
+                  disabled={
+                    !selectedTransaction ||
+                    selectedTransaction.isFraud ||
+                    isReviewing
+                  }
+                  onClick={() => handleReviewTransaction("Aprobada")}
+                >
+                  {selectedTransaction?.isFraud ? "Ya es fraude" : "Aprobar"}
+                </button>
+
+                <button
+                  className={styles.rejectButton}
+                  type="button"
+                  disabled={!selectedTransaction || isReviewing}
+                  onClick={() => handleReviewTransaction("Fraude")}
+                >
+                  Marcar fraude
+                </button>
+              </div>
+            </aside>
+          </section>
+        </section>
+      </main>
+    </div>
+  );
+}
+
+export default Transactions;

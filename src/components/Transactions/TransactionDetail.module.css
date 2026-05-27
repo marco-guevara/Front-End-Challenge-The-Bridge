@@ -1,0 +1,522 @@
+.page {
+  min-height: 100vh;
+  background: var(--color-background);
+  color: var(--color-text);
+  padding: 1.5rem;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 1rem;
+  color: var(--color-text-muted);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.breadcrumb a {
+  color: var(--color-primary-soft);
+  text-decoration: none;
+}
+
+.hero,
+.summaryGrid article,
+.loading,
+.error {
+  border: 1px solid var(--color-border);
+  border-radius: 0.9rem;
+  background: var(--color-surface-strong);
+}
+
+.hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+  padding: 1.35rem 1.5rem;
+}
+
+.eyebrow {
+  color: var(--color-primary-soft);
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  margin: 0.25rem 0 0.5rem;
+  color: var(--color-text);
+  font-size: 2rem;
+}
+
+.hero p {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-weight: 800;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.55rem;
+}
+
+.actionBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.actionBar button,
+.actionBar a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.7rem;
+  border-radius: 0.7rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 900;
+  padding-inline: 1.15rem;
+  text-decoration: none;
+}
+
+.actionBar button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.approveButton {
+  border: 1px solid rgb(125 211 168 / 30%);
+  background: var(--color-success-soft);
+  color: var(--color-text);
+}
+
+.rejectButton {
+  border: 1px solid rgb(255 107 122 / 32%);
+  background: var(--color-danger-soft);
+  color: var(--color-text);
+}
+
+.clientButton {
+  border: 1px solid var(--color-border-strong);
+  background: rgb(124 58 237 / 12%);
+  color: var(--color-text);
+}
+
+.decisionFeedback,
+.decisionError {
+  margin: -0.5rem 0 1.25rem;
+  border-radius: 0.7rem;
+  padding: 0.75rem 0.9rem;
+  font-weight: 800;
+}
+
+.decisionFeedback {
+  border: 1px solid rgb(125 211 168 / 24%);
+  background: var(--color-success-soft);
+  color: var(--color-text);
+}
+
+.decisionError {
+  border: 1px solid rgb(255 107 122 / 24%);
+  background: var(--color-danger-soft);
+  color: var(--color-text);
+}
+
+.riskGrid {
+  display: grid;
+  grid-template-columns: minmax(18rem, 24rem) 1fr;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.scoreCard {
+  display: grid;
+  justify-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 0.9rem;
+  background: var(--color-surface-strong);
+  padding: 1.5rem;
+}
+
+.scoreRing {
+  --score: 0%;
+
+  position: relative;
+  display: grid;
+  width: 9rem;
+  height: 9rem;
+  place-items: center;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at center, var(--color-surface-strong) 58%, transparent 59%),
+    conic-gradient(var(--color-danger) var(--score), var(--color-surface-soft) 0);
+  transition: background 180ms ease;
+}
+
+.scoreRing span {
+  position: relative;
+  z-index: 1;
+  color: var(--color-text);
+  font-size: 1.9rem;
+  font-weight: 900;
+}
+
+.scoreCard p {
+  margin: 0.75rem 0 1.2rem;
+  color: var(--color-text-muted);
+  font-weight: 800;
+}
+
+.scoreFacts {
+  display: grid;
+  width: 100%;
+  gap: 0.65rem;
+  margin: 0;
+}
+
+.scoreFacts div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  border-top: 1px solid var(--color-border);
+  padding-top: 0.65rem;
+}
+
+.scoreFacts dt {
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.scoreFacts dd {
+  margin: 0;
+  color: var(--color-text);
+  font-weight: 900;
+  text-align: right;
+}
+
+.explainabilityCard {
+  border: 1px solid var(--color-border);
+  border-radius: 0.9rem;
+  background: var(--color-surface-strong);
+  padding: 1.25rem;
+}
+
+.cardTitle {
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 1rem;
+  padding-bottom: 0.8rem;
+}
+
+.cardTitle h2 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 1.05rem;
+}
+
+.cardTitle p,
+.emptyState {
+  margin: 0.3rem 0 0;
+  color: var(--color-text-muted);
+}
+
+.explainabilitySummary {
+  display: grid;
+  gap: 1rem;
+}
+
+.explainabilityMetrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.explainabilityMetrics div {
+  border: 1px solid var(--color-border);
+  border-radius: 0.7rem;
+  background: var(--color-background);
+  padding: 0.8rem;
+}
+
+.explainabilityMetrics span {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.explainabilityMetrics strong {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--color-text);
+  font-size: 1.15rem;
+}
+
+.reasonColumns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.reasonColumns section {
+  border: 1px solid var(--color-border);
+  border-radius: 0.7rem;
+  background: var(--color-background);
+  padding: 0.9rem;
+}
+
+.reasonColumns h3 {
+  margin: 0 0 0.75rem;
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+
+.reasonColumns ul {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.reasonColumns li,
+.reasonColumns p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.explanationText {
+  border: 1px solid var(--color-border-strong);
+  border-radius: 0.7rem;
+  background: rgb(124 58 237 / 8%);
+  padding: 0.9rem;
+}
+
+.explanationText h3 {
+  margin: 0 0 0.55rem;
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+
+.explanationText p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.dangerBadge,
+.successBadge,
+.warningBadge,
+.infoBadge {
+  border-radius: 999px;
+  padding: 0.38rem 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.dangerBadge {
+  background: var(--color-danger-soft);
+  color: var(--color-text);
+}
+
+.successBadge {
+  background: var(--color-success-soft);
+  color: var(--color-text);
+}
+
+.warningBadge {
+  background: rgb(250 204 21 / 12%);
+  color: var(--color-text);
+}
+
+.infoBadge {
+  background: rgb(124 58 237 / 12%);
+  color: var(--color-text);
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.summaryGrid article {
+  display: grid;
+  gap: 0.45rem;
+  padding: 1.15rem;
+}
+
+.summaryGrid svg {
+  color: var(--color-primary-soft);
+}
+
+.summaryGrid span {
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.summaryGrid strong {
+  color: var(--color-text);
+  font-size: 1.6rem;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.infoCard {
+  border: 1px solid var(--color-border);
+  border-radius: 0.9rem;
+  background: var(--color-surface-strong);
+  padding: 1.25rem;
+}
+
+.infoCard h2 {
+  border-bottom: 1px solid var(--color-border);
+  margin: 0 0 1rem;
+  padding-bottom: 0.75rem;
+  color: var(--color-text);
+  font-size: 1.05rem;
+}
+
+.infoCard dl {
+  display: grid;
+  gap: 0.7rem;
+  margin: 0;
+}
+
+.infoCard div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 0.65rem;
+}
+
+.infoCard div:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.infoCard dt {
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.infoCard dd {
+  margin: 0;
+  color: var(--color-text);
+  font-weight: 800;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+.loading,
+.error {
+  padding: 0.85rem 1rem;
+}
+
+.loading {
+  color: var(--color-text-muted);
+}
+
+.error {
+  border-color: rgb(255 107 122 / 24%);
+  background: var(--color-danger-soft);
+  color: var(--color-text);
+}
+
+@media (max-width: 760px) {
+  .page {
+    padding: 0.85rem;
+  }
+
+  .hero {
+    display: grid;
+    gap: 0.9rem;
+    margin-bottom: 0.9rem;
+    padding: 1rem;
+  }
+
+  .hero h1 {
+    font-size: 1.55rem;
+  }
+
+  .hero p {
+    gap: 0.4rem;
+    font-size: 0.78rem;
+  }
+
+  .badges {
+    justify-content: flex-start;
+  }
+
+  .actionBar {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+    margin-bottom: 0.9rem;
+  }
+
+  .actionBar button,
+  .actionBar a {
+    min-height: 2.55rem;
+  }
+
+  .riskGrid {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+    margin-bottom: 0.9rem;
+  }
+
+  .scoreCard,
+  .explainabilityCard,
+  .infoCard {
+    padding: 1rem;
+  }
+
+  .scoreRing {
+    width: 7.4rem;
+    height: 7.4rem;
+  }
+
+  .summaryGrid,
+  .infoGrid {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+    margin-bottom: 0.9rem;
+  }
+
+  .explainabilityMetrics,
+  .reasonColumns {
+    grid-template-columns: 1fr;
+  }
+
+  .infoCard div {
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .infoCard dd {
+    text-align: left;
+  }
+}
