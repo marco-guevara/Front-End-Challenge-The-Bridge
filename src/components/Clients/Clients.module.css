@@ -226,6 +226,14 @@ td span {
   padding: 0.85rem 1rem;
 }
 
+.success {
+  border: 1px solid rgb(110 231 183 / 24%);
+  border-radius: 0.75rem;
+  background: rgb(110 231 183 / 10%);
+  color: #d1fae5;
+  padding: 0.85rem 1rem;
+}
+
 .loading {
   border: 1px solid #1d2638;
   border-radius: 0.75rem;

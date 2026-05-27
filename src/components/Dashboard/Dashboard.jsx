@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   AlertTriangle,
   CircleDot,
@@ -31,8 +31,10 @@ function Dashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [dashboardStats, setDashboardStats] = useState(null);
+  const [pendingCount, setPendingCount] = useState(null);
 
   const { user, logout } = useAuth();
+  const location = useLocation();
   const navigate = useNavigate();
 
   const analyst = {
@@ -41,26 +43,27 @@ function Dashboard() {
   };
 
   useEffect(() => {
-    const getDashboardStats = async () => {
-      try {
-        const response = await api.get("/trans/stats/dashboard");
-        setDashboardStats(response.data);
-      } catch (err) {
-        setStatsError("No se pudieron cargar las estadísticas del dashboard");
-        console.log("ERROR STATS:", err.message);
-      }
-    };
+    let ignore = false;
 
-    const getTransactions = async () => {
-      try {
-        const response = await api.get("/trans", {
-          params: {
-            limite: 100,
-            revisado: "Pendiente",
-          },
-        });
+    const loadDashboardData = async () => {
+      setIsLoading(true);
+      setStatsError("");
+      setTransactionsError("");
+      setPendingCount(null);
 
-        const mappedTransactions = response.data.map((transaction) => ({
+      try {
+        const [statsResponse, transactionsResponse] = await Promise.all([
+          api.get("/trans/stats/dashboard"),
+          api.get("/trans", {
+            params: {
+              limite: 50000,
+              revisado: "Pendiente",
+            },
+          }),
+        ]);
+        if (ignore) return;
+
+        const pendingTransactions = transactionsResponse.data.map((transaction) => ({
           id: transaction.id_transaccion,
           time: `${transaction.hora}:00`, // 9 => "09:00"
           customer: transaction.id_usuario,
@@ -72,25 +75,35 @@ function Dashboard() {
           legitReason: transaction.shap_reasons?.razones_legitima,
         }));
 
-        setTransactions(mappedTransactions);
+        setDashboardStats(statsResponse.data);
+        setPendingCount(pendingTransactions.length);
+        setTransactions(pendingTransactions.slice(0, 100));
+        setSelectedTransaction(null);
+        setCurrentPage(1);
       } catch (err) {
+        if (ignore) return;
+
+        setStatsError("No se pudieron cargar las estadísticas del dashboard");
         setTransactionsError("No se pudieron cargar las transacciones");
         console.log("ERROR:", err.message);
       } finally {
-        setIsLoading(false);
+        if (!ignore) setIsLoading(false);
       }
     };
 
-    getDashboardStats();
-    getTransactions();
-  }, []);
+    loadDashboardData();
+
+    return () => {
+      ignore = true;
+    };
+  }, [location.key]);
 
   // ESTADÍSTICAS
   const stats = [
     {
       icon: CircleDot,
       label: "Pending Reviews",
-      value: dashboardStats?.pending ?? 0,
+      value: pendingCount ?? "-",
       detail: "Pending",
     },
     {
@@ -388,6 +401,18 @@ function Dashboard() {
               </dl>
 
               <div className={styles.detailActions}>
+                <button
+                  type="button"
+                  disabled={!selectedTransaction}
+                  onClick={() => {
+                    if (!selectedTransaction) return;
+
+                    navigate(`/transactions/${selectedTransaction.id}`);
+                  }}
+                >
+                  <ListChecks aria-hidden="true" size={14} />
+                  Detail
+                </button>
                 <button
                   type="button"
                   disabled={!selectedTransaction}
