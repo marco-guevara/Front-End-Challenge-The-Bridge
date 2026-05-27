@@ -173,6 +173,99 @@
   text-align: right;
 }
 
+.explainabilityCard {
+  border: 1px solid #1d2638;
+  border-radius: 0.9rem;
+  background: #111725;
+  padding: 1.25rem;
+}
+
+.cardTitle {
+  border-bottom: 1px solid #1b2434;
+  margin-bottom: 1rem;
+  padding-bottom: 0.8rem;
+}
+
+.cardTitle h2 {
+  margin: 0;
+  color: #ecfeff;
+  font-size: 1.05rem;
+}
+
+.cardTitle p,
+.emptyState {
+  margin: 0.3rem 0 0;
+  color: #9fb1c3;
+}
+
+.shapList {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.shapLegend {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.shapRow {
+  display: grid;
+  grid-template-columns: minmax(7rem, 10rem) 1fr 4.5rem;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.shapRow > span {
+  color: #dbe7f0;
+  font-size: 0.78rem;
+  font-weight: 900;
+  overflow: hidden;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shapTrack {
+  display: flex;
+  align-items: center;
+  height: 1.25rem;
+  border-radius: 999px;
+  background: #1b2638;
+  overflow: hidden;
+}
+
+.fraudBar,
+.legitBar {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.fraudBar {
+  background: linear-gradient(90deg, #fca5a5, #ef4444);
+}
+
+.legitBar {
+  margin-left: auto;
+  background: linear-gradient(90deg, #22c55e, #86efac);
+}
+
+.shapRow strong {
+  font-family: Consolas, monospace;
+  font-size: 0.78rem;
+  text-align: right;
+}
+
+.fraud {
+  color: #ffaca2;
+}
+
+.legit {
+  color: #86efac;
+}
+
 .dangerBadge,
 .successBadge,
 .warningBadge,
@@ -261,6 +354,15 @@
 
   .riskGrid {
     grid-template-columns: 1fr;
+  }
+
+  .shapRow {
+    grid-template-columns: 1fr;
+  }
+
+  .shapRow > span,
+  .shapRow strong {
+    text-align: left;
   }
 
   .summaryGrid {

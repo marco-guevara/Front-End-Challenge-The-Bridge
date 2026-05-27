@@ -29,6 +29,18 @@ function formatDateTime(transaction) {
     : formattedDate;
 }
 
+function getShapReasons(transaction) {
+  return transaction.shap_reasons || transaction.shapReasons || transaction.explainability || [];
+}
+
+function getReasonLabel(reason, index) {
+  return reason.feature || reason.caracteristica || reason.nombre || `Feature ${index + 1}`;
+}
+
+function getReasonImpact(reason) {
+  return Number(reason.impacto ?? reason.valor ?? reason.value ?? 0);
+}
+
 function TransactionDetail() {
   const { id } = useParams();
   const [transaction, setTransaction] = useState(null);
@@ -72,6 +84,11 @@ function TransactionDetail() {
 
   const score = Math.round(Number(transaction.f_score || 0) * 100);
   const amount = Number(transaction.importe || 0).toFixed(2);
+  const shapReasons = getShapReasons(transaction);
+  const maxImpact = Math.max(
+    1,
+    ...shapReasons.map((reason) => Math.abs(getReasonImpact(reason))),
+  );
 
   return (
     <main className={styles.page}>
@@ -143,6 +160,45 @@ function TransactionDetail() {
               <dd>{transaction.analista || "-"}</dd>
             </div>
           </dl>
+        </article>
+
+        <article className={styles.explainabilityCard}>
+          <div className={styles.cardTitle}>
+            <h2>Explainability</h2>
+            <p>Model signals that influenced this fraud score.</p>
+          </div>
+
+          {shapReasons.length === 0 ? (
+            <p className={styles.emptyState}>No explainability data available</p>
+          ) : (
+            <div className={styles.shapList}>
+              <div className={styles.shapLegend}>
+                <span className={styles.legit}>Legitimate</span>
+                <span className={styles.fraud}>Fraud</span>
+              </div>
+
+              {shapReasons.map((reason, index) => {
+                const impact = getReasonImpact(reason);
+                const width = `${Math.max(8, (Math.abs(impact) / maxImpact) * 100)}%`;
+                const isFraudSignal = impact > 0;
+
+                return (
+                  <div className={styles.shapRow} key={getReasonLabel(reason, index)}>
+                    <span>{getReasonLabel(reason, index)}</span>
+                    <div className={styles.shapTrack}>
+                      <div
+                        className={isFraudSignal ? styles.fraudBar : styles.legitBar}
+                        style={{ width }}
+                      />
+                    </div>
+                    <strong className={isFraudSignal ? styles.fraud : styles.legit}>
+                      {impact.toFixed(4)}
+                    </strong>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </article>
       </section>
 
