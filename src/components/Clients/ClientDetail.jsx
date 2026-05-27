@@ -17,6 +17,10 @@ function getTransactionId(transaction) {
   return transaction.id_transaccion || transaction.id;
 }
 
+function isPendingReview(transaction) {
+  return !transaction.revisado || transaction.revisado === "Pendiente";
+}
+
 function formatTransactionDate(transaction) {
   if (!transaction.fecha) return "-";
 
@@ -37,6 +41,7 @@ function ClientDetail() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     let ignore = false;
@@ -64,9 +69,7 @@ function ClientDetail() {
 
   const stats = useMemo(() => {
     const fraud = transactions.filter((transaction) => transaction.es_fraude).length;
-    const pending = transactions.filter(
-      (transaction) => !transaction.revisado || transaction.revisado === "Pending",
-    ).length;
+    const pending = transactions.filter(isPendingReview).length;
     const volume = transactions.reduce(
       (total, transaction) => total + Number(transaction.importe || 0),
       0,
@@ -80,10 +83,14 @@ function ClientDetail() {
 
     setSaving(true);
     setError("");
+    setSuccessMessage("");
 
     try {
       const updated = await updateClient(id, { bloqueado: !client.bloqueado });
       setClient(updated);
+      setSuccessMessage(
+        updated.bloqueado ? "Client blocked" : "Client unblocked",
+      );
     } catch (err) {
       setError(err.message);
     } finally {
@@ -128,6 +135,7 @@ function ClientDetail() {
       </section>
 
       {error && <p className={styles.error}>{error}</p>}
+      {successMessage && <p className={styles.success}>{successMessage}</p>}
 
       <section className={styles.statsGrid}>
         <article>
