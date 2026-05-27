@@ -34,6 +34,7 @@ function Dashboard() {
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [dashboardStats, setDashboardStats] = useState(null);
 
   const { user, logout, loading } = useAuth();
   const navigate = useNavigate();
@@ -45,6 +46,16 @@ function Dashboard() {
   };
 
   useEffect(() => {
+    const getDashboardStats = async () => {
+      try {
+        const response = await api.get("/trans/stats/dashboard");
+        setDashboardStats(response.data);
+      } catch (err) {
+        setError("No se pudieron cargar las estadísticas del dashboard");
+        console.log("ERROR STATS:", err.message);
+      }
+    };
+
     const getTransactions = async () => {
       try {
         const response = await api.get("/trans", {
@@ -74,6 +85,7 @@ function Dashboard() {
       }
     };
 
+    getDashboardStats();
     getTransactions();
   }, []);
   console.log(transactions);
@@ -113,28 +125,28 @@ function Dashboard() {
   const stats = [
     {
       icon: CircleDot,
-      label: "Visible Reviews",
-      value: visibleTransactions.length,
-      detail: analyst.role,
+      label: "Pending Reviews",
+      value: dashboardStats?.pending ?? 0,
+      detail: "Pending",
     },
     {
       icon: Triangle,
-      label: "Low / Medium Risk",
-      value: lowMediumRisk,
-      detail: "< 70%",
+      label: "Clean Transactions",
+      value: dashboardStats?.clean ?? 0,
+      detail: "Clean",
     },
     {
       icon: AlertTriangle,
-      label: "High Risk",
-      value: highRisk,
-      detail: ">= 70%",
+      label: "Fraud Transactions",
+      value: dashboardStats?.fraud ?? 0,
+      detail: "Fraud",
       danger: true,
     },
     {
       icon: Gauge,
-      label: "Avg Fraud Score",
-      value: `${averageFraudScore}%`,
-      detail: "Current queue",
+      label: "Total Transactions",
+      value: dashboardStats?.total ?? 0,
+      detail: "Total",
       success: true,
     },
   ];
