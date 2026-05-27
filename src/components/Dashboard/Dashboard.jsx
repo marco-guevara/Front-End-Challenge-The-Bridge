@@ -89,12 +89,11 @@ function Dashboard() {
         setTransactions(pendingTransactions.slice(0, 100));
         setSelectedTransaction(null);
         setCurrentPage(1);
-      } catch (err) {
+      } catch {
         if (ignore) return;
 
         setStatsError("No se pudieron cargar las estadísticas del dashboard");
         setTransactionsError("No se pudieron cargar las transacciones");
-        console.log("ERROR:", err.message);
       } finally {
         if (!ignore) setIsLoading(false);
       }
@@ -146,13 +145,6 @@ function Dashboard() {
   const endIndex = startIndex + transactionsPerPage;
 
   const paginatedTransactions = transactions.slice(startIndex, endIndex);
-
-  // Si cambia el número de resultados y la página actual queda fuera, volvemos al inicio.
-  useEffect(() => {
-    if (currentPage > totalPages && totalPages > 0) {
-      setCurrentPage(1);
-    }
-  }, [currentPage, totalPages]);
 
   // Cierra la sesión del analista y vuelve al login.
   const handleLogout = async () => {
@@ -371,35 +363,6 @@ function Dashboard() {
                       : "-"}
                   </dd>
                 </div>
-
-                {/* <div>
-                  <dt>Category</dt>
-                  <dd>{selectedTransaction?.signal || "-"}</dd>
-                </div>
-
-                <div>
-                  <dt>Amount</dt>
-                  <dd>
-                    {selectedTransaction
-                      ? `€${selectedTransaction.amount}`
-                      : "-"}
-                  </dd>
-                </div>
-
-                <div>
-                  <dt>User</dt>
-                  <dd>{selectedTransaction?.userId || "-"}</dd>
-                </div>
-
-                <div>
-                  <dt>Country</dt>
-                  <dd>{selectedTransaction?.country || "-"}</dd>
-                </div>
-
-                <div>
-                  <dt>Status</dt>
-                  <dd>{selectedTransaction?.status || "-"}</dd>
-                </div> */}
               </dl>
 
               <div className={styles.detailActions}>
@@ -427,15 +390,6 @@ function Dashboard() {
                   <User aria-hidden="true" size={14} />
                   User
                 </button>
-                {/*<button className={styles.approveButton} type="button">
-                  <CheckCircle2 aria-hidden="true" size={16} />
-                  Approve
-                </button>
-                <button className={styles.rejectButton} type="button">
-                  <XCircle aria-hidden="true" size={16} />
-                  Mark Fraud
-                </button>
-              */}
               </div>
             </aside>
           </section>

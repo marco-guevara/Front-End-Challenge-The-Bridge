@@ -11,7 +11,7 @@ function Login() {
 
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
-  const { error, login, setError } = useAuth();
+  const { error, login } = useAuth();
 
   const handleChange = (event) => {
     setFormData({
@@ -54,10 +54,7 @@ function Login() {
 
           <label className={styles.field}>
             <span className={styles.splitLabel}>
-              Security Key
-              <button className={styles.resetButton} type="button">
-                Reset access?
-              </button>
+              Password
             </span>
             <span className={styles.inputRow}>
               <svg
@@ -142,8 +139,8 @@ function Login() {
       </section>
 
       <footer className={styles.footer}>
-        <span>Quantum-Safe</span>
-        <span>Level 4 Vault</span>
+        <span>NovaPay</span>
+        <span>Transaction Manager</span>
       </footer>
     </AuthShell>
   );

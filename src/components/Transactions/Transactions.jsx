@@ -35,6 +35,17 @@ function mapTransaction(transaction) {
   };
 }
 
+async function fetchPendingTransactions(params = {}) {
+  const response = await api.get("/trans", {
+    params: {
+      revisado: "Pendiente",
+      ...params,
+    },
+  });
+
+  return response.data.map(mapTransaction);
+}
+
 function Transactions() {
   const [transactions, setTransactions] = useState([]);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
@@ -73,23 +84,18 @@ function Transactions() {
         return;
       }
 
-      const params = {
-        revisado: "Pendiente",
-      };
+      const params = {};
 
       if (fraudFilter !== "") {
         params.es_fraude = fraudFilter;
       }
 
-      response = await api.get("/trans", { params });
-
-      const mappedTransactions = response.data.map(mapTransaction);
+      const mappedTransactions = await fetchPendingTransactions(params);
 
       setTransactions(mappedTransactions);
       setCurrentPage(1);
       setSelectedTransaction(null);
-    } catch (err) {
-      console.log("ERROR:", err.message);
+    } catch {
       setError("No se pudieron cargar las transacciones");
     } finally {
       setIsLoading(false);
@@ -97,7 +103,26 @@ function Transactions() {
   };
 
   useEffect(() => {
-    getTransactions();
+    let ignore = false;
+
+    fetchPendingTransactions()
+      .then((mappedTransactions) => {
+        if (ignore) return;
+
+        setTransactions(mappedTransactions);
+        setCurrentPage(1);
+        setSelectedTransaction(null);
+      })
+      .catch(() => {
+        if (!ignore) setError("No se pudieron cargar las transacciones");
+      })
+      .finally(() => {
+        if (!ignore) setIsLoading(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   const visibleTransactions = transactions.filter((transaction) => {
@@ -122,10 +147,6 @@ function Transactions() {
     prioritizedTransactions.length / transactionsPerPage,
   );
 
-  useEffect(() => {
-    setSelectedTransaction(null);
-  }, [currentPage]);
-
   const startIndex = (currentPage - 1) * transactionsPerPage;
   const endIndex = startIndex + transactionsPerPage;
 
@@ -133,12 +154,6 @@ function Transactions() {
     startIndex,
     endIndex,
   );
-
-  useEffect(() => {
-    if (currentPage > totalPages && totalPages > 0) {
-      setCurrentPage(1);
-    }
-  }, [currentPage, totalPages]);
 
   const handleLogout = async () => {
     const isConfirmed = confirm("¿Está segur@ de que quiere cerrar la sesión?");
@@ -171,8 +186,7 @@ function Transactions() {
       );
 
       setSelectedTransaction(null);
-    } catch (err) {
-      console.log("ERROR REVIEW:", err.message);
+    } catch {
       setError("No se pudo actualizar la transacción");
     } finally {
       setIsReviewing(false);
@@ -184,19 +198,12 @@ function Transactions() {
       setIsLoading(true);
       setError("");
 
-      const response = await api.get("/trans", {
-        params: {
-          revisado: "Pendiente",
-        },
-      });
-
-      setTransactions(response.data.map(mapTransaction));
+      setTransactions(await fetchPendingTransactions());
       setFraudFilter("");
       setTransactionId("");
       setCurrentPage(1);
       setSelectedTransaction(null);
-    } catch (err) {
-      console.log("ERROR RESET:", err.message);
+    } catch {
       setError("No se pudieron resetear los filtros");
     } finally {
       setIsLoading(false);
@@ -380,7 +387,10 @@ function Transactions() {
               <div className={styles.pagination}>
                 <button
                   disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(currentPage - 1)}
+                  onClick={() => {
+                    setSelectedTransaction(null);
+                    setCurrentPage(currentPage - 1);
+                  }}
                   type="button"
                 >
                   Previous
@@ -392,7 +402,10 @@ function Transactions() {
 
                 <button
                   disabled={currentPage === totalPages || totalPages === 0}
-                  onClick={() => setCurrentPage(currentPage + 1)}
+                  onClick={() => {
+                    setSelectedTransaction(null);
+                    setCurrentPage(currentPage + 1);
+                  }}
                   type="button"
                 >
                   Next
