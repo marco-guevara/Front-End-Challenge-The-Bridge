@@ -11,6 +11,13 @@ import {
 
 import { getTransactionById, updateTransaction } from "../../services/api";
 import { confirmAction, showError, showSuccess } from "../../utils/alerts";
+import {
+  displayValue as formatDisplayValue,
+  formatBoolean as formatDisplayBoolean,
+  formatCurrency,
+  formatHour,
+  formatScore,
+} from "../../utils/formatters";
 import styles from "./TransactionDetail.module.css";
 
 function normalizeTransaction(data) {
@@ -86,15 +93,6 @@ function getReasonList(value) {
       ? `${key}: ${itemValue}`
       : key,
   );
-}
-
-function displayValue(value) {
-  return value === null || value === undefined || value === "" ? "-" : value;
-}
-
-function displayBoolean(value) {
-  if (value === null || value === undefined) return "-";
-  return value ? "Yes" : "No";
 }
 
 function TransactionDetail() {
@@ -186,11 +184,8 @@ function TransactionDetail() {
     );
   }
 
-  const score = Math.min(
-    100,
-    Math.max(0, Math.round(Number(transaction.f_score || 0) * 100)),
-  );
-  const amount = Number(transaction.importe || 0).toFixed(2);
+  const score = formatScore(transaction.f_score);
+  const amount = formatCurrency(transaction.importe);
   const structuredExplainability = getStructuredExplainability(transaction);
   const fraudReasons = getReasonList(structuredExplainability?.razones_fraude);
   const legitReasons = getReasonList(
@@ -221,7 +216,7 @@ function TransactionDetail() {
           <p>
             <span>{transaction.id_transaccion || id}</span>
             <span>{formatDateTime(transaction)}</span>
-            <span>€{amount}</span>
+            <span>{amount}</span>
           </p>
         </div>
 
@@ -333,19 +328,19 @@ function TransactionDetail() {
           <dl className={styles.scoreFacts}>
             <div>
               <dt>Is Fraud</dt>
-              <dd>{transaction.es_fraude ? "Yes" : "No"}</dd>
+              <dd>{formatDisplayBoolean(transaction.es_fraude)}</dd>
             </div>
             <div>
               <dt>Needs Review</dt>
-              <dd>{transaction.revisar ? "Yes" : "No"}</dd>
+              <dd>{formatDisplayBoolean(transaction.revisar)}</dd>
             </div>
             <div>
               <dt>Category</dt>
-              <dd>{displayValue(transaction.categoria)}</dd>
+              <dd>{formatDisplayValue(transaction.categoria)}</dd>
             </div>
             <div>
               <dt>Amount</dt>
-              <dd>€{amount}</dd>
+              <dd>{amount}</dd>
             </div>
           </dl>
         </article>
@@ -361,11 +356,11 @@ function TransactionDetail() {
               <div className={styles.explainabilityMetrics}>
                 <div>
                   <span>Risk level</span>
-                  <strong>{displayValue(structuredExplainability.nivel)}</strong>
+                  <strong>{formatDisplayValue(structuredExplainability.nivel)}</strong>
                 </div>
                 <div>
                   <span>Model score</span>
-                  <strong>{displayValue(structuredExplainability.score)}</strong>
+                  <strong>{formatDisplayValue(structuredExplainability.score)}</strong>
                 </div>
               </div>
 
@@ -435,32 +430,32 @@ function TransactionDetail() {
             <div><dt>Transaction ID</dt><dd>{transaction.id_transaccion || id}</dd></div>
             <div><dt>User ID</dt><dd>{transaction.id_usuario || "-"}</dd></div>
             <div><dt>Date</dt><dd>{formatDateTime(transaction)}</dd></div>
-            <div><dt>Amount</dt><dd>€{amount}</dd></div>
-            <div><dt>Category</dt><dd>{displayValue(transaction.categoria)}</dd></div>
-            <div><dt>Hour</dt><dd>{transaction.hora !== undefined ? `${transaction.hora}:00` : "-"}</dd></div>
+            <div><dt>Amount</dt><dd>{amount}</dd></div>
+            <div><dt>Category</dt><dd>{formatDisplayValue(transaction.categoria)}</dd></div>
+            <div><dt>Hour</dt><dd>{formatHour(transaction.hora)}</dd></div>
           </dl>
         </article>
 
         <article className={styles.infoCard}>
           <h2>Payment Information</h2>
           <dl>
-            <div><dt>Payment Country</dt><dd>{displayValue(transaction.pais_pago)}</dd></div>
-            <div><dt>Card Type</dt><dd>{displayValue(transaction.tipo_tarjeta)}</dd></div>
-            <div><dt>Online</dt><dd>{displayBoolean(transaction.es_online)}</dd></div>
-            <div><dt>Same Shipping/Billing</dt><dd>{displayBoolean(transaction.mismo_envio_facturacion)}</dd></div>
-            <div><dt>VPN/Proxy</dt><dd>{displayBoolean(transaction.uso_vpn_proxy)}</dd></div>
-            <div><dt>3D Secure</dt><dd>{displayBoolean(transaction.paso_3d_secure)}</dd></div>
+            <div><dt>Payment Country</dt><dd>{formatDisplayValue(transaction.pais_pago)}</dd></div>
+            <div><dt>Card Type</dt><dd>{formatDisplayValue(transaction.tipo_tarjeta)}</dd></div>
+            <div><dt>Online</dt><dd>{formatDisplayBoolean(transaction.es_online)}</dd></div>
+            <div><dt>Same Shipping/Billing</dt><dd>{formatDisplayBoolean(transaction.mismo_envio_facturacion)}</dd></div>
+            <div><dt>VPN/Proxy</dt><dd>{formatDisplayBoolean(transaction.uso_vpn_proxy)}</dd></div>
+            <div><dt>3D Secure</dt><dd>{formatDisplayBoolean(transaction.paso_3d_secure)}</dd></div>
           </dl>
         </article>
 
         <article className={styles.infoCard}>
           <h2>Device and Account</h2>
           <dl>
-            <div><dt>Device Type</dt><dd>{displayValue(transaction.tipo_dispositivo)}</dd></div>
+            <div><dt>Device Type</dt><dd>{formatDisplayValue(transaction.tipo_dispositivo)}</dd></div>
             <div><dt>Min Since Last TX</dt><dd>{transaction.minutos_desde_ultima_tx ?? "-"} min</dd></div>
             <div><dt>Account Age</dt><dd>{transaction.dias_antiguedad_cuenta ?? "-"} days</dd></div>
-            <div><dt>Email Verified</dt><dd>{displayBoolean(transaction.email_verificado)}</dd></div>
-            <div><dt>Issuing Country</dt><dd>{displayValue(transaction.pais_emision)}</dd></div>
+            <div><dt>Email Verified</dt><dd>{formatDisplayBoolean(transaction.email_verificado)}</dd></div>
+            <div><dt>Issuing Country</dt><dd>{formatDisplayValue(transaction.pais_emision)}</dd></div>
           </dl>
         </article>
       </section>

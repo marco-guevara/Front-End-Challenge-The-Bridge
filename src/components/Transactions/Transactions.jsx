@@ -19,6 +19,7 @@ import {
   updateTransaction,
 } from "../../services/api";
 import { confirmAction, showError, showSuccess } from "../../utils/alerts";
+import { formatCurrency, formatHour, formatScore } from "../../utils/formatters";
 
 const navigationItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
@@ -29,11 +30,11 @@ const navigationItems = [
 function mapTransaction(transaction) {
   return {
     id: transaction.id_transaccion,
-    time: `${transaction.hora}:00`,
+    time: formatHour(transaction.hora),
     userId: transaction.id_usuario,
-    amount: Number(transaction.importe).toFixed(2),
+    amount: formatCurrency(transaction.importe),
     country: transaction.pais_pago,
-    score: Math.round(Number(transaction.f_score) * 100),
+    score: formatScore(transaction.f_score),
     isFraud: transaction.es_fraude,
     fraudReason: transaction.shap_reasons?.razones_fraude,
     legitReason: transaction.shap_reasons?.razones_legitima,
@@ -386,7 +387,7 @@ function Transactions() {
                             <span>{transaction.country}</span>
                           </td>
                           <td className={styles.amount}>
-                            €{transaction.amount}
+                            {transaction.amount}
                           </td>
                           <td>
                             <span

@@ -17,6 +17,7 @@ import styles from "./Dashboard.module.css";
 import useAuth from "../../context/useAuth";
 import { getDashboardStats, getTransactions } from "../../services/api";
 import { confirmAction, showError } from "../../utils/alerts";
+import { formatCurrency, formatHour, formatScore } from "../../utils/formatters";
 
 const navigationItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
@@ -28,12 +29,12 @@ const navigationItems = [
 function mapPendingTransaction(transaction) {
   return {
     id: transaction.id_transaccion,
-    time: `${transaction.hora}:00`,
+    time: formatHour(transaction.hora),
     customer: transaction.id_usuario,
     userId: transaction.id_usuario,
-    amount: Number(transaction.importe).toFixed(2),
+    amount: formatCurrency(transaction.importe),
     country: transaction.pais_pago,
-    score: Math.round(Number(transaction.f_score) * 100),
+    score: formatScore(transaction.f_score),
     fraudReason: transaction.shap_reasons?.razones_fraude,
     legitReason: transaction.shap_reasons?.razones_legitima,
   };
@@ -288,7 +289,7 @@ function Dashboard() {
                             <span>{transaction.country}</span>
                           </td>
                           <td className={styles.amount}>
-                            €{transaction.amount}
+                            {transaction.amount}
                           </td>
                           <td>
                             <span

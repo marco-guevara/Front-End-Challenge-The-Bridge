@@ -8,6 +8,11 @@ import {
   updateClient,
 } from "../../services/api";
 import { confirmAction, showError, showSuccess } from "../../utils/alerts";
+import {
+  formatBoolean,
+  formatCurrency,
+  formatDateTime,
+} from "../../utils/formatters";
 import styles from "./Clients.module.css";
 
 function getClientName(client) {
@@ -27,19 +32,6 @@ function getTransactionTimestamp(transaction) {
 
 function isPendingReview(transaction) {
   return !transaction.revisado || transaction.revisado === "Pendiente";
-}
-
-function formatTransactionDate(transaction) {
-  if (!transaction.fecha) return "-";
-
-  const date = new Date(transaction.fecha);
-  const formattedDate = Number.isNaN(date.getTime())
-    ? transaction.fecha
-    : date.toLocaleDateString();
-
-  return transaction.hora !== undefined
-    ? `${formattedDate} · ${transaction.hora}:00`
-    : formattedDate;
 }
 
 function ClientDetail() {
@@ -187,7 +179,7 @@ function ClientDetail() {
         </article>
         <article>
           <span>Volume</span>
-          <strong>€{stats.volume.toFixed(2)}</strong>
+          <strong>{formatCurrency(stats.volume)}</strong>
         </article>
       </section>
 
@@ -206,8 +198,8 @@ function ClientDetail() {
             <div><dt>DNI</dt><dd>{client?.dni || "-"}</dd></div>
             <div><dt>Country</dt><dd>{client?.pais_emision || "-"}</dd></div>
             <div><dt>Account age</dt><dd>{client?.dias_antiguedad_cuenta ?? "-"} days</dd></div>
-            <div><dt>Email verified</dt><dd>{client?.email_verificado ? "Yes" : "No"}</dd></div>
-            <div><dt>3D Secure</dt><dd>{client?.paso_3d_secure ? "Passed" : "Not passed"}</dd></div>
+            <div><dt>Email verified</dt><dd>{formatBoolean(client?.email_verificado)}</dd></div>
+            <div><dt>3D Secure</dt><dd>{formatBoolean(client?.paso_3d_secure, "Passed", "Not passed")}</dd></div>
           </dl>
 
           <button
@@ -248,10 +240,12 @@ function ClientDetail() {
                   >
                     <span>
                       <strong>{transaction.categoria || "-"}</strong>
-                      <small>{formatTransactionDate(transaction)}</small>
+                      <small>
+                        {formatDateTime(transaction.fecha, transaction.hora)}
+                      </small>
                     </span>
                     <span>{transaction.pais_pago || "-"}</span>
-                    <strong>€{Number(transaction.importe || 0).toFixed(2)}</strong>
+                    <strong>{formatCurrency(transaction.importe)}</strong>
                   </Link>
                 );
               })
