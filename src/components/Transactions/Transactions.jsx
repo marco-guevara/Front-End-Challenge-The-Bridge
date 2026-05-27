@@ -14,6 +14,7 @@ import {
 import styles from "./Transactions.module.css";
 import useAuth from "../../context/useAuth";
 import { api, updateTransaction } from "../../services/api";
+import { confirmAction, showError, showSuccess } from "../../utils/alerts";
 
 const navigationItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
@@ -156,7 +157,14 @@ function Transactions() {
   );
 
   const handleLogout = async () => {
-    const isConfirmed = confirm("¿Está segur@ de que quiere cerrar la sesión?");
+    const isConfirmed = await confirmAction({
+      title: "Cerrar sesión",
+      text: "¿Está segur@ de que quiere cerrar la sesión?",
+      confirmButtonText: "Cerrar sesión",
+      icon: "question",
+      confirmButtonColor: "#0dd1e7",
+    });
+
     if (!isConfirmed) return;
 
     await logout();
@@ -166,16 +174,24 @@ function Transactions() {
   const handleReviewTransaction = async (reviewStatus) => {
     if (!selectedTransaction) return;
 
+    const isFraudDecision = reviewStatus === "Fraude";
+    const isConfirmed = await confirmAction({
+      title: isFraudDecision ? "Mark as fraud?" : "Approve transaction?",
+      text: isFraudDecision
+        ? "This will mark the transaction as reviewed and fraudulent. This action can only be changed through technical support."
+        : "This will mark the transaction as reviewed and not fraudulent. This action can only be changed through technical support.",
+      confirmButtonText: isFraudDecision ? "Mark Fraud" : "Approve",
+      icon: isFraudDecision ? "warning" : "question",
+    });
+
+    if (!isConfirmed) return;
+
     try {
       setIsReviewing(true);
-      const isConfirmed = confirm(
-        "¿Está segur@ de que quiere enviar el resultado de la transacción?",
-      );
-      if (!isConfirmed) return;
       await updateTransaction(selectedTransaction.id, {
         revisado: "Revisado",
-        es_fraude: reviewStatus === "Fraude",
-        auditor_fraude: reviewStatus === "Fraude",
+        es_fraude: isFraudDecision,
+        auditor_fraude: isFraudDecision,
       });
 
       setError("");
@@ -186,8 +202,18 @@ function Transactions() {
       );
 
       setSelectedTransaction(null);
+      await showSuccess(
+        "Decision saved",
+        isFraudDecision
+          ? "Transaction marked as fraud"
+          : "Transaction approved",
+      );
     } catch {
       setError("No se pudo actualizar la transacción");
+      await showError(
+        "Decision not saved",
+        "No se pudo actualizar la transacción",
+      );
     } finally {
       setIsReviewing(false);
     }

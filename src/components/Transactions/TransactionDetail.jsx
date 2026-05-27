@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import Swal from "sweetalert2";
-import "sweetalert2/dist/sweetalert2.min.css";
 import {
   CheckCircle2,
   CalendarClock,
@@ -12,6 +10,7 @@ import {
 } from "lucide-react";
 
 import { getTransactionById, updateTransaction } from "../../services/api";
+import { confirmAction, showError, showSuccess } from "../../utils/alerts";
 import styles from "./TransactionDetail.module.css";
 
 function normalizeTransaction(data) {
@@ -98,23 +97,6 @@ function displayBoolean(value) {
   return value ? "Yes" : "No";
 }
 
-async function confirmDecision({ title, text, confirmButtonText, icon }) {
-  const result = await Swal.fire({
-    title,
-    text,
-    icon,
-    showCancelButton: true,
-    confirmButtonText,
-    cancelButtonText: "Cancel",
-    confirmButtonColor: icon === "warning" ? "#ef4444" : "#16a34a",
-    cancelButtonColor: "#64748b",
-    background: "#111725",
-    color: "#ecfeff",
-  });
-
-  return result.isConfirmed;
-}
-
 function TransactionDetail() {
   const { id } = useParams();
   const [transaction, setTransaction] = useState(null);
@@ -150,7 +132,7 @@ function TransactionDetail() {
     localPatch = payload,
     confirmOptions,
   }) => {
-    const isConfirmed = await confirmDecision(confirmOptions);
+    const isConfirmed = await confirmAction(confirmOptions);
     if (!isConfirmed) return;
 
     try {
@@ -174,26 +156,10 @@ function TransactionDetail() {
         };
       });
       setDecisionMessage(message);
-      await Swal.fire({
-        title: "Decision saved",
-        text: message,
-        icon: "success",
-        confirmButtonText: "OK",
-        confirmButtonColor: "#0dd1e7",
-        background: "#111725",
-        color: "#ecfeff",
-      });
+      await showSuccess("Decision saved", message);
     } catch (err) {
       setDecisionError(err.message);
-      await Swal.fire({
-        title: "Decision not saved",
-        text: err.message,
-        icon: "error",
-        confirmButtonText: "OK",
-        confirmButtonColor: "#ef4444",
-        background: "#111725",
-        color: "#ecfeff",
-      });
+      await showError("Decision not saved", err.message);
     } finally {
       setDecisionLoading("");
     }

@@ -16,6 +16,7 @@ import {
 import styles from "./Dashboard.module.css";
 import useAuth from "../../context/useAuth";
 import { api } from "../../services/api";
+import { confirmAction } from "../../utils/alerts";
 
 const navigationItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
@@ -148,7 +149,14 @@ function Dashboard() {
 
   // Cierra la sesión del analista y vuelve al login.
   const handleLogout = async () => {
-    const isConfirmed = confirm("¿Está segur@ de que quiere cerrar la sesión?");
+    const isConfirmed = await confirmAction({
+      title: "Cerrar sesión",
+      text: "¿Está segur@ de que quiere cerrar la sesión?",
+      confirmButtonText: "Cerrar sesión",
+      icon: "question",
+      confirmButtonColor: "#0dd1e7",
+    });
+
     if (!isConfirmed) return;
 
     await logout();
