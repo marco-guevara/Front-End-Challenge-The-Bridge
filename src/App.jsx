@@ -6,17 +6,24 @@ import Transactions from "./components/Transactions/Transactions";
 import TransactionDetail from "./components/Transactions/TransactionDetail";
 import Clients from "./components/Clients/Clients";
 import ClientDetail from "./components/Clients/ClientDetail";
+import ProtectedRoute from "./components/Auth/ProtectedRoute";
+import PublicRoute from "./components/Auth/PublicRoute";
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Login />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/transactions" element={<Transactions />} />
-      <Route path="/transactions/:id" element={<TransactionDetail />} />
-      <Route path="/clients" element={<Clients />} />
-      <Route path="/clients/:id" element={<ClientDetail />} />
+      <Route element={<PublicRoute />}>
+        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
+      </Route>
+
+      <Route element={<ProtectedRoute />}>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/transactions" element={<Transactions />} />
+        <Route path="/transactions/:id" element={<TransactionDetail />} />
+        <Route path="/clients" element={<Clients />} />
+        <Route path="/clients/:id" element={<ClientDetail />} />
+      </Route>
     </Routes>
   );
 }
