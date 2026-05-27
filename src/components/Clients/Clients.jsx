@@ -45,6 +45,10 @@ function Clients() {
     setCurrentPage(1);
   };
 
+  const handleFilterSubmit = (event) => {
+    event.preventDefault();
+  };
+
   useEffect(() => {
     let ignore = false;
 
@@ -76,7 +80,7 @@ function Clients() {
         </div>
       </header>
 
-      <form className={styles.filters}>
+      <form className={styles.filters} onSubmit={handleFilterSubmit}>
         <label>
           <span>Search</span>
           <div className={styles.searchInput}>
