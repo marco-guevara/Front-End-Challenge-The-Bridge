@@ -1,21 +1,3 @@
-  // Filtramos transacciones por rol de analista
-  // const visibleTransactions = transactions.filter((transaction) => {
-  //   if (analyst.role === "Admin") {
-  //     return transaction.score < 70;
-  //   }
-
-  //   if (analyst.role === "Analyst") {
-  //     return transaction.score >= 70;
-  //   }
-
-  //   return false;
-  // });
-
-    // Ordenamos transacciones por score (riesgo) de mayor a menor
-  // const prioritizedTransactions = [...visibleTransactions].sort((a, b) => {
-  //   return b.score - a.score;
-  // });
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -23,55 +5,53 @@ import {
   ListChecks,
   LogOut,
   Search,
-  ShieldAlert,
   SlidersHorizontal,
   User,
   UserCircle,
   Users,
 } from "lucide-react";
 
-import styles from "../Dashboard/Dashboard.module.css";
+import styles from "./Transactions.module.css";
 import useAuth from "../../context/useAuth";
 import { api } from "../../services/api";
-
-const analyst = {
-  name: "Marta Soler",
-  role: "Admin",
-};
 
 const navigationItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
   { label: "Transactions", icon: ListChecks, path: "/transactions" },
-  { label: "Risk Review", icon: ShieldAlert, path: "/dashboard" },
   { label: "Users", icon: Users, path: "/clients" },
 ];
 
 function mapTransaction(transaction) {
   return {
     id: transaction.id_transaccion,
-    date: transaction.fecha,
     time: `${transaction.hora}:00`,
     userId: transaction.id_usuario,
     amount: Number(transaction.importe).toFixed(2),
     country: transaction.pais_pago,
     score: Math.round(Number(transaction.f_score) * 100),
-    status: transaction.revisado,
     isFraud: transaction.es_fraude,
-    category: transaction.categoria,
+    fraudReason: transaction.shap_reasons?.razones_fraude,
+    legitReason: transaction.shap_reasons?.razones_legitima,
   };
 }
 
 function Transactions() {
   const [transactions, setTransactions] = useState([]);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [isReviewing, setIsReviewing] = useState(false);
   const [fraudFilter, setFraudFilter] = useState("");
-  const [reviewedFilter, setReviewedFilter] = useState("");
   const [transactionId, setTransactionId] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
+
+  const analyst = {
+    name: user?.name || user?.email || "Analyst",
+    role: user?.role || "Analyst",
+  };
 
   const getTransactions = async () => {
     try {
@@ -83,23 +63,23 @@ function Transactions() {
       if (transactionId.trim()) {
         response = await api.get(`/trans/${transactionId.trim()}`);
 
+        // Si es array coge primer elemento, si no usa el objeto directamente
         const transaction = Array.isArray(response.data)
           ? response.data[0]
           : response.data;
 
         setTransactions(transaction ? [mapTransaction(transaction)] : []);
         setCurrentPage(1);
+        setSelectedTransaction(null);
         return;
       }
 
-      const params = {};
+      const params = {
+        revisado: "Pendiente",
+      };
 
       if (fraudFilter !== "") {
         params.es_fraude = fraudFilter;
-      }
-
-      if (reviewedFilter !== "") {
-        params.revisado = reviewedFilter;
       }
 
       response = await api.get("/trans", { params });
@@ -108,6 +88,7 @@ function Transactions() {
 
       setTransactions(mappedTransactions);
       setCurrentPage(1);
+      setSelectedTransaction(null);
     } catch (err) {
       console.log("ERROR:", err.message);
       setError("No se pudieron cargar las transacciones");
@@ -117,46 +98,119 @@ function Transactions() {
   };
 
   useEffect(() => {
-    let ignore = false;
-
-    api
-      .get("/trans")
-      .then((response) => {
-        if (ignore) return;
-
-        setTransactions(response.data.map(mapTransaction));
-        setCurrentPage(1);
-      })
-      .catch((err) => {
-        if (ignore) return;
-
-        console.log("ERROR:", err.message);
-        setError("No se pudieron cargar las transacciones");
-      })
-      .finally(() => {
-        if (!ignore) setIsLoading(false);
-      });
-
-    return () => {
-      ignore = true;
-    };
+    getTransactions();
   }, []);
 
+  const visibleTransactions = transactions.filter((transaction) => {
+    if (analyst.role === "Analyst") {
+      return transaction.score >= 70;
+    }
+
+    if (analyst.role === "Admin") {
+      return transaction.score < 70;
+    }
+
+    return false;
+  });
+
+  const prioritizedTransactions = [...visibleTransactions].sort((a, b) => {
+    return b.score - a.score;
+  });
+
+  // Transacciones por página
   const transactionsPerPage = 10;
 
-  const totalPages = Math.ceil(transactions.length / transactionsPerPage);
+  // PAGINADO DE TRANSACCIONES
+  // Calculamos el total de páginas
+  // Como necesitamos páginas completas, Math.ceil() redondea hacia arriba.
+  const totalPages = Math.ceil(
+    prioritizedTransactions.length / transactionsPerPage,
+  );
 
+  useEffect(() => {
+    setSelectedTransaction(null);
+  }, [currentPage]);
+
+  // Calculamos desde qué posición del array empieza la página actual
   const startIndex = (currentPage - 1) * transactionsPerPage;
+
+  // Calculamos hasta qué posición del array llega la página
   const endIndex = startIndex + transactionsPerPage;
 
-  const paginatedTransactions = transactions.slice(startIndex, endIndex);
+  // Hacemos el corte real del array
+  const paginatedTransactions = prioritizedTransactions.slice(
+    startIndex,
+    endIndex,
+  );
 
+  // Si estás en una página que ya no existe, volver a página 1
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1);
+    }
+  }, [currentPage, totalPages]);
+
+  // LOGOUT
   const handleLogout = async () => {
     const isConfirmed = confirm("¿Está segur@ de que quiere cerrar la sesión?");
     if (!isConfirmed) return;
 
     await logout();
     navigate("/login");
+  };
+
+  const handleReviewTransaction = async (reviewStatus) => {
+    if (!selectedTransaction) return;
+
+    try {
+      setIsReviewing(true);
+      const isConfirmed = confirm(
+        "¿Está segur@ de que quiere enviar el resultado de la transacción?",
+      );
+      if (!isConfirmed) return;
+      await api.patch(`/trans/${selectedTransaction.id}`, {
+        revisado: "Revisado",
+        es_fraude: reviewStatus === "Fraude",
+      });
+
+      setError("");
+      setTransactions((prevTransactions) =>
+        prevTransactions.filter(
+          (transaction) => transaction.id !== selectedTransaction.id,
+        ),
+      );
+
+      setSelectedTransaction(null);
+    } catch (err) {
+      console.log("ERROR REVIEW:", err.message);
+      setError("No se pudo actualizar la transacción");
+    } finally {
+      setIsReviewing(false);
+    }
+  };
+
+  const handleResetFilters = async () => {
+    try {
+      setIsLoading(true);
+      setError("");
+
+      const response = await api.get("/trans", {
+        params: {
+          revisado: "Pendiente",
+        },
+      });
+
+      setTransactions(response.data.map(mapTransaction));
+      setFraudFilter("");
+      setTransactionId("");
+      setCurrentPage(1);
+      setSelectedTransaction(null);
+    } catch (err) {
+      console.log("ERROR RESET:", err.message);
+      setError("No se pudieron resetear los filtros");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -219,19 +273,6 @@ function Transactions() {
               </select>
             </label>
 
-            <label>
-              <span>Revisado</span>
-              <select
-                value={reviewedFilter}
-                onChange={(e) => setReviewedFilter(e.target.value)}
-              >
-                <option value="">All</option>
-                <option value="No requerido">No requerido</option>
-                <option value="Revisado">Revisado</option>
-                <option value="Pendiente">Pendiente</option>
-              </select>
-            </label>
-
             <label className={styles.searchField}>
               <span>Transaction ID</span>
               <div className={styles.searchInput}>
@@ -253,14 +294,25 @@ function Transactions() {
               <SlidersHorizontal aria-hidden="true" size={16} />
               Apply Filters
             </button>
+            <button
+              className={styles.secondaryButton}
+              onClick={handleResetFilters}
+              type="button"
+            >
+              Reset Filters
+            </button>
           </section>
 
           <section className={styles.workspaceGrid}>
             <article className={styles.ledger}>
               <div className={styles.cardHeader}>
                 <div>
-                  <h3>Transactions</h3>
-                  <p>All database transactions</p>
+                  <h3>Pending Transactions</h3>
+                  <p>
+                    {analyst.role === "Analyst"
+                      ? "Showing pending transactions with score >= 70"
+                      : "Showing pending transactions with score < 70"}
+                  </p>
                 </div>
               </div>
 
@@ -274,28 +326,34 @@ function Transactions() {
                       <th>Amount</th>
                       <th>Score</th>
                       <th>Fraud</th>
-                      <th>Status</th>
-                      <th>Actions</th>
                     </tr>
                   </thead>
 
                   <tbody>
                     {isLoading && (
                       <tr>
-                        <td colSpan="8">Cargando transacciones...</td>
+                        <td colSpan="6">Cargando transacciones...</td>
                       </tr>
                     )}
 
                     {error && (
                       <tr>
-                        <td colSpan="8">{error}</td>
+                        <td colSpan="6">{error}</td>
                       </tr>
                     )}
 
                     {!isLoading &&
                       !error &&
                       paginatedTransactions.map((transaction) => (
-                        <tr key={transaction.id}>
+                        <tr
+                          className={
+                            selectedTransaction?.id === transaction.id
+                              ? styles.selectedRow
+                              : ""
+                          }
+                          key={transaction.id}
+                          onClick={() => setSelectedTransaction(transaction)}
+                        >
                           <td>{transaction.id}</td>
                           <td>{transaction.time}</td>
                           <td>
@@ -315,37 +373,16 @@ function Transactions() {
                             </span>
                           </td>
                           <td>{transaction.isFraud ? "Sí" : "No"}</td>
-                          <td>{transaction.status}</td>
-                          <td>
-                            <div className={styles.rowActions}>
-                              <button
-                                onClick={() =>
-                                  navigate(`/transactions/${transaction.id}`)
-                                }
-                                type="button"
-                              >
-                                <ShieldAlert aria-hidden="true" size={14} />
-                                Detail
-                              </button>
-                              <button
-                                onClick={() =>
-                                  navigate(`/clients/${transaction.userId}`)
-                                }
-                                type="button"
-                              >
-                                <User aria-hidden="true" size={14} />
-                                User
-                              </button>
-                            </div>
-                          </td>
                         </tr>
                       ))}
 
-                    {!isLoading && !error && transactions.length === 0 && (
-                      <tr>
-                        <td colSpan="8">No hay transacciones</td>
-                      </tr>
-                    )}
+                    {!isLoading &&
+                      !error &&
+                      prioritizedTransactions.length === 0 && (
+                        <tr>
+                          <td colSpan="6">No hay transacciones</td>
+                        </tr>
+                      )}
                   </tbody>
                 </table>
               </div>
@@ -372,6 +409,85 @@ function Transactions() {
                 </button>
               </div>
             </article>
+            <aside className={styles.reviewPanel}>
+              <div className={styles.cardHeader}>
+                <div>
+                  <h3>Transaction Detail</h3>
+                  <p>
+                    {selectedTransaction
+                      ? `${selectedTransaction.id} selected`
+                      : "Select a transaction"}
+                  </p>
+                </div>
+                <span className={styles.livePill}>Review</span>
+              </div>
+
+              <div className={styles.scoreBlock}>
+                <div>
+                  <span>Fraud score</span>
+                  <strong>
+                    {selectedTransaction
+                      ? `${selectedTransaction.score}%`
+                      : "-"}
+                  </strong>
+                </div>
+                <div className={styles.scoreRing}>
+                  {selectedTransaction ? selectedTransaction.score : "-"}
+                </div>
+              </div>
+
+              <dl className={styles.detailList}>
+                <div>
+                  <dt>Fraud Reason</dt>
+                  <dd>
+                    {selectedTransaction?.fraudReason?.length > 0
+                      ? selectedTransaction.fraudReason.join(", ")
+                      : "-"}
+                  </dd>
+                </div>
+
+                <div>
+                  <dt>Legitimate Reason</dt>
+                  <dd>
+                    {selectedTransaction?.legitReason?.length > 0
+                      ? selectedTransaction.legitReason.join(", ")
+                      : "-"}
+                  </dd>
+                </div>
+              </dl>
+
+              <div className={styles.detailActions}>
+                <button
+                  type="button"
+                  disabled={!selectedTransaction}
+                  onClick={() => {
+                    if (!selectedTransaction) return;
+                    navigate(`/clients/${selectedTransaction.userId}`);
+                  }}
+                >
+                  <User aria-hidden="true" size={14} />
+                  User
+                </button>
+
+                <button
+                  className={styles.approveButton}
+                  type="button"
+                  disabled={!selectedTransaction || isReviewing}
+                  onClick={() => handleReviewTransaction("Aprobada")}
+                >
+                  Approve
+                </button>
+
+                <button
+                  className={styles.rejectButton}
+                  type="button"
+                  disabled={!selectedTransaction || isReviewing}
+                  onClick={() => handleReviewTransaction("Fraude")}
+                >
+                  Mark Fraud
+                </button>
+              </div>
+            </aside>
           </section>
         </section>
       </main>
