@@ -532,7 +532,7 @@ tbody tr:hover {
   }
 
   .brand {
-    justify-content: center;
+    justify-content: flex-start;
     padding: 0.1rem 0 0.85rem;
   }
 
@@ -544,7 +544,7 @@ tbody tr:hover {
   .navItem,
   .activeNav,
   .logout {
-    justify-content: center;
+    justify-content: flex-start;
     padding: 0.72rem 0.6rem;
     font-size: 0.8rem;
   }
