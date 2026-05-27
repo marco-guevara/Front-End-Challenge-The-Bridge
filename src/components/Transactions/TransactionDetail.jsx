@@ -154,10 +154,10 @@ function TransactionDetail() {
         };
       });
       setDecisionMessage(message);
-      await showSuccess("Decision saved", message);
+      await showSuccess("Decisión guardada", message);
     } catch (err) {
       setDecisionError(err.message);
-      await showError("Decision not saved", err.message);
+      await showError("No se guardó la decisión", err.message);
     } finally {
       setDecisionLoading("");
     }
@@ -166,7 +166,7 @@ function TransactionDetail() {
   if (loading) {
     return (
       <main className={styles.page}>
-        <p className={styles.loading}>Loading transaction...</p>
+        <p className={styles.loading}>Cargando transacción...</p>
       </main>
     );
   }
@@ -175,11 +175,11 @@ function TransactionDetail() {
     return (
       <main className={styles.page}>
         <nav className={styles.breadcrumb}>
-          <Link to="/transactions">Transactions</Link>
+          <Link to="/transactions">Transacciones</Link>
           <span>/</span>
           <strong>{String(id).slice(0, 12)}...</strong>
         </nav>
-        <p className={styles.error}>{error || "Transaction not found"}</p>
+        <p className={styles.error}>{error || "Transacción no encontrada"}</p>
       </main>
     );
   }
@@ -206,15 +206,15 @@ function TransactionDetail() {
   return (
     <main className={styles.page}>
       <nav className={styles.breadcrumb}>
-        <Link to="/transactions">Transactions</Link>
+        <Link to="/transactions">Transacciones</Link>
         <span>/</span>
         <strong>{String(id).slice(0, 12)}...</strong>
       </nav>
 
       <section className={styles.hero}>
         <div>
-          <span className={styles.eyebrow}>Advanced Review</span>
-          <h1>Transaction Detail</h1>
+          <span className={styles.eyebrow}>Revisión avanzada</span>
+          <h1>Detalle de transacción</h1>
           <p>
             <span>{transaction.id_transaccion || id}</span>
             <span>{formatDateTime(transaction)}</span>
@@ -224,9 +224,9 @@ function TransactionDetail() {
 
         <div className={styles.badges}>
           <span className={transaction.es_fraude ? styles.dangerBadge : styles.successBadge}>
-            {transaction.es_fraude ? "Fraud Detected" : "No Fraud"}
+            {transaction.es_fraude ? "Fraude detectado" : "Sin fraude"}
           </span>
-          <span className={styles.warningBadge}>{transaction.revisado || "Pending"}</span>
+          <span className={styles.warningBadge}>{transaction.revisado || "Pendiente"}</span>
         </div>
       </section>
 
@@ -241,7 +241,7 @@ function TransactionDetail() {
                 revisado: "Revisado",
                 auditor_fraude: false,
               },
-              message: "Transaction approved",
+              message: "Transacción aprobada",
               loadingKey: "approve",
               localPatch: {
                 es_fraude: false,
@@ -250,9 +250,9 @@ function TransactionDetail() {
                 auditor_fraude: false,
               },
               confirmOptions: {
-                title: "Approve transaction?",
-                text: "This will mark the transaction as reviewed and not fraudulent. This action can only be changed through technical support.",
-                confirmButtonText: "Approve",
+                title: "¿Aprobar transacción?",
+                text: "La transacción quedará revisada y marcada como no fraudulenta. Esta acción solo podrá cambiarse mediante soporte técnico.",
+                confirmButtonText: "Aprobar",
                 icon: "question",
               },
             })
@@ -261,12 +261,12 @@ function TransactionDetail() {
         >
           <CheckCircle2 aria-hidden="true" size={16} />
           {isReviewed
-            ? "Decision Saved"
+            ? "Decisión guardada"
             : transaction.es_fraude
-              ? "Already Fraud"
+              ? "Ya es fraude"
             : decisionLoading === "approve"
-              ? "Approving..."
-              : "Approve Transaction"}
+              ? "Aprobando..."
+              : "Aprobar transacción"}
         </button>
         <button
           className={styles.rejectButton}
@@ -278,7 +278,7 @@ function TransactionDetail() {
                 revisado: "Revisado",
                 auditor_fraude: true,
               },
-              message: "Transaction marked as fraud",
+              message: "Transacción marcada como fraude",
               loadingKey: "fraud",
               localPatch: {
                 es_fraude: true,
@@ -287,9 +287,9 @@ function TransactionDetail() {
                 auditor_fraude: true,
               },
               confirmOptions: {
-                title: "Mark as fraud?",
-                text: "This will mark the transaction as reviewed and fraudulent. This action can only be changed through technical support.",
-                confirmButtonText: "Mark Fraud",
+                title: "¿Marcar como fraude?",
+                text: "La transacción quedará revisada y marcada como fraude. Esta acción solo podrá cambiarse mediante soporte técnico.",
+                confirmButtonText: "Marcar fraude",
                 icon: "warning",
               },
             })
@@ -298,14 +298,14 @@ function TransactionDetail() {
         >
           <XCircle aria-hidden="true" size={16} />
           {isReviewed
-            ? "Decision Saved"
+            ? "Decisión guardada"
             : decisionLoading === "fraud"
-              ? "Saving..."
-              : "Mark as Fraud"}
+              ? "Guardando..."
+              : "Marcar como fraude"}
         </button>
         <Link className={styles.clientButton} to={`/clients/${transaction.id_usuario}`}>
           <UserRound aria-hidden="true" size={16} />
-          View Client
+          Ver cliente
         </Link>
       </section>
 
@@ -327,23 +327,23 @@ function TransactionDetail() {
           >
             <span>{score}%</span>
           </div>
-          <p>Fraud Score</p>
+          <p>Puntuación de fraude</p>
 
           <dl className={styles.scoreFacts}>
             <div>
-              <dt>Is Fraud</dt>
+              <dt>Es fraude</dt>
               <dd>{formatDisplayBoolean(transaction.es_fraude)}</dd>
             </div>
             <div>
-              <dt>Needs Review</dt>
+              <dt>Necesita revisión</dt>
               <dd>{formatDisplayBoolean(transaction.revisar)}</dd>
             </div>
             <div>
-              <dt>Category</dt>
+              <dt>Categoría</dt>
               <dd>{formatDisplayValue(transaction.categoria)}</dd>
             </div>
             <div>
-              <dt>Amount</dt>
+              <dt>Importe</dt>
               <dd>{amount}</dd>
             </div>
           </dl>
@@ -351,28 +351,28 @@ function TransactionDetail() {
 
         <article className={styles.explainabilityCard}>
           <div className={styles.cardTitle}>
-            <h2>Explainability</h2>
-            <p>Model signals that influenced this fraud score.</p>
+            <h2>Explicabilidad</h2>
+            <p>Señales del modelo que influyeron en el score de fraude.</p>
           </div>
 
           {structuredExplainability ? (
             <div className={styles.explainabilitySummary}>
               <div className={styles.explainabilityMetrics}>
                 <div>
-                  <span>Risk level</span>
+                  <span>Nivel de riesgo</span>
                   <strong>{formatDisplayValue(structuredExplainability.nivel)}</strong>
                 </div>
                 <div>
-                  <span>Model score</span>
+                  <span>Puntuación del modelo</span>
                   <strong>{formatDisplayValue(structuredExplainability.score)}</strong>
                 </div>
               </div>
 
               <div className={styles.reasonColumns}>
                 <section>
-                  <h3>Fraud reasons</h3>
+                  <h3>Motivos de fraude</h3>
                   {fraudReasons.length === 0 ? (
-                    <p>No fraud reasons available</p>
+                    <p>No hay motivos de fraude disponibles</p>
                   ) : (
                     <ul>
                       {fraudReasons.map((reason) => (
@@ -383,9 +383,9 @@ function TransactionDetail() {
                 </section>
 
                 <section>
-                  <h3>Legitimate reasons</h3>
+                  <h3>Motivos legítimos</h3>
                   {legitReasons.length === 0 ? (
-                    <p>No legitimate reasons available</p>
+                    <p>No hay motivos legítimos disponibles</p>
                   ) : (
                     <ul>
                       {legitReasons.map((reason) => (
@@ -398,13 +398,13 @@ function TransactionDetail() {
 
               {explanationText && (
                 <section className={styles.explanationText}>
-                  <h3>API explanation</h3>
+                  <h3>Explicación de la API</h3>
                   <p>{explanationText}</p>
                 </section>
               )}
             </div>
           ) : (
-            <p className={styles.emptyState}>No explainability data available</p>
+            <p className={styles.emptyState}>No hay datos de explicabilidad disponibles</p>
           )}
         </article>
       </section>
@@ -412,54 +412,54 @@ function TransactionDetail() {
       <section className={styles.summaryGrid}>
         <article>
           <ShieldAlert aria-hidden="true" size={22} />
-          <span>Fraud Score</span>
+          <span>Puntuación de fraude</span>
           <strong>{score}%</strong>
         </article>
         <article>
           <CreditCard aria-hidden="true" size={22} />
-          <span>Payment Country</span>
+          <span>País de pago</span>
           <strong>{transaction.pais_pago || "-"}</strong>
         </article>
         <article>
           <CalendarClock aria-hidden="true" size={22} />
-          <span>Category</span>
+          <span>Categoría</span>
           <strong>{transaction.categoria || "-"}</strong>
         </article>
       </section>
 
       <section className={styles.infoGrid}>
         <article className={styles.infoCard}>
-          <h2>General Information</h2>
+          <h2>Información general</h2>
           <dl>
-            <div><dt>Transaction ID</dt><dd>{transaction.id_transaccion || id}</dd></div>
-            <div><dt>User ID</dt><dd>{transaction.id_usuario || "-"}</dd></div>
-            <div><dt>Date</dt><dd>{formatDateTime(transaction)}</dd></div>
-            <div><dt>Amount</dt><dd>{amount}</dd></div>
-            <div><dt>Category</dt><dd>{formatDisplayValue(transaction.categoria)}</dd></div>
-            <div><dt>Hour</dt><dd>{formatHour(transaction.hora)}</dd></div>
+            <div><dt>ID transacción</dt><dd>{transaction.id_transaccion || id}</dd></div>
+            <div><dt>ID usuario</dt><dd>{transaction.id_usuario || "-"}</dd></div>
+            <div><dt>Fecha</dt><dd>{formatDateTime(transaction)}</dd></div>
+            <div><dt>Importe</dt><dd>{amount}</dd></div>
+            <div><dt>Categoría</dt><dd>{formatDisplayValue(transaction.categoria)}</dd></div>
+            <div><dt>Hora</dt><dd>{formatHour(transaction.hora)}</dd></div>
           </dl>
         </article>
 
         <article className={styles.infoCard}>
-          <h2>Payment Information</h2>
+          <h2>Información de pago</h2>
           <dl>
-            <div><dt>Payment Country</dt><dd>{formatDisplayValue(transaction.pais_pago)}</dd></div>
-            <div><dt>Card Type</dt><dd>{formatDisplayValue(transaction.tipo_tarjeta)}</dd></div>
-            <div><dt>Online</dt><dd>{formatDisplayBoolean(transaction.es_online)}</dd></div>
-            <div><dt>Same Shipping/Billing</dt><dd>{formatDisplayBoolean(transaction.mismo_envio_facturacion)}</dd></div>
+            <div><dt>País de pago</dt><dd>{formatDisplayValue(transaction.pais_pago)}</dd></div>
+            <div><dt>Tipo de tarjeta</dt><dd>{formatDisplayValue(transaction.tipo_tarjeta)}</dd></div>
+            <div><dt>En línea</dt><dd>{formatDisplayBoolean(transaction.es_online)}</dd></div>
+            <div><dt>Mismo envío/facturación</dt><dd>{formatDisplayBoolean(transaction.mismo_envio_facturacion)}</dd></div>
             <div><dt>VPN/Proxy</dt><dd>{formatDisplayBoolean(transaction.uso_vpn_proxy)}</dd></div>
             <div><dt>3D Secure</dt><dd>{formatDisplayBoolean(transaction.paso_3d_secure)}</dd></div>
           </dl>
         </article>
 
         <article className={styles.infoCard}>
-          <h2>Device and Account</h2>
+          <h2>Dispositivo y cuenta</h2>
           <dl>
-            <div><dt>Device Type</dt><dd>{formatDisplayValue(transaction.tipo_dispositivo)}</dd></div>
-            <div><dt>Min Since Last TX</dt><dd>{transaction.minutos_desde_ultima_tx ?? "-"} min</dd></div>
-            <div><dt>Account Age</dt><dd>{transaction.dias_antiguedad_cuenta ?? "-"} days</dd></div>
-            <div><dt>Email Verified</dt><dd>{formatDisplayBoolean(transaction.email_verificado)}</dd></div>
-            <div><dt>Issuing Country</dt><dd>{formatDisplayValue(transaction.pais_emision)}</dd></div>
+            <div><dt>Tipo de dispositivo</dt><dd>{formatDisplayValue(transaction.tipo_dispositivo)}</dd></div>
+            <div><dt>Min desde última TX</dt><dd>{transaction.minutos_desde_ultima_tx ?? "-"} min</dd></div>
+            <div><dt>Antigüedad de cuenta</dt><dd>{transaction.dias_antiguedad_cuenta ?? "-"} días</dd></div>
+            <div><dt>Email verificado</dt><dd>{formatDisplayBoolean(transaction.email_verificado)}</dd></div>
+            <div><dt>País de emisión</dt><dd>{formatDisplayValue(transaction.pais_emision)}</dd></div>
           </dl>
         </article>
       </section>

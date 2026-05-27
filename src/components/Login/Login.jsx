@@ -41,7 +41,7 @@ function Login() {
       <section className={styles.card}>
         <form className={styles.form} onSubmit={handleSubmit}>
           <label className={styles.field}>
-            <span className={styles.label}>Corporate ID / Email</span>
+            <span className={styles.label}>ID corporativo / Email</span>
             <span className={styles.inputRow}>
               <span aria-hidden="true" className={styles.atIcon}>
                 @
@@ -52,7 +52,7 @@ function Login() {
                 disabled={isSubmitting}
                 name="email"
                 onChange={handleChange}
-                placeholder="Enter your credentials"
+                placeholder="Introduce tus credenciales"
                 required
                 type="email"
                 value={formData.email}
@@ -62,7 +62,7 @@ function Login() {
 
           <label className={styles.field}>
             <span className={styles.splitLabel}>
-              Password
+              Contraseña
             </span>
             <span className={styles.inputRow}>
               <svg
@@ -87,13 +87,13 @@ function Login() {
                 disabled={isSubmitting}
                 name="password"
                 onChange={handleChange}
-                placeholder="Password"
+                placeholder="Contraseña"
                 required
                 type={showPassword ? "text" : "password"}
                 value={formData.password}
               />
               <button
-                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                 className={styles.revealButton}
                 disabled={isSubmitting}
                 onClick={() => setShowPassword((visible) => !visible)}
@@ -133,7 +133,7 @@ function Login() {
 
           <label className={styles.checkboxField}>
             <input className={styles.checkbox} defaultChecked type="checkbox" />
-            Enforce session encryption
+            Forzar cifrado de sesión
           </label>
 
           <button
@@ -141,7 +141,7 @@ function Login() {
             disabled={isSubmitting}
             type="submit"
           >
-            {isSubmitting ? "Initializing..." : "Initialize Session"}
+            {isSubmitting ? "Iniciando..." : "Iniciar sesión"}
           </button>
 
           {error && (
@@ -154,7 +154,7 @@ function Login() {
 
       <footer className={styles.footer}>
         <span>NovaPay</span>
-        <span>Transaction Manager</span>
+        <span>Gestor de transacciones</span>
       </footer>
     </AuthShell>
   );

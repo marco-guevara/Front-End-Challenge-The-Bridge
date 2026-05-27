@@ -26,9 +26,9 @@ import {
 } from "../../utils/formatters";
 
 const navigationItems = [
-  { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
-  { label: "Transactions", icon: ListChecks, path: "/transactions" },
-  { label: "Users", icon: Users, path: "/clients" },
+  { label: "Panel", icon: LayoutDashboard, path: "/dashboard" },
+  { label: "Transacciones", icon: ListChecks, path: "/transactions" },
+  { label: "Clientes", icon: Users, path: "/clients" },
 ];
 
 function mapTransaction(transaction) {
@@ -51,6 +51,10 @@ async function fetchTransactions(params = {}) {
   return transactions.map(mapTransaction);
 }
 
+function formatRole(role) {
+  return role === "Analyst" ? "Analista" : role || "Analista";
+}
+
 function Transactions() {
   const [transactions, setTransactions] = useState([]);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
@@ -65,8 +69,8 @@ function Transactions() {
   const navigate = useNavigate();
 
   const analyst = {
-    name: user?.name || user?.email || "Analyst",
-    role: user?.role || "Analyst",
+    name: user?.name || user?.email || "Analista",
+    role: formatRole(user?.role),
   };
   const loadTransactions = async () => {
     try {
@@ -146,7 +150,7 @@ function Transactions() {
   const handleLogout = async () => {
     const isConfirmed = await confirmAction({
       title: "Cerrar sesión",
-      text: "¿Está segur@ de que quiere cerrar la sesión?",
+      text: "¿Seguro que quieres cerrar la sesión?",
       confirmButtonText: "Cerrar sesión",
       icon: "question",
       confirmButtonColor: "#0dd1e7",
@@ -167,11 +171,11 @@ function Transactions() {
 
     const isFraudDecision = reviewStatus === "Fraude";
     const isConfirmed = await confirmAction({
-      title: isFraudDecision ? "Mark as fraud?" : "Approve transaction?",
+      title: isFraudDecision ? "¿Marcar como fraude?" : "¿Aprobar transacción?",
       text: isFraudDecision
-        ? "This will mark the transaction as reviewed and fraudulent. This action can only be changed through technical support."
-        : "This will mark the transaction as reviewed and not fraudulent. This action can only be changed through technical support.",
-      confirmButtonText: isFraudDecision ? "Mark Fraud" : "Approve",
+        ? "La transacción quedará revisada y marcada como fraude. Esta acción solo podrá cambiarse mediante soporte técnico."
+        : "La transacción quedará revisada y marcada como no fraudulenta. Esta acción solo podrá cambiarse mediante soporte técnico.",
+      confirmButtonText: isFraudDecision ? "Marcar fraude" : "Aprobar",
       icon: isFraudDecision ? "warning" : "question",
     });
 
@@ -196,15 +200,15 @@ function Transactions() {
 
       setSelectedTransaction(null);
       await showSuccess(
-        "Decision saved",
+        "Decisión guardada",
         isFraudDecision
-          ? "Transaction marked as fraud"
-          : "Transaction approved",
+          ? "Transacción marcada como fraude"
+          : "Transacción aprobada",
       );
     } catch {
       setError("No se pudo actualizar la transacción");
       await showError(
-        "Decision not saved",
+        "No se guardó la decisión",
         "No se pudo actualizar la transacción",
       );
     } finally {
@@ -236,7 +240,7 @@ function Transactions() {
           <span className={styles.brandMark}>N</span>
           <div>
             <h1>NovaPay</h1>
-            <span>Transaction Manager</span>
+            <span>Gestor de transacciones</span>
           </div>
         </div>
 
@@ -269,7 +273,7 @@ function Transactions() {
             type="button"
           >
             <LogOut aria-hidden="true" size={16} />
-            Logout
+            Cerrar sesión
           </button>
         </div>
       </aside>
@@ -283,19 +287,19 @@ function Transactions() {
                 value={fraudFilter}
                 onChange={(e) => setFraudFilter(e.target.value)}
               >
-                <option value="">All</option>
+                <option value="">Todas</option>
                 <option value="true">Sí</option>
                 <option value="false">No</option>
               </select>
             </label>
 
             <label className={styles.searchField}>
-              <span>Transaction ID</span>
+              <span>ID de transacción</span>
               <div className={styles.searchInput}>
                 <Search aria-hidden="true" size={16} />
                 <input
                   onChange={(e) => setTransactionId(e.target.value)}
-                  placeholder="Search by transaction ID"
+                  placeholder="Buscar por ID de transacción"
                   type="text"
                   value={transactionId}
                 />
@@ -308,14 +312,14 @@ function Transactions() {
               type="button"
             >
               <SlidersHorizontal aria-hidden="true" size={16} />
-              Apply Filters
+              Aplicar filtros
             </button>
             <button
               className={styles.secondaryButton}
               onClick={handleResetFilters}
               type="button"
             >
-              Reset Filters
+              Limpiar filtros
             </button>
           </section>
 
@@ -323,8 +327,8 @@ function Transactions() {
             <article className={styles.ledger}>
               <div className={styles.cardHeader}>
                 <div>
-                  <h3>Transactions</h3>
-                  <p>Showing all transactions</p>
+                  <h3>Transacciones</h3>
+                  <p>Mostrando todas las transacciones</p>
                 </div>
               </div>
 
@@ -333,11 +337,11 @@ function Transactions() {
                   <thead>
                     <tr>
                       <th>ID</th>
-                      <th>Time</th>
-                      <th>User</th>
-                      <th>Amount</th>
-                      <th>Score</th>
-                      <th>Fraud</th>
+                      <th>Hora</th>
+                      <th>Usuario</th>
+                      <th>Importe</th>
+                      <th>Puntuación</th>
+                      <th>Fraude</th>
                     </tr>
                   </thead>
 
@@ -408,11 +412,11 @@ function Transactions() {
                   }}
                   type="button"
                 >
-                  Previous
+                  Anterior
                 </button>
 
                 <span>
-                  Page {currentPage} of {totalPages || 1}
+                  Página {currentPage} de {totalPages || 1}
                 </span>
 
                 <button
@@ -423,26 +427,26 @@ function Transactions() {
                   }}
                   type="button"
                 >
-                  Next
+                  Siguiente
                 </button>
               </div>
             </article>
             <aside className={styles.reviewPanel}>
               <div className={styles.cardHeader}>
                 <div>
-                  <h3>Transaction Detail</h3>
+                  <h3>Detalle de transacción</h3>
                   <p>
                     {selectedTransaction
-                      ? `${selectedTransaction.id} selected`
-                      : "Select a transaction"}
+                      ? `${selectedTransaction.id} seleccionada`
+                      : "Selecciona una transacción"}
                   </p>
                 </div>
-                <span className={styles.livePill}>Review</span>
+                <span className={styles.livePill}>Revisión</span>
               </div>
 
               <div className={styles.scoreBlock}>
                 <div>
-                  <span>Fraud score</span>
+                  <span>Puntuación de fraude</span>
                   <strong>
                     {selectedTransaction
                       ? `${selectedTransaction.score}%`
@@ -456,7 +460,7 @@ function Transactions() {
 
               <dl className={styles.detailList}>
                 <div>
-                  <dt>Fraud Reason</dt>
+                  <dt>Motivo de fraude</dt>
                   <dd>
                     {selectedTransaction?.fraudReason?.length > 0
                       ? selectedTransaction.fraudReason.join(", ")
@@ -465,7 +469,7 @@ function Transactions() {
                 </div>
 
                 <div>
-                  <dt>Legitimate Reason</dt>
+                  <dt>Motivo legítimo</dt>
                   <dd>
                     {selectedTransaction?.legitReason?.length > 0
                       ? selectedTransaction.legitReason.join(", ")
@@ -484,7 +488,7 @@ function Transactions() {
                   }}
                 >
                   <ListChecks aria-hidden="true" size={14} />
-                  Detail
+                  Detalle
                 </button>
 
                 <button
@@ -496,7 +500,7 @@ function Transactions() {
                   }}
                 >
                   <User aria-hidden="true" size={14} />
-                  User
+                  Cliente
                 </button>
 
                 <button
@@ -509,7 +513,7 @@ function Transactions() {
                   }
                   onClick={() => handleReviewTransaction("Aprobada")}
                 >
-                  {selectedTransaction?.isFraud ? "Already Fraud" : "Approve"}
+                  {selectedTransaction?.isFraud ? "Ya es fraude" : "Aprobar"}
                 </button>
 
                 <button
@@ -518,7 +522,7 @@ function Transactions() {
                   disabled={!selectedTransaction || isReviewing}
                   onClick={() => handleReviewTransaction("Fraude")}
                 >
-                  Mark Fraud
+                  Marcar fraude
                 </button>
               </div>
             </aside>

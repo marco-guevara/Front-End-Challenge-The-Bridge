@@ -24,9 +24,9 @@ import {
 } from "../../utils/formatters";
 
 const navigationItems = [
-  { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
-  { label: "Transactions", icon: ListChecks, path: "/transactions" },
-  { label: "Users", icon: Users, path: "/clients" },
+  { label: "Panel", icon: LayoutDashboard, path: "/dashboard" },
+  { label: "Transacciones", icon: ListChecks, path: "/transactions" },
+  { label: "Clientes", icon: Users, path: "/clients" },
 ];
 const DASHBOARD_TRANSACTION_LIMIT = 1000;
 
@@ -68,6 +68,10 @@ function getTransactionTimestamp(transaction) {
   return date && !Number.isNaN(date.getTime()) ? date.getTime() + time : time;
 }
 
+function formatRole(role) {
+  return role === "Analyst" ? "Analista" : role || "Analista";
+}
+
 function Dashboard() {
   const [transactions, setTransactions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -83,11 +87,11 @@ function Dashboard() {
   const navigate = useNavigate();
 
   const analyst = {
-    name: user?.name || user?.email || "Analyst",
-    role: user?.role || "Analyst",
+    name: user?.name || user?.email || "Analista",
+    role: formatRole(user?.role),
   };
   // Recarga stats y transacciones pendientes cada vez que se entra al dashboard.
-  // Pending Reviews se calcula desde la lista filtrada porque el endpoint de stats
+  // Revisiones pendientes se calcula desde la lista filtrada porque el endpoint de stats
   // puede no reflejar inmediatamente las transacciones recién revisadas.
   useEffect(() => {
     let ignore = false;
@@ -143,26 +147,26 @@ function Dashboard() {
   const stats = [
     {
       icon: CircleDot,
-      label: "Pending Reviews",
+      label: "Revisiones pendientes",
       value: pendingCount ?? "-",
-      detail: "Pending",
+      detail: "Pendientes",
     },
     {
       icon: Triangle,
-      label: "Clean Transactions",
+      label: "Transacciones limpias",
       value: dashboardStats?.clean ?? 0,
-      detail: "Clean",
+      detail: "Limpias",
     },
     {
       icon: AlertTriangle,
-      label: "Fraud Transactions",
+      label: "Transacciones fraudulentas",
       value: dashboardStats?.fraud ?? 0,
-      detail: "Fraud",
+      detail: "Fraude",
       danger: true,
     },
     {
       icon: Gauge,
-      label: "Total Transactions",
+      label: "Total de transacciones",
       value: dashboardStats?.total ?? 0,
       detail: "Total",
       success: true,
@@ -184,7 +188,7 @@ function Dashboard() {
   const handleLogout = async () => {
     const isConfirmed = await confirmAction({
       title: "Cerrar sesión",
-      text: "¿Está segur@ de que quiere cerrar la sesión?",
+      text: "¿Seguro que quieres cerrar la sesión?",
       confirmButtonText: "Cerrar sesión",
       icon: "question",
       confirmButtonColor: "#0dd1e7",
@@ -207,7 +211,7 @@ function Dashboard() {
           <span className={styles.brandMark}>N</span>
           <div>
             <h1>NovaPay</h1>
-            <span>Transaction Manager</span>
+            <span>Gestor de transacciones</span>
           </div>
         </div>
 
@@ -237,7 +241,7 @@ function Dashboard() {
             type="button"
           >
             <LogOut aria-hidden="true" size={16} />
-            Logout
+            Cerrar sesión
           </button>
         </div>
       </aside>
@@ -278,7 +282,7 @@ function Dashboard() {
             <article className={styles.ledger}>
               <div className={styles.cardHeader}>
                 <div>
-                  <h3>Last 100 Pending Transactions</h3>
+                  <h3>Últimas 100 transacciones pendientes</h3>
                 </div>
               </div>
 
@@ -287,10 +291,10 @@ function Dashboard() {
                   <thead>
                     <tr>
                       <th>ID</th>
-                      <th>Time</th>
-                      <th>Customer</th>
-                      <th>Amount</th>
-                      <th>Score</th>
+                      <th>Hora</th>
+                      <th>Cliente</th>
+                      <th>Importe</th>
+                      <th>Puntuación</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -357,11 +361,11 @@ function Dashboard() {
                   }
                   type="button"
                 >
-                  Previous
+                  Anterior
                 </button>
 
                 <span>
-                  Page {currentPage} of {totalPages || 1}
+                  Página {currentPage} de {totalPages || 1}
                 </span>
 
                 <button
@@ -371,7 +375,7 @@ function Dashboard() {
                   }
                   type="button"
                 >
-                  Next
+                  Siguiente
                 </button>
               </div>
             </article>
@@ -379,19 +383,19 @@ function Dashboard() {
             <aside className={styles.reviewPanel}>
               <div className={styles.cardHeader}>
                 <div>
-                  <h3>Transaction Detail</h3>
+                  <h3>Detalle de transacción</h3>
                   <p>
                     {selectedTransaction
-                      ? `${selectedTransaction.id} selected`
-                      : "Select a transaction"}
+                      ? `${selectedTransaction.id} seleccionada`
+                      : "Selecciona una transacción"}
                   </p>
                 </div>
-                <span className={styles.livePill}>Preview</span>
+                <span className={styles.livePill}>Vista previa</span>
               </div>
 
               <div className={styles.scoreBlock}>
                 <div>
-                  <span>Fraud score</span>
+                  <span>Puntuación de fraude</span>
                   <strong>
                     {selectedTransaction
                       ? `${selectedTransaction.score}%`
@@ -405,7 +409,7 @@ function Dashboard() {
 
               <dl className={styles.detailList}>
                 <div>
-                  <dt>Fraud Reason</dt>
+                  <dt>Motivo de fraude</dt>
                   <dd>
                     {selectedTransaction?.fraudReason?.length > 0
                       ? selectedTransaction.fraudReason.join(", ")
@@ -413,7 +417,7 @@ function Dashboard() {
                   </dd>
                 </div>
                 <div>
-                  <dt>Legitimate Reason</dt>
+                  <dt>Motivo legítimo</dt>
                   <dd>
                     {selectedTransaction?.legitReason?.length > 0
                       ? selectedTransaction.legitReason.join(", ")
@@ -433,7 +437,7 @@ function Dashboard() {
                   }}
                 >
                   <ListChecks aria-hidden="true" size={14} />
-                  Detail
+                  Detalle
                 </button>
                 <button
                   type="button"
@@ -445,7 +449,7 @@ function Dashboard() {
                   }}
                 >
                   <User aria-hidden="true" size={14} />
-                  User
+                  Cliente
                 </button>
               </div>
             </aside>

@@ -31,7 +31,7 @@ function AuthShell({ children }) {
         <header className={styles.loginHeader}>
           <BoltMark compact />
           <p className={styles.loginBrandName}>NovaPay</p>
-          <p className={styles.grade}>Transaction Manager</p>
+          <p className={styles.grade}>Gestor de transacciones</p>
         </header>
 
         {children}
@@ -56,7 +56,7 @@ function StatusMessage({ kind, children }) {
 function LoadingSession() {
   return (
     <AuthShell>
-      <StatusMessage kind="success">Loading session...</StatusMessage>
+      <StatusMessage kind="success">Cargando sesión...</StatusMessage>
     </AuthShell>
   );
 }

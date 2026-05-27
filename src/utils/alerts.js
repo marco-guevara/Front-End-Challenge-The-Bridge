@@ -9,7 +9,7 @@ const alertTheme = {
 async function confirmAction({
   title,
   text,
-  confirmButtonText = "Confirm",
+  confirmButtonText = "Confirmar",
   icon = "question",
   confirmButtonColor,
 }) {
@@ -20,7 +20,7 @@ async function confirmAction({
     icon,
     showCancelButton: true,
     confirmButtonText,
-    cancelButtonText: "Cancel",
+    cancelButtonText: "Cancelar",
     confirmButtonColor:
       confirmButtonColor || (icon === "warning" ? "#ef4444" : "#16a34a"),
     cancelButtonColor: "#64748b",

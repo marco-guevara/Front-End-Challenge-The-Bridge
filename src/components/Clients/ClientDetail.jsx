@@ -16,7 +16,7 @@ import {
 import styles from "./Clients.module.css";
 
 function getClientName(client) {
-  return `${client?.nombre || client?.name || "Unknown"} ${client?.apellido || ""}`.trim();
+  return `${client?.nombre || client?.name || "Sin nombre"} ${client?.apellido || ""}`.trim();
 }
 
 function getTransactionId(transaction) {
@@ -93,11 +93,11 @@ function ClientDetail() {
 
     const willBlockClient = !client.bloqueado;
     const isConfirmed = await confirmAction({
-      title: willBlockClient ? "Block client?" : "Unblock client?",
+      title: willBlockClient ? "¿Bloquear cliente?" : "¿Desbloquear cliente?",
       text: willBlockClient
-        ? "This will prevent the client from operating until the account is reviewed again."
-        : "This will restore the client account access.",
-      confirmButtonText: willBlockClient ? "Block Client" : "Unblock Client",
+        ? "El cliente no podrá operar hasta que la cuenta vuelva a revisarse."
+        : "El cliente recuperará el acceso a su cuenta.",
+      confirmButtonText: willBlockClient ? "Bloquear cliente" : "Desbloquear cliente",
       icon: willBlockClient ? "warning" : "question",
     });
 
@@ -110,13 +110,13 @@ function ClientDetail() {
     try {
       const updated = await updateClient(id, { bloqueado: !client.bloqueado });
       setClient(updated);
-      const message = updated.bloqueado ? "Client blocked" : "Client unblocked";
+      const message = updated.bloqueado ? "Cliente bloqueado" : "Cliente desbloqueado";
 
       setSuccessMessage(message);
-      await showSuccess("Client updated", message);
+      await showSuccess("Cliente actualizado", message);
     } catch (err) {
       setError(err.message);
-      await showError("Client not updated", err.message);
+      await showError("No se actualizó el cliente", err.message);
     } finally {
       setSaving(false);
     }
@@ -125,7 +125,7 @@ function ClientDetail() {
   if (loading) {
     return (
       <main className={styles.page}>
-        <p className={styles.loading}>Loading client...</p>
+        <p className={styles.loading}>Cargando cliente...</p>
       </main>
     );
   }
@@ -134,7 +134,7 @@ function ClientDetail() {
     return (
       <main className={styles.page}>
         <Link className={styles.backLink} to="/clients">
-          Back to clients
+          Volver a clientes
         </Link>
         <p className={styles.error}>{error}</p>
       </main>
@@ -144,7 +144,7 @@ function ClientDetail() {
   return (
     <main className={styles.page}>
       <Link className={styles.backLink} to="/clients">
-        Back to clients
+        Volver a clientes
       </Link>
 
       <section className={styles.profileHeader}>
@@ -152,12 +152,12 @@ function ClientDetail() {
           <UserRound aria-hidden="true" size={34} />
         </div>
         <div>
-          <span className={styles.eyebrow}>Client Profile</span>
+          <span className={styles.eyebrow}>Perfil de cliente</span>
           <h1>{getClientName(client)}</h1>
           <p>{client?.email || id}</p>
         </div>
         <span className={client?.bloqueado ? styles.blocked : styles.active}>
-          {client?.bloqueado ? "Blocked" : "Active"}
+          {client?.bloqueado ? "Bloqueado" : "Activo"}
         </span>
       </section>
 
@@ -166,19 +166,19 @@ function ClientDetail() {
 
       <section className={styles.statsGrid}>
         <article>
-          <span>Last transactions</span>
+          <span>Últimas transacciones</span>
           <strong>{transactions.length}</strong>
         </article>
         <article>
-          <span>Fraud flags</span>
+          <span>Alertas de fraude</span>
           <strong>{stats.fraud}</strong>
         </article>
         <article>
-          <span>Pending reviews</span>
+          <span>Revisiones pendientes</span>
           <strong>{stats.pending}</strong>
         </article>
         <article>
-          <span>Volume</span>
+          <span>Volumen</span>
           <strong>{formatCurrency(stats.volume)}</strong>
         </article>
       </section>
@@ -187,19 +187,19 @@ function ClientDetail() {
         <article className={styles.card}>
           <div className={styles.cardHeader}>
             <div>
-              <h2>Account Detail</h2>
-              <p>Risk context used by analysts before taking action.</p>
+              <h2>Detalle de cuenta</h2>
+              <p>Contexto de riesgo usado por analistas antes de actuar.</p>
             </div>
             <ShieldCheck aria-hidden="true" size={22} />
           </div>
 
           <dl className={styles.detailList}>
-            <div><dt>Client ID</dt><dd>{id}</dd></div>
+            <div><dt>ID cliente</dt><dd>{id}</dd></div>
             <div><dt>DNI</dt><dd>{client?.dni || "-"}</dd></div>
-            <div><dt>Country</dt><dd>{client?.pais_emision || "-"}</dd></div>
-            <div><dt>Account age</dt><dd>{client?.dias_antiguedad_cuenta ?? "-"} days</dd></div>
-            <div><dt>Email verified</dt><dd>{formatBoolean(client?.email_verificado)}</dd></div>
-            <div><dt>3D Secure</dt><dd>{formatBoolean(client?.paso_3d_secure, "Passed", "Not passed")}</dd></div>
+            <div><dt>País</dt><dd>{client?.pais_emision || "-"}</dd></div>
+            <div><dt>Antigüedad de cuenta</dt><dd>{client?.dias_antiguedad_cuenta ?? "-"} días</dd></div>
+            <div><dt>Email verificado</dt><dd>{formatBoolean(client?.email_verificado)}</dd></div>
+            <div><dt>3D Secure</dt><dd>{formatBoolean(client?.paso_3d_secure, "Superado", "No superado")}</dd></div>
           </dl>
 
           <button
@@ -213,21 +213,21 @@ function ClientDetail() {
             ) : (
               <Ban aria-hidden="true" size={16} />
             )}
-            {saving ? "Saving..." : client?.bloqueado ? "Unblock Client" : "Block Client"}
+            {saving ? "Guardando..." : client?.bloqueado ? "Desbloquear cliente" : "Bloquear cliente"}
           </button>
         </article>
 
         <article className={styles.card}>
           <div className={styles.cardHeader}>
             <div>
-              <h2>Last 5 Transactions</h2>
-              <p>Most recent activity linked to this client.</p>
+              <h2>Últimas 5 transacciones</h2>
+              <p>Actividad más reciente asociada a este cliente.</p>
             </div>
           </div>
 
           <div className={styles.miniTable}>
             {transactions.length === 0 ? (
-              <p>No transactions found</p>
+              <p>No se encontraron transacciones</p>
             ) : (
               transactions.map((transaction) => {
                 const transactionId = getTransactionId(transaction);
