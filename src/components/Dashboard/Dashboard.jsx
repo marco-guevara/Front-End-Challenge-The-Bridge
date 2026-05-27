@@ -23,6 +23,21 @@ const navigationItems = [
   { label: "Users", icon: Users, path: "/clients" },
 ];
 
+// Normaliza la respuesta de la API al formato que usa la tabla del dashboard.
+function mapPendingTransaction(transaction) {
+  return {
+    id: transaction.id_transaccion,
+    time: `${transaction.hora}:00`,
+    customer: transaction.id_usuario,
+    userId: transaction.id_usuario,
+    amount: Number(transaction.importe).toFixed(2),
+    country: transaction.pais_pago,
+    score: Math.round(Number(transaction.f_score) * 100),
+    fraudReason: transaction.shap_reasons?.razones_fraude,
+    legitReason: transaction.shap_reasons?.razones_legitima,
+  };
+}
+
 function Dashboard() {
   const [transactions, setTransactions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,6 +57,9 @@ function Dashboard() {
     role: user?.role || "Analyst",
   };
 
+  // Recarga stats y transacciones pendientes cada vez que se entra al dashboard.
+  // Pending Reviews se calcula desde la lista filtrada porque el endpoint de stats
+  // puede no reflejar inmediatamente las transacciones recién revisadas.
   useEffect(() => {
     let ignore = false;
 
@@ -63,17 +81,8 @@ function Dashboard() {
         ]);
         if (ignore) return;
 
-        const pendingTransactions = transactionsResponse.data.map((transaction) => ({
-          id: transaction.id_transaccion,
-          time: `${transaction.hora}:00`, // 9 => "09:00"
-          customer: transaction.id_usuario,
-          userId: transaction.id_usuario,
-          amount: Number(transaction.importe).toFixed(2), // "17.49" => 17.49 || "17" => 17.00
-          country: transaction.pais_pago,
-          score: Math.round(Number(transaction.f_score) * 100), // "0.87" => 87
-          fraudReason: transaction.shap_reasons?.razones_fraude,
-          legitReason: transaction.shap_reasons?.razones_legitima,
-        }));
+        const pendingTransactions =
+          transactionsResponse.data.map(mapPendingTransaction);
 
         setDashboardStats(statsResponse.data);
         setPendingCount(pendingTransactions.length);
@@ -98,7 +107,7 @@ function Dashboard() {
     };
   }, [location.key]);
 
-  // ESTADÍSTICAS
+  // Tarjetas superiores del dashboard.
   const stats = [
     {
       icon: CircleDot,
@@ -128,31 +137,24 @@ function Dashboard() {
     },
   ];
 
-  // Transacciones por página
   const transactionsPerPage = 5;
 
-  // PAGINADO DE TRANSACCIONES
-  // Calculamos el total de páginas
-  // Como necesitamos páginas completas, Math.ceil() redondea hacia arriba.
+  // Paginación de la tabla de pendientes.
   const totalPages = Math.ceil(transactions.length / transactionsPerPage);
 
-  // Calculamos desde qué posición del array empieza la página actual
   const startIndex = (currentPage - 1) * transactionsPerPage;
-
-  // Calculamos hasta qué posición del array llega la página
   const endIndex = startIndex + transactionsPerPage;
 
-  // Hacemos el corte real del array
   const paginatedTransactions = transactions.slice(startIndex, endIndex);
 
-  // Si estás en una página que ya no existe, volver a página 1
+  // Si cambia el número de resultados y la página actual queda fuera, volvemos al inicio.
   useEffect(() => {
     if (currentPage > totalPages && totalPages > 0) {
       setCurrentPage(1);
     }
   }, [currentPage, totalPages]);
 
-  // LOGOUT
+  // Cierra la sesión del analista y vuelve al login.
   const handleLogout = async () => {
     const isConfirmed = confirm("¿Está segur@ de que quiere cerrar la sesión?");
     if (!isConfirmed) return;
