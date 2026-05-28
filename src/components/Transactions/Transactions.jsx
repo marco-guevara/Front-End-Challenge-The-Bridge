@@ -21,7 +21,7 @@ import {
 import { confirmAction, showError, showSuccess } from "../../utils/alerts";
 import {
   formatCurrency,
-  formatHour,
+  formatDateTime,
   getTransactionScore,
 } from "../../utils/formatters";
 import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
@@ -35,7 +35,8 @@ const navigationItems = [
 function mapTransaction(transaction) {
   return {
     id: transaction.id_transaccion,
-    time: formatHour(transaction.hora),
+    time: formatDateTime(transaction.fecha, transaction.hora),
+    timestamp: getTransactionTimestamp(transaction),
     userId: transaction.id_usuario,
     amount: formatCurrency(transaction.importe),
     country: transaction.pais_pago,
@@ -46,10 +47,85 @@ function mapTransaction(transaction) {
   };
 }
 
-async function fetchTransactions(params = {}) {
-  const transactions = await getTransactions(params);
+function getTransactionTimestamp(transaction) {
+  const date = parseTransactionDate(transaction.fecha);
+  const time = parseTransactionTime(transaction.hora);
 
-  return transactions.map(mapTransaction);
+  return date && !Number.isNaN(date.getTime()) ? date.getTime() + time : time;
+}
+
+function parseTransactionDate(dateValue) {
+  if (!dateValue) return null;
+
+  if (dateValue instanceof Date) return dateValue;
+
+  const normalizedDate = String(dateValue).trim();
+  const dayFirstDate = normalizedDate.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+
+  if (dayFirstDate) {
+    const [, day, month, year] = dayFirstDate;
+    return new Date(Number(year), Number(month) - 1, Number(day));
+  }
+
+  return new Date(normalizedDate);
+}
+
+function parseTransactionTime(hourValue) {
+  if (hourValue === null || hourValue === undefined || hourValue === "") {
+    return 0;
+  }
+
+  if (typeof hourValue === "number") {
+    return hourValue * 60 * 60 * 1000;
+  }
+
+  const normalizedHour = String(hourValue).trim();
+  const [hours = 0, minutes = 0, seconds = 0] = normalizedHour
+    .split(":")
+    .map(Number);
+
+  if ([hours, minutes, seconds].some(Number.isNaN)) {
+    return Number(normalizedHour || 0) * 60 * 60 * 1000;
+  }
+
+  return (
+    hours * 60 * 60 * 1000 +
+    minutes * 60 * 1000 +
+    seconds * 1000
+  );
+}
+
+function getReasonList(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.flatMap(getReasonList);
+  if (typeof value === "object") return Object.values(value).flatMap(getReasonList);
+
+  return [String(value)];
+}
+
+function isPendingTransaction(transaction) {
+  const reviewStatus = transaction.revisado ?? transaction.reviewed;
+
+  if (reviewStatus === null || reviewStatus === undefined || reviewStatus === "") {
+    return true;
+  }
+
+  if (typeof reviewStatus === "boolean") {
+    return !reviewStatus;
+  }
+
+  return ["pendiente", "pending", "no revisado", "unreviewed"].includes(
+    String(reviewStatus).trim().toLowerCase(),
+  );
+}
+
+async function fetchTransactions(params = {}) {
+  const transactions = await getTransactions({
+    ...params,
+    revisado: "Pendiente",
+  });
+
+  return transactions.filter(isPendingTransaction).map(mapTransaction);
 }
 
 function formatRole(role) {
@@ -83,7 +159,11 @@ function Transactions() {
 
         const transaction = Array.isArray(response) ? response[0] : response;
 
-        setTransactions(transaction ? [mapTransaction(transaction)] : []);
+        setTransactions(
+          transaction && isPendingTransaction(transaction)
+            ? [mapTransaction(transaction)]
+            : [],
+        );
         setCurrentPage(1);
         setSelectedTransaction(null);
         return;
@@ -131,7 +211,7 @@ function Transactions() {
   }, []);
 
   const prioritizedTransactions = [...transactions].sort((a, b) => {
-    return b.score - a.score;
+    return a.timestamp - b.timestamp;
   });
 
   const transactionsPerPage = 10;
@@ -192,10 +272,8 @@ function Transactions() {
 
       setError("");
       setTransactions((prevTransactions) =>
-        prevTransactions.map((transaction) =>
-          transaction.id === selectedTransaction.id
-            ? { ...transaction, isFraud: isFraudDecision }
-            : transaction,
+        prevTransactions.filter(
+          (transaction) => transaction.id !== selectedTransaction.id,
         ),
       );
 
@@ -334,7 +412,7 @@ function Transactions() {
               <div className={styles.cardHeader}>
                 <div>
                   <h3>Transacciones</h3>
-                  <p>Mostrando todas las transacciones</p>
+                  <p>Mostrando transacciones pendientes</p>
                 </div>
               </div>
 
@@ -343,7 +421,7 @@ function Transactions() {
                   <thead>
                     <tr>
                       <th>ID</th>
-                      <th>Hora</th>
+                      <th>Fecha y hora</th>
                       <th>Usuario</th>
                       <th>Importe</th>
                       <th>Puntuación</th>
@@ -477,18 +555,30 @@ function Transactions() {
                 <div>
                   <dt>Motivo de fraude</dt>
                   <dd>
-                    {selectedTransaction?.fraudReason?.length > 0
-                      ? selectedTransaction.fraudReason.join(", ")
-                      : "-"}
+                    {getReasonList(selectedTransaction?.fraudReason).length > 0 ? (
+                      <ul className={styles.reasonList}>
+                        {getReasonList(selectedTransaction.fraudReason).map((reason, index) => (
+                          <li key={`${reason}-${index}`}>{reason}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      "-"
+                    )}
                   </dd>
                 </div>
 
                 <div>
                   <dt>Motivo legítimo</dt>
                   <dd>
-                    {selectedTransaction?.legitReason?.length > 0
-                      ? selectedTransaction.legitReason.join(", ")
-                      : "-"}
+                    {getReasonList(selectedTransaction?.legitReason).length > 0 ? (
+                      <ul className={styles.reasonList}>
+                        {getReasonList(selectedTransaction.legitReason).map((reason, index) => (
+                          <li key={`${reason}-${index}`}>{reason}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      "-"
+                    )}
                   </dd>
                 </div>
               </dl>

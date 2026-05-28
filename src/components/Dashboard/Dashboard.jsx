@@ -19,7 +19,7 @@ import { getDashboardStats, getTransactions } from "../../services/api";
 import { confirmAction, showError } from "../../utils/alerts";
 import {
   formatCurrency,
-  formatHour,
+  formatDateTime,
   getTransactionScore,
 } from "../../utils/formatters";
 import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
@@ -35,7 +35,7 @@ const DASHBOARD_TRANSACTION_LIMIT = 1000;
 function mapPendingTransaction(transaction) {
   return {
     id: transaction.id_transaccion,
-    time: formatHour(transaction.hora),
+    time: formatDateTime(transaction.fecha, transaction.hora),
     customer: transaction.id_usuario,
     userId: transaction.id_usuario,
     amount: formatCurrency(transaction.importe),
@@ -44,6 +44,14 @@ function mapPendingTransaction(transaction) {
     fraudReason: transaction.shap_reasons?.razones_fraude,
     legitReason: transaction.shap_reasons?.razones_legitima,
   };
+}
+
+function getReasonList(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.flatMap(getReasonList);
+  if (typeof value === "object") return Object.values(value).flatMap(getReasonList);
+
+  return [String(value)];
 }
 
 function isPendingTransaction(transaction) {
@@ -297,7 +305,7 @@ function Dashboard() {
                   <thead>
                     <tr>
                       <th>ID</th>
-                      <th>Hora</th>
+                      <th>Fecha y hora</th>
                       <th>Cliente</th>
                       <th>Importe</th>
                       <th>Puntuación</th>
@@ -426,17 +434,29 @@ function Dashboard() {
                 <div>
                   <dt>Motivo de fraude</dt>
                   <dd>
-                    {selectedTransaction?.fraudReason?.length > 0
-                      ? selectedTransaction.fraudReason.join(", ")
-                      : "-"}
+                    {getReasonList(selectedTransaction?.fraudReason).length > 0 ? (
+                      <ul className={styles.reasonList}>
+                        {getReasonList(selectedTransaction.fraudReason).map((reason, index) => (
+                          <li key={`${reason}-${index}`}>{reason}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      "-"
+                    )}
                   </dd>
                 </div>
                 <div>
                   <dt>Motivo legítimo</dt>
                   <dd>
-                    {selectedTransaction?.legitReason?.length > 0
-                      ? selectedTransaction.legitReason.join(", ")
-                      : "-"}
+                    {getReasonList(selectedTransaction?.legitReason).length > 0 ? (
+                      <ul className={styles.reasonList}>
+                        {getReasonList(selectedTransaction.legitReason).map((reason, index) => (
+                          <li key={`${reason}-${index}`}>{reason}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      "-"
+                    )}
                   </dd>
                 </div>
               </dl>

@@ -78,7 +78,7 @@ function Clients() {
 
       <header className={styles.header}>
         <div>
-          <span className={styles.eyebrow}>Inteligencia de clientes</span>
+          <span className={styles.eyebrow}>Clientes activos o bloqueados</span>
           <h1>Clientes</h1>
           <p>Busca clientes, revisa su estado y abre perfiles de riesgo.</p>
         </div>
