@@ -1,4 +1,5 @@
 import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
+import AnimatedPage from "../Motion/AnimatedPage";
 
 import styles from "./AuthShell.module.css";
 
@@ -19,7 +20,7 @@ function BoltMark({ compact = false }) {
 
 function AuthShell({ children }) {
   return (
-    <main className={styles.shell}>
+    <AnimatedPage as="main" className={styles.shell}>
       <div className={`${styles.stage} ${styles.loginStage}`}>
         <header className={styles.loginHeader}>
           <BoltMark compact />
@@ -29,7 +30,7 @@ function AuthShell({ children }) {
 
         {children}
       </div>
-    </main>
+    </AnimatedPage>
   );
 }
 

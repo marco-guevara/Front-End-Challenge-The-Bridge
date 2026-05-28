@@ -169,6 +169,26 @@ input {
   font-weight: 900;
 }
 
+.detailActions button:first-child {
+  border-color: rgb(192 132 252 / 34%);
+  border-radius: 999px;
+  background:
+    linear-gradient(135deg, rgb(124 58 237 / 18%), rgb(192 132 252 / 10%)),
+    var(--color-surface);
+  color: var(--color-primary-soft);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 8%),
+    0 10px 24px rgb(124 58 237 / 10%);
+}
+
+.detailActions button:first-child:hover {
+  border-color: rgb(192 132 252 / 58%);
+  background:
+    linear-gradient(135deg, rgb(124 58 237 / 28%), rgb(192 132 252 / 16%)),
+    var(--color-surface);
+  color: var(--color-text);
+}
+
 .detailActions button:disabled {
   opacity: 0.45;
   cursor: not-allowed;
@@ -480,6 +500,17 @@ tbody tr:hover {
   overflow-wrap: anywhere;
 }
 
+.reasonList {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0.35rem 0 0;
+  padding-left: 1rem;
+}
+
+.reasonList li {
+  margin: 0;
+}
+
 .selectedRow {
   background: rgb(124 58 237 / 12%);
 }
@@ -602,45 +633,47 @@ tbody tr:hover {
     padding: 0 0.75rem 0.75rem;
   }
 
-  table,
-  thead,
-  tbody,
-  tr,
-  td {
+  .ledger table,
+  .ledger thead,
+  .ledger tbody,
+  .ledger tr,
+  .ledger td {
     display: block;
     min-width: 0;
     width: 100%;
   }
 
-  thead {
+  .ledger thead {
     display: none;
   }
 
-  tbody {
+  .ledger tbody {
     display: grid;
     gap: 0.7rem;
   }
 
-  tbody tr {
+  .ledger tbody tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.7rem 0.9rem;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-card);
     background: rgb(26 31 46 / 62%);
-    padding: 0.8rem;
+    padding: 0.9rem;
   }
 
-  td {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1rem;
+  .ledger td {
+    display: grid;
+    gap: 0.25rem;
     border-top: 0;
-    padding: 0.25rem 0;
-    text-align: right;
-    overflow-wrap: anywhere;
+    padding: 0;
+    color: var(--color-text);
+    text-align: left;
+    overflow-wrap: break-word;
+    word-break: normal;
   }
 
-  td::before {
-    flex-shrink: 0;
+  .ledger td::before {
     color: var(--color-text-soft);
     content: "";
     font-size: 0.68rem;
@@ -649,32 +682,38 @@ tbody tr:hover {
     text-transform: uppercase;
   }
 
-  td:nth-child(1)::before {
+  .ledger td:nth-child(1),
+  .ledger td:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+
+  .ledger td:nth-child(1)::before {
     content: "ID";
   }
 
-  td:nth-child(2)::before {
-    content: "Hora";
+  .ledger td:nth-child(2)::before {
+    content: "Fecha y hora";
   }
 
-  td:nth-child(3)::before {
+  .ledger td:nth-child(3)::before {
     content: "Cliente";
   }
 
-  td:nth-child(4)::before {
+  .ledger td:nth-child(4)::before {
     content: "Importe";
   }
 
-  td:nth-child(5)::before {
+  .ledger td:nth-child(5)::before {
     content: "Puntuación";
   }
 
-  td[colspan] {
+  .ledger td[colspan] {
     display: block;
+    grid-column: 1 / -1;
     text-align: center;
   }
 
-  td[colspan]::before {
+  .ledger td[colspan]::before {
     content: none;
   }
 

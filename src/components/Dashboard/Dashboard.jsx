@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   AlertTriangle,
@@ -19,10 +20,17 @@ import { getDashboardStats, getTransactions } from "../../services/api";
 import { confirmAction, showError } from "../../utils/alerts";
 import {
   formatCurrency,
-  formatHour,
+  formatDateTime,
   getTransactionScore,
 } from "../../utils/formatters";
+import {
+  interactiveTap,
+  staggerContainer,
+  surfaceItem,
+  tableRowItem,
+} from "../../utils/motionPresets";
 import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
+import AnimatedPage from "../Motion/AnimatedPage";
 
 const navigationItems = [
   { label: "Panel", icon: LayoutDashboard, path: "/dashboard" },
@@ -35,7 +43,7 @@ const DASHBOARD_TRANSACTION_LIMIT = 1000;
 function mapPendingTransaction(transaction) {
   return {
     id: transaction.id_transaccion,
-    time: formatHour(transaction.hora),
+    time: formatDateTime(transaction.fecha, transaction.hora),
     customer: transaction.id_usuario,
     userId: transaction.id_usuario,
     amount: formatCurrency(transaction.importe),
@@ -44,6 +52,14 @@ function mapPendingTransaction(transaction) {
     fraudReason: transaction.shap_reasons?.razones_fraude,
     legitReason: transaction.shap_reasons?.razones_legitima,
   };
+}
+
+function getReasonList(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.flatMap(getReasonList);
+  if (typeof value === "object") return Object.values(value).flatMap(getReasonList);
+
+  return [String(value)];
 }
 
 function isPendingTransaction(transaction) {
@@ -206,7 +222,7 @@ function Dashboard() {
   };
 
   return (
-    <div className={styles.dashboard}>
+    <AnimatedPage className={styles.dashboard}>
       <aside className={styles.sidebar}>
         <div className={styles.brand}>
           <img
@@ -256,11 +272,17 @@ function Dashboard() {
         <section className={styles.content}>
           <section className={styles.statsSection}>
             {statsError && <p className={styles.errorMessage}>{statsError}</p>}
-            <section className={styles.statsGrid}>
+            <motion.section
+              animate="show"
+              className={styles.statsGrid}
+              initial="hidden"
+              variants={staggerContainer}
+            >
               {stats.map((stat) => (
-                <article
+                <motion.article
                   className={`${styles.statCard} ${stat.danger ? styles.dangerCard : ""}`}
                   key={stat.label}
+                  variants={surfaceItem}
                 >
                   <div className={styles.statTop}>
                     <span className={styles.statIcon}>
@@ -280,12 +302,17 @@ function Dashboard() {
                   </div>
                   <span className={styles.statLabel}>{stat.label}</span>
                   <strong>{stat.value}</strong>
-                </article>
+                </motion.article>
               ))}
-            </section>
+            </motion.section>
           </section>
-          <section className={styles.workspaceGrid}>
-            <article className={styles.ledger}>
+          <motion.section
+            animate="show"
+            className={styles.workspaceGrid}
+            initial="hidden"
+            variants={staggerContainer}
+          >
+            <motion.article className={styles.ledger} variants={surfaceItem}>
               <div className={styles.cardHeader}>
                 <div>
                   <h3>Últimas 100 transacciones pendientes</h3>
@@ -297,7 +324,7 @@ function Dashboard() {
                   <thead>
                     <tr>
                       <th>ID</th>
-                      <th>Hora</th>
+                      <th>Fecha y hora</th>
                       <th>Cliente</th>
                       <th>Importe</th>
                       <th>Puntuación</th>
@@ -320,14 +347,16 @@ function Dashboard() {
                     {!isLoading &&
                       !transactionsError &&
                       paginatedTransactions.map((transaction) => (
-                        <tr
+                        <motion.tr
                           className={
                             selectedTransaction?.id === transaction.id
                               ? styles.selectedRow
                               : ""
                           }
                           key={transaction.id}
+                          layout
                           onClick={() => setSelectedTransaction(transaction)}
+                          variants={tableRowItem}
                         >
                           <td>{transaction.id}</td>
                           <td>{transaction.time}</td>
@@ -347,7 +376,7 @@ function Dashboard() {
                               {transaction.score}%
                             </span>
                           </td>
-                        </tr>
+                        </motion.tr>
                       ))}
 
                     {!isLoading && !transactionsError && hasNoPendingTransactions && (
@@ -386,9 +415,9 @@ function Dashboard() {
                   Siguiente
                 </button>
               </div>
-            </article>
+            </motion.article>
 
-            <aside className={styles.reviewPanel}>
+            <motion.aside className={styles.reviewPanel} variants={surfaceItem}>
               <div className={styles.cardHeader}>
                 <div>
                   <h3>Detalle de transacción</h3>
@@ -426,23 +455,36 @@ function Dashboard() {
                 <div>
                   <dt>Motivo de fraude</dt>
                   <dd>
-                    {selectedTransaction?.fraudReason?.length > 0
-                      ? selectedTransaction.fraudReason.join(", ")
-                      : "-"}
+                    {getReasonList(selectedTransaction?.fraudReason).length > 0 ? (
+                      <ul className={styles.reasonList}>
+                        {getReasonList(selectedTransaction.fraudReason).map((reason, index) => (
+                          <li key={`${reason}-${index}`}>{reason}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      "-"
+                    )}
                   </dd>
                 </div>
                 <div>
                   <dt>Motivo legítimo</dt>
                   <dd>
-                    {selectedTransaction?.legitReason?.length > 0
-                      ? selectedTransaction.legitReason.join(", ")
-                      : "-"}
+                    {getReasonList(selectedTransaction?.legitReason).length > 0 ? (
+                      <ul className={styles.reasonList}>
+                        {getReasonList(selectedTransaction.legitReason).map((reason, index) => (
+                          <li key={`${reason}-${index}`}>{reason}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      "-"
+                    )}
                   </dd>
                 </div>
               </dl>
 
               <div className={styles.detailActions}>
-                <button
+                <motion.button
+                  {...interactiveTap}
                   type="button"
                   disabled={!selectedTransaction}
                   onClick={() => {
@@ -453,8 +495,9 @@ function Dashboard() {
                 >
                   <ListChecks aria-hidden="true" size={14} />
                   Detalle
-                </button>
-                <button
+                </motion.button>
+                <motion.button
+                  {...interactiveTap}
                   type="button"
                   disabled={!selectedTransaction}
                   onClick={() => {
@@ -465,13 +508,13 @@ function Dashboard() {
                 >
                   <User aria-hidden="true" size={14} />
                   Cliente
-                </button>
+                </motion.button>
               </div>
-            </aside>
-          </section>
+            </motion.aside>
+          </motion.section>
         </section>
       </main>
-    </div>
+    </AnimatedPage>
   );
 }
 

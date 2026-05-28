@@ -19,6 +19,7 @@ import {
   getTransactionScore,
 } from "../../utils/formatters";
 import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
+import AnimatedPage from "../Motion/AnimatedPage";
 import PageNavigation from "../PageNavigation/PageNavigation";
 import styles from "./TransactionDetail.module.css";
 
@@ -167,18 +168,18 @@ function TransactionDetail() {
 
   if (loading) {
     return (
-      <main className={styles.page}>
+      <AnimatedPage as="main" className={styles.page}>
         <PageNavigation />
         <p className={styles.loading}>
           <LoadingSpinner label="Cargando transacción..." />
         </p>
-      </main>
+      </AnimatedPage>
     );
   }
 
   if (error || !transaction) {
     return (
-      <main className={styles.page}>
+      <AnimatedPage as="main" className={styles.page}>
         <PageNavigation />
         <nav className={styles.breadcrumb}>
           <Link to="/transactions">Transacciones</Link>
@@ -186,7 +187,7 @@ function TransactionDetail() {
           <strong>{String(id).slice(0, 12)}...</strong>
         </nav>
         <p className={styles.error}>{error || "Transacción no encontrada"}</p>
-      </main>
+      </AnimatedPage>
     );
   }
 
@@ -210,7 +211,7 @@ function TransactionDetail() {
   const isFraudDisabled = Boolean(decisionLoading) || isReviewed;
 
   return (
-    <main className={styles.page}>
+    <AnimatedPage as="main" className={styles.page}>
       <PageNavigation />
 
       <nav className={styles.breadcrumb}>
@@ -471,7 +472,7 @@ function TransactionDetail() {
           </dl>
         </article>
       </section>
-    </main>
+    </AnimatedPage>
   );
 }
 

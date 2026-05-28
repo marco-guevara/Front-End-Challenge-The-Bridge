@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
   LayoutDashboard,
   ListChecks,
   LogOut,
@@ -21,10 +26,17 @@ import {
 import { confirmAction, showError, showSuccess } from "../../utils/alerts";
 import {
   formatCurrency,
-  formatHour,
+  formatDateTime,
   getTransactionScore,
 } from "../../utils/formatters";
+import {
+  interactiveTap,
+  staggerContainer,
+  surfaceItem,
+  tableRowItem,
+} from "../../utils/motionPresets";
 import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
+import AnimatedPage from "../Motion/AnimatedPage";
 
 const navigationItems = [
   { label: "Panel", icon: LayoutDashboard, path: "/dashboard" },
@@ -35,7 +47,8 @@ const navigationItems = [
 function mapTransaction(transaction) {
   return {
     id: transaction.id_transaccion,
-    time: formatHour(transaction.hora),
+    time: formatDateTime(transaction.fecha, transaction.hora),
+    timestamp: getTransactionTimestamp(transaction),
     userId: transaction.id_usuario,
     amount: formatCurrency(transaction.importe),
     country: transaction.pais_pago,
@@ -46,10 +59,85 @@ function mapTransaction(transaction) {
   };
 }
 
-async function fetchTransactions(params = {}) {
-  const transactions = await getTransactions(params);
+function getTransactionTimestamp(transaction) {
+  const date = parseTransactionDate(transaction.fecha);
+  const time = parseTransactionTime(transaction.hora);
 
-  return transactions.map(mapTransaction);
+  return date && !Number.isNaN(date.getTime()) ? date.getTime() + time : time;
+}
+
+function parseTransactionDate(dateValue) {
+  if (!dateValue) return null;
+
+  if (dateValue instanceof Date) return dateValue;
+
+  const normalizedDate = String(dateValue).trim();
+  const dayFirstDate = normalizedDate.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+
+  if (dayFirstDate) {
+    const [, day, month, year] = dayFirstDate;
+    return new Date(Number(year), Number(month) - 1, Number(day));
+  }
+
+  return new Date(normalizedDate);
+}
+
+function parseTransactionTime(hourValue) {
+  if (hourValue === null || hourValue === undefined || hourValue === "") {
+    return 0;
+  }
+
+  if (typeof hourValue === "number") {
+    return hourValue * 60 * 60 * 1000;
+  }
+
+  const normalizedHour = String(hourValue).trim();
+  const [hours = 0, minutes = 0, seconds = 0] = normalizedHour
+    .split(":")
+    .map(Number);
+
+  if ([hours, minutes, seconds].some(Number.isNaN)) {
+    return Number(normalizedHour || 0) * 60 * 60 * 1000;
+  }
+
+  return (
+    hours * 60 * 60 * 1000 +
+    minutes * 60 * 1000 +
+    seconds * 1000
+  );
+}
+
+function getReasonList(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.flatMap(getReasonList);
+  if (typeof value === "object") return Object.values(value).flatMap(getReasonList);
+
+  return [String(value)];
+}
+
+function isPendingTransaction(transaction) {
+  const reviewStatus = transaction.revisado ?? transaction.reviewed;
+
+  if (reviewStatus === null || reviewStatus === undefined || reviewStatus === "") {
+    return true;
+  }
+
+  if (typeof reviewStatus === "boolean") {
+    return !reviewStatus;
+  }
+
+  return ["pendiente", "pending", "no revisado", "unreviewed"].includes(
+    String(reviewStatus).trim().toLowerCase(),
+  );
+}
+
+async function fetchTransactions(params = {}) {
+  const transactions = await getTransactions({
+    ...params,
+    revisado: "Pendiente",
+  });
+
+  return transactions.filter(isPendingTransaction).map(mapTransaction);
 }
 
 function formatRole(role) {
@@ -83,7 +171,11 @@ function Transactions() {
 
         const transaction = Array.isArray(response) ? response[0] : response;
 
-        setTransactions(transaction ? [mapTransaction(transaction)] : []);
+        setTransactions(
+          transaction && isPendingTransaction(transaction)
+            ? [mapTransaction(transaction)]
+            : [],
+        );
         setCurrentPage(1);
         setSelectedTransaction(null);
         return;
@@ -131,7 +223,7 @@ function Transactions() {
   }, []);
 
   const prioritizedTransactions = [...transactions].sort((a, b) => {
-    return b.score - a.score;
+    return a.timestamp - b.timestamp;
   });
 
   const transactionsPerPage = 10;
@@ -192,10 +284,8 @@ function Transactions() {
 
       setError("");
       setTransactions((prevTransactions) =>
-        prevTransactions.map((transaction) =>
-          transaction.id === selectedTransaction.id
-            ? { ...transaction, isFraud: isFraudDecision }
-            : transaction,
+        prevTransactions.filter(
+          (transaction) => transaction.id !== selectedTransaction.id,
         ),
       );
 
@@ -235,7 +325,7 @@ function Transactions() {
   };
 
   return (
-    <div className={styles.dashboard}>
+    <AnimatedPage className={styles.dashboard}>
       <aside className={styles.sidebar}>
         <div className={styles.brand}>
           <img
@@ -329,12 +419,26 @@ function Transactions() {
             </button>
           </section>
 
-          <section className={styles.workspaceGrid}>
-            <article className={styles.ledger}>
+          <motion.section
+            animate="show"
+            className={styles.workspaceGrid}
+            initial="hidden"
+            variants={staggerContainer}
+          >
+            <motion.article className={styles.ledger} variants={surfaceItem}>
               <div className={styles.cardHeader}>
                 <div>
                   <h3>Transacciones</h3>
-                  <p>Mostrando todas las transacciones</p>
+                  <p className={styles.headerMeta}>
+                    <span>Mostrando transacciones pendientes</span>
+                    <strong>
+                      {isLoading
+                        ? "Cargando..."
+                        : `${prioritizedTransactions.length.toLocaleString(
+                            "es-ES",
+                          )} pendientes`}
+                    </strong>
+                  </p>
                 </div>
               </div>
 
@@ -343,7 +447,7 @@ function Transactions() {
                   <thead>
                     <tr>
                       <th>ID</th>
-                      <th>Hora</th>
+                      <th>Fecha y hora</th>
                       <th>Usuario</th>
                       <th>Importe</th>
                       <th>Puntuación</th>
@@ -369,14 +473,16 @@ function Transactions() {
                     {!isLoading &&
                       !error &&
                       paginatedTransactions.map((transaction) => (
-                        <tr
+                        <motion.tr
                           className={
                             selectedTransaction?.id === transaction.id
                               ? styles.selectedRow
                               : ""
                           }
                           key={transaction.id}
+                          layout
                           onClick={() => setSelectedTransaction(transaction)}
+                          variants={tableRowItem}
                         >
                           <td>{transaction.id}</td>
                           <td>{transaction.time}</td>
@@ -397,7 +503,7 @@ function Transactions() {
                             </span>
                           </td>
                           <td>{transaction.isFraud ? "Sí" : "No"}</td>
-                        </tr>
+                        </motion.tr>
                       ))}
 
                     {!isLoading &&
@@ -413,6 +519,19 @@ function Transactions() {
 
               <div className={styles.pagination}>
                 <button
+                  aria-label="Ir a la primera página"
+                  disabled={currentPage === 1}
+                  onClick={() => {
+                    setSelectedTransaction(null);
+                    setCurrentPage(1);
+                  }}
+                  type="button"
+                >
+                  <ChevronsLeft aria-hidden="true" size={16} />
+                </button>
+
+                <button
+                  aria-label="Ir a la página anterior"
                   disabled={currentPage === 1}
                   onClick={() => {
                     setSelectedTransaction(null);
@@ -420,14 +539,27 @@ function Transactions() {
                   }}
                   type="button"
                 >
-                  Anterior
+                  <ChevronLeft
+                    aria-hidden="true"
+                    className={styles.paginationIcon}
+                    size={15}
+                  />
+                  <span className={styles.paginationButtonLabel}>
+                    Anterior
+                  </span>
                 </button>
 
                 <span>
-                  Página {currentPage} de {totalPages || 1}
+                  <span className={styles.paginationFullLabel}>
+                    Página {currentPage} de {totalPages || 1}
+                  </span>
+                  <span className={styles.paginationShortLabel}>
+                    {currentPage}/{totalPages || 1}
+                  </span>
                 </span>
 
                 <button
+                  aria-label="Ir a la página siguiente"
                   disabled={currentPage === totalPages || totalPages === 0}
                   onClick={() => {
                     setSelectedTransaction(null);
@@ -435,11 +567,30 @@ function Transactions() {
                   }}
                   type="button"
                 >
-                  Siguiente
+                  <span className={styles.paginationButtonLabel}>
+                    Siguiente
+                  </span>
+                  <ChevronRight
+                    aria-hidden="true"
+                    className={styles.paginationIcon}
+                    size={15}
+                  />
+                </button>
+
+                <button
+                  aria-label="Ir a la última página"
+                  disabled={currentPage === totalPages || totalPages === 0}
+                  onClick={() => {
+                    setSelectedTransaction(null);
+                    setCurrentPage(totalPages);
+                  }}
+                  type="button"
+                >
+                  <ChevronsRight aria-hidden="true" size={16} />
                 </button>
               </div>
-            </article>
-            <aside className={styles.reviewPanel}>
+            </motion.article>
+            <motion.aside className={styles.reviewPanel} variants={surfaceItem}>
               <div className={styles.cardHeader}>
                 <div>
                   <h3>Detalle de transacción</h3>
@@ -477,24 +628,37 @@ function Transactions() {
                 <div>
                   <dt>Motivo de fraude</dt>
                   <dd>
-                    {selectedTransaction?.fraudReason?.length > 0
-                      ? selectedTransaction.fraudReason.join(", ")
-                      : "-"}
+                    {getReasonList(selectedTransaction?.fraudReason).length > 0 ? (
+                      <ul className={styles.reasonList}>
+                        {getReasonList(selectedTransaction.fraudReason).map((reason, index) => (
+                          <li key={`${reason}-${index}`}>{reason}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      "-"
+                    )}
                   </dd>
                 </div>
 
                 <div>
                   <dt>Motivo legítimo</dt>
                   <dd>
-                    {selectedTransaction?.legitReason?.length > 0
-                      ? selectedTransaction.legitReason.join(", ")
-                      : "-"}
+                    {getReasonList(selectedTransaction?.legitReason).length > 0 ? (
+                      <ul className={styles.reasonList}>
+                        {getReasonList(selectedTransaction.legitReason).map((reason, index) => (
+                          <li key={`${reason}-${index}`}>{reason}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      "-"
+                    )}
                   </dd>
                 </div>
               </dl>
 
               <div className={styles.detailActions}>
-                <button
+                <motion.button
+                  {...interactiveTap}
                   type="button"
                   disabled={!selectedTransaction}
                   onClick={() => {
@@ -504,9 +668,10 @@ function Transactions() {
                 >
                   <ListChecks aria-hidden="true" size={14} />
                   Detalle
-                </button>
+                </motion.button>
 
-                <button
+                <motion.button
+                  {...interactiveTap}
                   type="button"
                   disabled={!selectedTransaction}
                   onClick={() => {
@@ -516,9 +681,10 @@ function Transactions() {
                 >
                   <User aria-hidden="true" size={14} />
                   Cliente
-                </button>
+                </motion.button>
 
-                <button
+                <motion.button
+                  {...interactiveTap}
                   className={styles.approveButton}
                   type="button"
                   disabled={
@@ -529,22 +695,23 @@ function Transactions() {
                   onClick={() => handleReviewTransaction("Aprobada")}
                 >
                   {selectedTransaction?.isFraud ? "Ya es fraude" : "Aprobar"}
-                </button>
+                </motion.button>
 
-                <button
+                <motion.button
+                  {...interactiveTap}
                   className={styles.rejectButton}
                   type="button"
                   disabled={!selectedTransaction || isReviewing}
                   onClick={() => handleReviewTransaction("Fraude")}
                 >
                   Marcar fraude
-                </button>
+                </motion.button>
               </div>
-            </aside>
-          </section>
+            </motion.aside>
+          </motion.section>
         </section>
       </main>
-    </div>
+    </AnimatedPage>
   );
 }
 

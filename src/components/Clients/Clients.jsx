@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Search, UserRound } from "lucide-react";
 
 import { getClients } from "../../services/api";
+import { surfaceItem, tableRowItem } from "../../utils/motionPresets";
 import styles from "./Clients.module.css";
 import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
+import AnimatedPage from "../Motion/AnimatedPage";
 import PageNavigation from "../PageNavigation/PageNavigation";
 
 function getClientId(client) {
@@ -73,12 +76,12 @@ function Clients() {
   }, []);
 
   return (
-    <main className={styles.page}>
+    <AnimatedPage as="main" className={styles.page}>
       <PageNavigation />
 
       <header className={styles.header}>
         <div>
-          <span className={styles.eyebrow}>Inteligencia de clientes</span>
+          <span className={styles.eyebrow}>Clientes activos o bloqueados</span>
           <h1>Clientes</h1>
           <p>Busca clientes, revisa su estado y abre perfiles de riesgo.</p>
         </div>
@@ -112,7 +115,12 @@ function Clients() {
 
       {error && <p className={styles.error}>{error}</p>}
 
-      <section className={styles.card}>
+      <motion.section
+        animate="show"
+        className={styles.card}
+        initial="hidden"
+        variants={surfaceItem}
+      >
         <div className={styles.cardHeader}>
           <div>
             <h2>Directorio de clientes</h2>
@@ -148,7 +156,7 @@ function Clients() {
                   const id = getClientId(client);
 
                   return (
-                    <tr key={id}>
+                    <motion.tr key={id} layout variants={tableRowItem}>
                       <td>
                         <strong>{getClientName(client)}</strong>
                         <span>{id}</span>
@@ -165,7 +173,7 @@ function Clients() {
                           Detalle
                         </Link>
                       </td>
-                    </tr>
+                    </motion.tr>
                   );
                 })
               )}
@@ -194,8 +202,8 @@ function Clients() {
             </button>
           </div>
         )}
-      </section>
-    </main>
+      </motion.section>
+    </AnimatedPage>
   );
 }
 
