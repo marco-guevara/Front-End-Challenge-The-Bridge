@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
   ChevronLeft,
@@ -28,7 +29,14 @@ import {
   formatDateTime,
   getTransactionScore,
 } from "../../utils/formatters";
+import {
+  interactiveTap,
+  staggerContainer,
+  surfaceItem,
+  tableRowItem,
+} from "../../utils/motionPresets";
 import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
+import AnimatedPage from "../Motion/AnimatedPage";
 
 const navigationItems = [
   { label: "Panel", icon: LayoutDashboard, path: "/dashboard" },
@@ -317,7 +325,7 @@ function Transactions() {
   };
 
   return (
-    <div className={styles.dashboard}>
+    <AnimatedPage className={styles.dashboard}>
       <aside className={styles.sidebar}>
         <div className={styles.brand}>
           <img
@@ -411,8 +419,13 @@ function Transactions() {
             </button>
           </section>
 
-          <section className={styles.workspaceGrid}>
-            <article className={styles.ledger}>
+          <motion.section
+            animate="show"
+            className={styles.workspaceGrid}
+            initial="hidden"
+            variants={staggerContainer}
+          >
+            <motion.article className={styles.ledger} variants={surfaceItem}>
               <div className={styles.cardHeader}>
                 <div>
                   <h3>Transacciones</h3>
@@ -460,14 +473,16 @@ function Transactions() {
                     {!isLoading &&
                       !error &&
                       paginatedTransactions.map((transaction) => (
-                        <tr
+                        <motion.tr
                           className={
                             selectedTransaction?.id === transaction.id
                               ? styles.selectedRow
                               : ""
                           }
                           key={transaction.id}
+                          layout
                           onClick={() => setSelectedTransaction(transaction)}
+                          variants={tableRowItem}
                         >
                           <td>{transaction.id}</td>
                           <td>{transaction.time}</td>
@@ -488,7 +503,7 @@ function Transactions() {
                             </span>
                           </td>
                           <td>{transaction.isFraud ? "Sí" : "No"}</td>
-                        </tr>
+                        </motion.tr>
                       ))}
 
                     {!isLoading &&
@@ -574,8 +589,8 @@ function Transactions() {
                   <ChevronsRight aria-hidden="true" size={16} />
                 </button>
               </div>
-            </article>
-            <aside className={styles.reviewPanel}>
+            </motion.article>
+            <motion.aside className={styles.reviewPanel} variants={surfaceItem}>
               <div className={styles.cardHeader}>
                 <div>
                   <h3>Detalle de transacción</h3>
@@ -642,7 +657,8 @@ function Transactions() {
               </dl>
 
               <div className={styles.detailActions}>
-                <button
+                <motion.button
+                  {...interactiveTap}
                   type="button"
                   disabled={!selectedTransaction}
                   onClick={() => {
@@ -652,9 +668,10 @@ function Transactions() {
                 >
                   <ListChecks aria-hidden="true" size={14} />
                   Detalle
-                </button>
+                </motion.button>
 
-                <button
+                <motion.button
+                  {...interactiveTap}
                   type="button"
                   disabled={!selectedTransaction}
                   onClick={() => {
@@ -664,9 +681,10 @@ function Transactions() {
                 >
                   <User aria-hidden="true" size={14} />
                   Cliente
-                </button>
+                </motion.button>
 
-                <button
+                <motion.button
+                  {...interactiveTap}
                   className={styles.approveButton}
                   type="button"
                   disabled={
@@ -677,22 +695,23 @@ function Transactions() {
                   onClick={() => handleReviewTransaction("Aprobada")}
                 >
                   {selectedTransaction?.isFraud ? "Ya es fraude" : "Aprobar"}
-                </button>
+                </motion.button>
 
-                <button
+                <motion.button
+                  {...interactiveTap}
                   className={styles.rejectButton}
                   type="button"
                   disabled={!selectedTransaction || isReviewing}
                   onClick={() => handleReviewTransaction("Fraude")}
                 >
                   Marcar fraude
-                </button>
+                </motion.button>
               </div>
-            </aside>
-          </section>
+            </motion.aside>
+          </motion.section>
         </section>
       </main>
-    </div>
+    </AnimatedPage>
   );
 }
 

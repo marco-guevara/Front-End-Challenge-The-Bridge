@@ -15,6 +15,7 @@ import {
 } from "../../utils/formatters";
 import styles from "./Clients.module.css";
 import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
+import AnimatedPage from "../Motion/AnimatedPage";
 import PageNavigation from "../PageNavigation/PageNavigation";
 
 function getClientName(client) {
@@ -126,29 +127,29 @@ function ClientDetail() {
 
   if (loading) {
     return (
-      <main className={styles.page}>
+      <AnimatedPage as="main" className={styles.page}>
         <PageNavigation />
         <p className={styles.loading}>
           <LoadingSpinner label="Cargando cliente..." />
         </p>
-      </main>
+      </AnimatedPage>
     );
   }
 
   if (error && !client) {
     return (
-      <main className={styles.page}>
+      <AnimatedPage as="main" className={styles.page}>
         <PageNavigation />
         <Link className={styles.backLink} to="/clients">
           Volver a clientes
         </Link>
         <p className={styles.error}>{error}</p>
-      </main>
+      </AnimatedPage>
     );
   }
 
   return (
-    <main className={styles.page}>
+    <AnimatedPage as="main" className={styles.page}>
       <PageNavigation />
 
       <Link className={styles.backLink} to="/clients">
@@ -261,7 +262,7 @@ function ClientDetail() {
           </div>
         </article>
       </section>
-    </main>
+    </AnimatedPage>
   );
 }
 

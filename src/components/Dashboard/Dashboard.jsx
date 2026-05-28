@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   AlertTriangle,
@@ -22,7 +23,14 @@ import {
   formatDateTime,
   getTransactionScore,
 } from "../../utils/formatters";
+import {
+  interactiveTap,
+  staggerContainer,
+  surfaceItem,
+  tableRowItem,
+} from "../../utils/motionPresets";
 import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
+import AnimatedPage from "../Motion/AnimatedPage";
 
 const navigationItems = [
   { label: "Panel", icon: LayoutDashboard, path: "/dashboard" },
@@ -214,7 +222,7 @@ function Dashboard() {
   };
 
   return (
-    <div className={styles.dashboard}>
+    <AnimatedPage className={styles.dashboard}>
       <aside className={styles.sidebar}>
         <div className={styles.brand}>
           <img
@@ -264,11 +272,17 @@ function Dashboard() {
         <section className={styles.content}>
           <section className={styles.statsSection}>
             {statsError && <p className={styles.errorMessage}>{statsError}</p>}
-            <section className={styles.statsGrid}>
+            <motion.section
+              animate="show"
+              className={styles.statsGrid}
+              initial="hidden"
+              variants={staggerContainer}
+            >
               {stats.map((stat) => (
-                <article
+                <motion.article
                   className={`${styles.statCard} ${stat.danger ? styles.dangerCard : ""}`}
                   key={stat.label}
+                  variants={surfaceItem}
                 >
                   <div className={styles.statTop}>
                     <span className={styles.statIcon}>
@@ -288,12 +302,17 @@ function Dashboard() {
                   </div>
                   <span className={styles.statLabel}>{stat.label}</span>
                   <strong>{stat.value}</strong>
-                </article>
+                </motion.article>
               ))}
-            </section>
+            </motion.section>
           </section>
-          <section className={styles.workspaceGrid}>
-            <article className={styles.ledger}>
+          <motion.section
+            animate="show"
+            className={styles.workspaceGrid}
+            initial="hidden"
+            variants={staggerContainer}
+          >
+            <motion.article className={styles.ledger} variants={surfaceItem}>
               <div className={styles.cardHeader}>
                 <div>
                   <h3>Últimas 100 transacciones pendientes</h3>
@@ -328,14 +347,16 @@ function Dashboard() {
                     {!isLoading &&
                       !transactionsError &&
                       paginatedTransactions.map((transaction) => (
-                        <tr
+                        <motion.tr
                           className={
                             selectedTransaction?.id === transaction.id
                               ? styles.selectedRow
                               : ""
                           }
                           key={transaction.id}
+                          layout
                           onClick={() => setSelectedTransaction(transaction)}
+                          variants={tableRowItem}
                         >
                           <td>{transaction.id}</td>
                           <td>{transaction.time}</td>
@@ -355,7 +376,7 @@ function Dashboard() {
                               {transaction.score}%
                             </span>
                           </td>
-                        </tr>
+                        </motion.tr>
                       ))}
 
                     {!isLoading && !transactionsError && hasNoPendingTransactions && (
@@ -394,9 +415,9 @@ function Dashboard() {
                   Siguiente
                 </button>
               </div>
-            </article>
+            </motion.article>
 
-            <aside className={styles.reviewPanel}>
+            <motion.aside className={styles.reviewPanel} variants={surfaceItem}>
               <div className={styles.cardHeader}>
                 <div>
                   <h3>Detalle de transacción</h3>
@@ -462,7 +483,8 @@ function Dashboard() {
               </dl>
 
               <div className={styles.detailActions}>
-                <button
+                <motion.button
+                  {...interactiveTap}
                   type="button"
                   disabled={!selectedTransaction}
                   onClick={() => {
@@ -473,8 +495,9 @@ function Dashboard() {
                 >
                   <ListChecks aria-hidden="true" size={14} />
                   Detalle
-                </button>
-                <button
+                </motion.button>
+                <motion.button
+                  {...interactiveTap}
                   type="button"
                   disabled={!selectedTransaction}
                   onClick={() => {
@@ -485,13 +508,13 @@ function Dashboard() {
                 >
                   <User aria-hidden="true" size={14} />
                   Cliente
-                </button>
+                </motion.button>
               </div>
-            </aside>
-          </section>
+            </motion.aside>
+          </motion.section>
         </section>
       </main>
-    </div>
+    </AnimatedPage>
   );
 }
 
