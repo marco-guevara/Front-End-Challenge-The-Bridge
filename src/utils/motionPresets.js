@@ -1,4 +1,4 @@
-export const smoothEase = [0.22, 1, 0.36, 1];
+const smoothEase = [0.22, 1, 0.36, 1];
 
 export const pageVariants = {
   hidden: {

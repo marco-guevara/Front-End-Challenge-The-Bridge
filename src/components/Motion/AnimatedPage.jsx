@@ -4,7 +4,6 @@ import { pageVariants } from "../../utils/motionPresets";
 const motionTags = {
   div: motion.div,
   main: motion.main,
-  section: motion.section,
 };
 
 function AnimatedPage({ as = "div", children, className }) {
