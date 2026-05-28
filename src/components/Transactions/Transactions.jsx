@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
   LayoutDashboard,
   ListChecks,
   LogOut,
@@ -412,7 +416,16 @@ function Transactions() {
               <div className={styles.cardHeader}>
                 <div>
                   <h3>Transacciones</h3>
-                  <p>Mostrando transacciones pendientes</p>
+                  <p className={styles.headerMeta}>
+                    <span>Mostrando transacciones pendientes</span>
+                    <strong>
+                      {isLoading
+                        ? "Cargando..."
+                        : `${prioritizedTransactions.length.toLocaleString(
+                            "es-ES",
+                          )} pendientes`}
+                    </strong>
+                  </p>
                 </div>
               </div>
 
@@ -491,6 +504,19 @@ function Transactions() {
 
               <div className={styles.pagination}>
                 <button
+                  aria-label="Ir a la primera página"
+                  disabled={currentPage === 1}
+                  onClick={() => {
+                    setSelectedTransaction(null);
+                    setCurrentPage(1);
+                  }}
+                  type="button"
+                >
+                  <ChevronsLeft aria-hidden="true" size={16} />
+                </button>
+
+                <button
+                  aria-label="Ir a la página anterior"
                   disabled={currentPage === 1}
                   onClick={() => {
                     setSelectedTransaction(null);
@@ -498,14 +524,27 @@ function Transactions() {
                   }}
                   type="button"
                 >
-                  Anterior
+                  <ChevronLeft
+                    aria-hidden="true"
+                    className={styles.paginationIcon}
+                    size={15}
+                  />
+                  <span className={styles.paginationButtonLabel}>
+                    Anterior
+                  </span>
                 </button>
 
                 <span>
-                  Página {currentPage} de {totalPages || 1}
+                  <span className={styles.paginationFullLabel}>
+                    Página {currentPage} de {totalPages || 1}
+                  </span>
+                  <span className={styles.paginationShortLabel}>
+                    {currentPage}/{totalPages || 1}
+                  </span>
                 </span>
 
                 <button
+                  aria-label="Ir a la página siguiente"
                   disabled={currentPage === totalPages || totalPages === 0}
                   onClick={() => {
                     setSelectedTransaction(null);
@@ -513,7 +552,26 @@ function Transactions() {
                   }}
                   type="button"
                 >
-                  Siguiente
+                  <span className={styles.paginationButtonLabel}>
+                    Siguiente
+                  </span>
+                  <ChevronRight
+                    aria-hidden="true"
+                    className={styles.paginationIcon}
+                    size={15}
+                  />
+                </button>
+
+                <button
+                  aria-label="Ir a la última página"
+                  disabled={currentPage === totalPages || totalPages === 0}
+                  onClick={() => {
+                    setSelectedTransaction(null);
+                    setCurrentPage(totalPages);
+                  }}
+                  type="button"
+                >
+                  <ChevronsRight aria-hidden="true" size={16} />
                 </button>
               </div>
             </article>
